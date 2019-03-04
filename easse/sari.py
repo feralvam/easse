@@ -4,7 +4,6 @@ from collections import Counter
 from typing import List
 import sacrebleu
 import sacremoses
-from nltk.tokenize.nist import NISTTokenizer
 
 # n-gram order. Don't change this.
 NGRAM_ORDER = 4
