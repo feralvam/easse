@@ -33,11 +33,10 @@ def findAllCommonContiguousSublists(A, B, turnToLowerCases=True): # this is a ve
         b.append(item)
 
     if turnToLowerCases:
-        for i in xrange(len(a)):
+        for i in range(len(a)):
             a[i] = a[i].lower()
-        for i in xrange(len(b)):
+        for i in range(len(b)):
             b[i] = b[i].lower()
-            
 
     commonContiguousSublists = []
 
@@ -49,16 +48,16 @@ def findAllCommonContiguousSublists(A, B, turnToLowerCases=True): # this is a ve
         swapped = True
 
     maxSize = len(a)
-    for size in xrange(maxSize, 0, -1):
-        startingIndicesForA = [item for item in xrange(0, len(a)-size+1)]
-        startingIndicesForB = [item for item in xrange(0, len(b)-size+1)]
+    for size in range(maxSize, 0, -1):
+        startingIndicesForA = [item for item in range(0, len(a)-size+1)]
+        startingIndicesForB = [item for item in range(0, len(b)-size+1)]
         for i in startingIndicesForA:
             for j in startingIndicesForB:
                 if a[i:i+size] == b[j:j+size]:
                     # check if a contiguous superset has already been inserted; don't insert this one in that case
                     alreadyInserted = False
-                    currentAIndices = [item for item in xrange(i,i+size)]
-                    currentBIndices = [item for item in xrange(j,j+size)]
+                    currentAIndices = [item for item in range(i,i+size)]
+                    currentBIndices = [item for item in range(j,j+size)]
                     for item in commonContiguousSublists:
                         if isSublist(currentAIndices, item[0]) and isSublist(currentBIndices, item[1]):
                             alreadyInserted = True
@@ -114,7 +113,7 @@ def isAcronym(word, namedEntity):
         return False
 
     acronym = True    
-    for i in xrange(len(canonicalWord)):
+    for i in range(len(canonicalWord)):
         if canonicalWord[i] != namedEntity[i][0]:
             acronym = False
             break

@@ -91,7 +91,7 @@ def transform_json2text_sentence_lst(sentence_lst):
 
 def transform_json2text_file(file_path, out_file_path, verbose=False):
     if verbose:
-        print "Processing file {}".format(file_path)
+        print(f"Processing file {file_path}")
     with open(file_path) as json_file, open(out_file_path, 'w') as out_file:
         sentences = json.load(json_file)['sentences']
         info_file = transform_json2text_sentence_lst(sentences)

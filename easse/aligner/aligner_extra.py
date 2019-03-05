@@ -1,6 +1,6 @@
-import easse.aligner.aligner
+import easse.aligner.aligner as aligner
 import argparse
-import easse.aligner.coreNlpUtil
+import easse.aligner.coreNlpUtil as coreNlpUtil
 import json
 import os
 
@@ -22,7 +22,7 @@ def group_sentence_alignments(sent1_parse_lst, sent2_parse_lst, sent_aligns):
     sent2_map = {}
     for index_pair in sent_aligns:
         sent1_index, sent2_index = map(int, index_pair.strip().split('\t'))
-        print sent1_index, sent2_index
+        print(sent1_index, sent2_index)
         sent1_added = sent1_index in sent1_map
         sent2_added = sent2_index in sent2_map
 

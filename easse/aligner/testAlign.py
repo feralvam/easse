@@ -6,9 +6,9 @@ sentence2 = "4 people are dead from a collision."
 
 alignments = align(sentence1, sentence2)
 
-print alignments[0]
-print alignments[1]
-print
+print(alignments[0])
+print(alignments[1])
+print()
 
 
 # aligning sets of tokens (output indexes start at 1)
@@ -17,7 +17,7 @@ sentence2 = ['4', 'people', 'are', 'dead', 'from', 'a', 'collision', '.']
 
 alignments = align(sentence1, sentence2)
 
-print alignments[0]
-print alignments[1]
+print(alignments[0])
+print(alignments[1])
 
 

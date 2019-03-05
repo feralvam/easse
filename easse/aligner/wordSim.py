@@ -61,7 +61,7 @@ def wordRelatedness(word1, pos1, word2, pos2):
     if stemmer.stem(word1).lower() == stemmer.stem(word2).lower():
         return 1
 
-    if canonicalWord1.isdigit() and canonicalWord2.isdigit() and canonicalWord1 <> canonicalWord2:
+    if canonicalWord1.isdigit() and canonicalWord2.isdigit() and canonicalWord1 != canonicalWord2:
         return 0
 
     if pos1.lower() == 'cd' and pos2.lower() == 'cd' and (not canonicalWord1.isdigit() and not canonicalWord2.isdigit()) and canonicalWord1 != canonicalWord2:
