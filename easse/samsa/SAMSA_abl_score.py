@@ -1,5 +1,9 @@
-from ucca import convert
-from xml.etree.ElementTree import fromstring
+
+
+
+from ucca import layer0, layer1, convert, core
+from xml.etree.ElementTree import ElementTree, tostring, fromstring
+
 
 import nltk
 import ast
@@ -14,17 +18,15 @@ def get_num_scenes(P):
 
     return output
 
-
 def get_num_sentences(P):
     """
     P is the output of the simplification system. Return all the sentences in each passage
     """
-    dirpath = '/Mypath/System_output' # Replace Zhu by Woodsend/Wubben/Narayan1/Narayan2/Narayan3/Simple for testing the different systems
+    dirpath = '/Mypath/System_output' #Replace Zhu by Woodsend/Wubben/Narayan1/Narayan2/Narayan3/Simple for testing the different systems
     folder = nltk.data.find(dirpath)
     corpusReader = nltk.corpus.PlaintextCorpusReader(folder, P)
 
     return len(corpusReader.sents())
-
 
 def get_cmrelations(P):
     """
@@ -66,7 +68,12 @@ def get_cmrelations(P):
 
         output.append(output2)
 
-    return output
+    return(output)
+
+
+
+
+
 
 
 def get_cparticipants(P):
@@ -83,7 +90,7 @@ def get_cparticipants(P):
             if centers != []:
                 while centers != []:
                     for c in centers:
-                        ccenters = [e.child for e in c.outgoing if e.tag == 'C' or e.tag == 'P' or e.tag == 'S']   # also addresses center Scenes
+                        ccenters = [e.child for e in c.outgoing if e.tag == 'C' or e.tag =='P' or e.tag =='S']   #also addresses center Scenes
                     lcenters = centers
                     centers = ccenters
                 m.append(lcenters)
@@ -100,11 +107,11 @@ def get_cparticipants(P):
                         m.append(lcenters)
                     else:
                         m.append(scenters)
-            elif any(e.tag == "H" for e in pa.outgoing):  # address the case of multiple parallel Scenes inside a participant
+            elif any(e.tag == "H" for e in pa.outgoing): #address the case of multiple parallel Scenes inside a participant
                 hscenes = [e.child for e in pa.outgoing if e.tag == 'H']
                 mh = []
                 for h in hscenes:
-                    hrelations = [e.child for e in h.outgoing if e.tag == 'P' or e.tag == 'S']  # in case of multiple parallel scenes we generate new multiple centers
+                    hrelations = [e.child for e in h.outgoing if e.tag == 'P' or e.tag == 'S']  #in case of multiple parallel scenes we generate new multiple centers
                     for hr in hrelations:
                         centers = [e.child for e in hr.outgoing if e.tag == 'C']
                         if centers != []:
@@ -122,7 +129,7 @@ def get_cparticipants(P):
 
         n.append(m)
 
-    y = P.layer("0")  # find cases of multiple centers
+    y = P.layer("0") #find cases of multiple centers
     output = []
     s = []
     I = []
@@ -140,7 +147,8 @@ def get_cparticipants(P):
                 r.append(par)
         s.append(r)
 
-    for scp in s:  # find the spans of the participant nodes
+
+    for scp in s: # find the spans of the participant nodes
         output1 = []
         for [par] in scp:
             output2 =[]
@@ -158,7 +166,8 @@ def get_cparticipants(P):
             output1.append(output2)
         output.append(output1)
 
-    y = []   # unify spans in case of multiple centers
+
+    y =[]                #unify spans in case of multiple centers
     for scp in output:
         x = []
         u = output.index(scp)
@@ -175,7 +184,10 @@ def get_cparticipants(P):
                 x.append(par)
         y.append(x)
 
-    return y
+    return(y)
+
+
+
 
 
 index = list(range(0,100))
@@ -192,8 +204,7 @@ for t in index:
     A1 = get_cparticipants(P1)
 
     if L1 < L2:
-        score = 0
-
+       score = 0
     elif L1 == L2:
         f1 = open('scene_sentence_alignment_output/a%s.txt' %t)   #Replace Zhu by Woodsend/Wubben/Narayan1/Narayan2/Narayan3/Simple for testing the different systems
         s = f1.read()
@@ -247,7 +258,7 @@ for t in index:
         f1 = open('scene_sentence_alignment_output/a%s.txt' %t)
         s = f1.read()
         f1.close()
-        t = ast.literal_eval(s)
+        t =  ast.literal_eval(s)
         match = []
         for i in list(range(0,L1)):
             match_value = 0
@@ -290,4 +301,27 @@ for t in index:
             scoresc.append(v)
         score = (1/L1)*sum(scoresc)
 
+
     print(score)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

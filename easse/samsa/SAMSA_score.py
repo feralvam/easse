@@ -1,27 +1,17 @@
-from ucca import convert
-from xml.etree.ElementTree import fromstring
-import nltk
-import ast
+from easse.samsa.scene_sentence_extraction import get_scenes, get_sentences, get_ucca_passage
+from easse.samsa.scene_sentence_alignment import align_scenes_sentences
 
 
-def get_num_scenes(P):
+def get_num_scenes(ucca_passage):
     """
-    P is a ucca passage. Returns the number of scenes.
+    Returns the number of scenes in the ucca_passage.
     """
-    scenes = [x for x in P.layer("1").all if x.tag == "FN" and x.is_scene()]
-    output = len(scenes)
-    return output
+    scenes = [x for x in ucca_passage.layer("1").all if x.tag == "FN" and x.is_scene()]
+    return len(scenes)
 
 
-def get_num_sentences(P):
-    """
-    P is the output of the simplification system. Return all the sentences in each passage
-    """
-    dirpath = '/Mypath/System_output'
-    folder = nltk.data.find(dirpath)
-    corpus_reader = nltk.corpus.PlaintextCorpusReader(folder, P)
-
-    return len(corpus_reader.sents())
+def get_num_sentences(text):
+    return len(get_sentences(text))
 
 
 def get_cmrelations(P):
@@ -30,13 +20,12 @@ def get_cmrelations(P):
     """
     scenes = [x for x in P.layer("1").all if x.tag == "FN" and x.is_scene()]
     m = []
-    #c = []
     for sc in scenes:
         mrelations = [e.child for e in sc.outgoing if e.tag == 'P' or e.tag == 'S']
         for mr in mrelations:
             centers = [e.child for e in mr.outgoing if e.tag == 'C']
-            if centers != []:
-                while centers != []:
+            if centers:
+                while centers:
                     for c in centers:
                         ccenters = [e.child for e in c.outgoing if e.tag == 'C']
                     lcenters = centers
@@ -49,7 +38,7 @@ def get_cmrelations(P):
     output = []
     for scp in m:
         for par in scp:
-            output2 = []
+            output2 =[]
             p = []
             d = par.get_terminals(False,True)
             for i in list(range(0,len(d))):
@@ -64,7 +53,7 @@ def get_cmrelations(P):
 
         output.append(output2)
 
-    return output
+    return(output)
 
 
 def get_cparticipants(P):
@@ -73,7 +62,7 @@ def get_cparticipants(P):
     """
     scenes = [x for x in P.layer("1").all if x.tag == "FN" and x.is_scene()]
     n = []
-    for sc in scenes:  # find participant nodes
+    for sc in scenes:  #find participant nodes
         m = []
         participants = [e.child for e in sc.outgoing if e.tag == 'A']
         for pa in participants:
@@ -156,7 +145,7 @@ def get_cparticipants(P):
             output1.append(output2)
         output.append(output1)
 
-    y =[]  # unify spans in case of multiple centers
+    y = []  # unify spans in case of multiple centers
     for scp in output:
         x = []
         u = output.index(scp)
@@ -176,45 +165,42 @@ def get_cparticipants(P):
     return y
 
 
-index = list(range(0,100))
+def samsa_sentence(orig_sentence, sys_output):
+    orig_scenes = get_scenes(orig_sentence)
+    sys_sentences = get_sentences(sys_output)
+    all_scenes_alignments = align_scenes_sentences(orig_scenes, sys_sentences)
 
-for t in index:
-    f1 = open('UCCAannotated_source/%s.xml' %t)
-    xml_string1 = f1.read()
-    f1.close()
-    xml_object1 = fromstring(xml_string1)
-    P1 = convert.from_standard(xml_object1)  # for semi-automatic SAMSA
-    L1 = get_num_scenes(P1)
-    L2 = get_num_sentences('%s.txt' %t)
-    M1 = get_cmrelations(P1)
-    A1 = get_cparticipants(P1)
+    orig_ucca_passage = get_ucca_passage(orig_sentence)
+    orig_num_scenes = get_num_scenes(orig_ucca_passage)
+    sys_num_sents = len(sys_sentences)
+    M1 = get_cmrelations(orig_ucca_passage)
+    A1 = get_cparticipants(orig_ucca_passage)
 
-    if L1 < L2:
-        score = 0
-    elif L1 == L2:
-        f1 = open('scene_sentence_alignment_output/a%s.txt' %t)   # Replace Zhu by Woodsend/Wubben/Narayan1/Narayan2/Narayan3/Simple for testing the different systems
-        s = f1.read()
-        f1.close()
-        t = ast.literal_eval(s)
+    if orig_num_scenes < sys_num_sents:
+        score = 0.0
+    elif orig_num_scenes == sys_num_sents:
+        t = all_scenes_alignments
+
         match = []
-        for i in list(range(0,L1)):
+        for i in range(orig_num_scenes):
             match_value = 0
-            for j in list(range(0,L2)):
+            for j in range(sys_num_sents):
                 if len(t[i][j]) > match_value and j not in match:
                     match_value = len(t[i][j])
                     m = j
             match.append(m)
+
         scorem = []
         scorea = []
-        for i in list(range(0,L1)):
+        for i in range(orig_num_scenes):
             j = match[i]
-            r = [t[i][j][k][0] for k in list(range(0,len(t[i][j])))]
+            r = [t[i][j][k][0] for k in range(len(t[i][j]))]
             if M1[i]==[]:
-                s = 0.5
-            elif all(M1[i][l] in r for l in list(range(0,len(M1[i])))):
-                s = 1
+               s = 0.5
+            elif all(M1[i][l] in r for l in range(len(M1[i]))):
+               s = 1
             else:
-                s = 0
+               s = 0
             scorem.append(s)
             sa = []
             if A1[i] == []:
@@ -224,7 +210,7 @@ for t in index:
                 for a in A1[i]:
                     if a == []:
                         p = 0.5
-                    elif all(a[l] in r for l in list(range(0,len(a)))):
+                    elif all(a[l] in r for l in range(len(a))):
                         p = 1
                     else:
                         p = 0
@@ -232,32 +218,30 @@ for t in index:
                 scorea.append(sa)
 
         scoresc = []
-        for i in list(range(0,L1)):
+        for i in range(orig_num_scenes):
             d = len(scorea[i])
             v = 0.5*scorem[i] + 0.5*(1/d)*sum(scorea[i])
             scoresc.append(v)
-        score = (L2/(L1**2))*sum(scoresc)
+        score = (sys_num_sents/(orig_num_scenes**2))*sum(scoresc)
     else:
-        f1 = open('scene_sentence_alignment_output/a%s.txt' %t)
-        s = f1.read()
-        f1.close()
-        t =  ast.literal_eval(s)
+        t = all_scenes_alignments
         match = []
-        for i in list(range(0,L1)):
+        for i in range(orig_num_scenes):
             match_value = 0
-            for j in list(range(0,L2)):
+            for j in range(sys_num_sents):
                 if len(t[i][j]) > match_value:
-                   match_value = len(t[i][j])
-                   m = j
+                    match_value = len(t[i][j])
+                    m = j
             match.append(m)
+
         scorem = []
         scorea = []
-        for i in list(range(0,L1)):
+        for i in range(orig_num_scenes):
             j = match[i]
-            r = [t[i][j][k][0] for k in list(range(0,len(t[i][j])))]
+            r = [t[i][j][k][0] for k in range(len(t[i][j]))]
             if M1[i]==[]:
                 s = 0.5
-            elif all(M1[i][l] in r for l in list(range(0,len(M1[i])))):
+            elif all(M1[i][l] in r for l in range(len(M1[i]))):
                 s = 1
             else:
                 s = 0
@@ -270,7 +254,7 @@ for t in index:
                 for a in A1[i]:
                     if a == []:
                         p = 0.5
-                    elif all(a[l] in r for l in list(range(0,len(a)))):
+                    elif all(a[l] in r for l in range(len(a))):
                         p = 1
                     else:
                         p = 0
@@ -278,10 +262,9 @@ for t in index:
                 scorea.append(sa)
 
         scoresc = []
-        for i in list(range(0,L1)):
+        for i in range(orig_num_scenes):
             d = len(scorea[i])
             v = 0.5*scorem[i] + 0.5*(1/d)*sum(scorea[i])
             scoresc.append(v)
-        score = (L2/(L1**2))*sum(scoresc)
-
-    print(score)
+        score = (sys_num_sents/(orig_num_scenes**2))*sum(scoresc)
+    return score

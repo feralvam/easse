@@ -1,29 +1,13 @@
-from aligner import *
-import ast
-
-index = list(range(0,100))
-
-for t in index:
-    f1 = open('scene_sentence_extraction_output/s%s.txt' %t)
-    lines = f1.readlines()
-    f1.close()
-    l1 = lines[0]
-    l2 = lines[1]
-    vl1 = ast.literal_eval(l1)
-    vl2 = ast.literal_eval(l2)
-    output = []
-    for i in list(range(0,len(vl1))):
-        output1 = []
-        for j in list(range(0,len(vl2))):
-            a = align(vl1[i],vl2[j])
-            output1.append(a[1])
-        output.append(output1)
-                      
-    s = open('a%s.txt' %t, 'w')
-    s.write(str(output))
-    s.close()
-
- 
+from easse.aligner import align
 
 
-
+def align_scenes_sentences(scenes, sentences):
+    all_scenes_alignments = []
+    for scene in scenes:
+        scene_alignments = []
+        for sentence in sentences:
+            # word_alignments = [[word1_scene, word1_sentence], [word2_scene, word3_sentence], ...]
+            word_alignments = align(scene, sentence)[1]
+            scene_alignments.append(word_alignments)
+        all_scenes_alignments.append(scene_alignments)
+    return all_scenes_alignments
