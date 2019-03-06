@@ -1,4 +1,3 @@
-import easse.aligner.json2txt as json2txt
 import os
 from stanfordnlp.server import CoreNLPClient
 
@@ -9,9 +8,70 @@ props = {'annotators': 'tokenize,ssplit,pos,lemma,ner,depparse',
          'outputFormat': 'json'}
 
 
-def format_json_parser_results(sent_parse_json):
+def _format_token_info(sent_json):
+    token_lst = sent_json['tokens']
+    tokens = []
+    sent_str = ""
+    for token in token_lst:
+        tokens.append(token['word'])
+        sent_str += (f"[Text={token['originalText']} CharacterOffsetBegin={token['characterOffsetBegin']} "
+                     f"CharacterOffsetEnd={token['characterOffsetEnd']} PartOfSpeech={token['pos']} "
+                     f"Lemma={token['lemma']} NamedEntityTag={token['ner']}] ")
+
+    return tokens, sent_str
+
+
+def _get_depnode_index(node_id, dep_parse):
+    index = 0
+    for dep_node in dep_parse:
+        if dep_node['governor'] == node_id:
+            return index
+        index += 1
+
+
+def _get_depnode_index_by_label(node_deplabel, dep_parse, node_ids):
+    index = 0
+    for dep_node in dep_parse:
+        if dep_node['dep'] == node_deplabel and dep_node['governor'] in node_ids:
+            return index
+        index += 1
+
+
+def _collapse_dependencies(dependency_parse):
+    dep_tree_formatted = []
+    for dep_node in dependency_parse:
+        dep_rel = dep_node['dep'].lower()
+        dependent_gloss = dep_node['dependentGloss']
+        dependent = dep_node['dependent']
+
+        if dep_rel == 'prep':
+            aux_dep_node_index = _get_depnode_index(dep_node['dependent'], dependency_parse)
+            if aux_dep_node_index:
+                dep_rel += f"_{dep_node['dependentGloss']}"
+                aux_dep_node = dependency_parse[aux_dep_node_index]
+                dependent_gloss = aux_dep_node['dependentGloss']
+                dependent = aux_dep_node['dependent']
+        elif dep_rel == 'conj':
+            aux_dep_node_index = _get_depnode_index_by_label('cc', dependency_parse,
+                                                             [dep_node['dependent'], dep_node['governor']])
+            if aux_dep_node_index:
+                aux_dep_node = dependency_parse[aux_dep_node_index]
+                dep_rel += f"_{aux_dep_node['dependentGloss']}"
+            else:
+                continue
+        elif dep_rel in ['cc', 'pobj']:
+            continue
+
+        dep_tree_formatted.append([dep_rel,
+                                   f"{dep_node['governorGloss']}-{dep_node['governor']}",
+                                   f"{dependent_gloss}-{dependent}"])
+
+    return dep_tree_formatted
+
+
+def format_parser_results(sentence_parse):
     results = {"sentences": []}
-    for sent_json in sent_parse_json:
+    for sent_json in sentence_parse:
         sent_formatted = {'words': []}
         # format the information of each word
         for token in sent_json['tokens']:
@@ -24,7 +84,7 @@ def format_json_parser_results(sent_parse_json):
             sent_formatted['words'].append((word, attributes))
 
         sent_formatted['text'] = ' '.join([word for word, _ in sent_formatted['words']])
-        sent_formatted['dependencies'] = json2txt.format_dependency_parse_tree(sent_json['basicDependencies'])
+        sent_formatted['dependencies'] = _collapse_dependencies(sent_json['basicDependencies'])
 
         results["sentences"].append(sent_formatted)
 
@@ -34,8 +94,8 @@ def format_json_parser_results(sent_parse_json):
 def parseText(sentences):
 
     with CoreNLPClient() as client:
-        json_parse_result = client.annotate(sentences, properties=props)['sentences']
-    parseResult = format_json_parser_results(json_parse_result)
+        raw_parse_result = client.annotate(sentences, properties=props)
+    parseResult = format_parser_results(raw_parse_result['sentences'])
 
     if len(parseResult['sentences']) == 1:
         return parseResult
@@ -152,7 +212,11 @@ def lemmatize(parseResult):
 
     wordIndex = 1
     for i in range(len(parseResult['sentences'][0]['words'])):
-        tag = [[parseResult['sentences'][0]['words'][i][1]['CharacterOffsetBegin'], parseResult['sentences'][0]['words'][i][1]['CharacterOffsetEnd']], wordIndex, parseResult['sentences'][0]['words'][i][0], parseResult['sentences'][0]['words'][i][1]['Lemma']]
+        tag = [[parseResult['sentences'][0]['words'][i][1]['CharacterOffsetBegin'],
+                parseResult['sentences'][0]['words'][i][1]['CharacterOffsetEnd']],
+               wordIndex,
+               parseResult['sentences'][0]['words'][i][0],
+               parseResult['sentences'][0]['words'][i][1]['Lemma']]
         wordIndex += 1
         res.append(tag)
     return res
