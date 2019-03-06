@@ -1,12 +1,12 @@
-import json
 import easse.aligner.json2txt as json2txt
-from stanfordcorenlp import StanfordCoreNLP
+import os
+from stanfordnlp.server import CoreNLPClient
 
-
-nlp = StanfordCoreNLP(r'/home/fernandom/Tools/stanford-corenlp-full-2018-02-27')
-#nlp = StanfordCoreNLP('http://localhost', port=9000)
-props = {'annotators': 'tokenize,ssplit,pos,lemma,ner,depparse','pipelineLanguage': 'en',
-         'depparse.model': "edu/stanford/nlp/models/parser/nndep/english_SD.gz", 'outputFormat': 'json'}
+os.environ['CORENLP_HOME'] = "/tools/stanford-corenlp-full-2018-10-05"
+props = {'annotators': 'tokenize,ssplit,pos,lemma,ner,depparse',
+         'pipelineLanguage': 'en',
+         'depparse.model': "edu/stanford/nlp/models/parser/nndep/english_SD.gz",
+         'outputFormat': 'json'}
 
 
 def format_json_parser_results(sent_parse_json):
@@ -16,15 +16,14 @@ def format_json_parser_results(sent_parse_json):
         # format the information of each word
         for token in sent_json['tokens']:
             word = token['originalText']
-            attributes = {'CharacterOffsetBegin': u'{}'.format(token['characterOffsetBegin']),
-                          'CharacterOffsetEnd': u'{}'.format(token['characterOffsetEnd']),
+            attributes = {'CharacterOffsetBegin': str(token['characterOffsetBegin']),
+                          'CharacterOffsetEnd': str(token['characterOffsetEnd']),
                           'PartOfSpeech': token['pos'],
                           'Lemma': token['lemma'],
                           'NamedEntityTag': token['ner']}
             sent_formatted['words'].append((word, attributes))
 
         sent_formatted['text'] = ' '.join([word for word, _ in sent_formatted['words']])
-        # sent_formatted['parsetree'] = ' '.join(sent_json['parse'].split())
         sent_formatted['dependencies'] = json2txt.format_dependency_parse_tree(sent_json['basicDependencies'])
 
         results["sentences"].append(sent_formatted)
@@ -32,14 +31,11 @@ def format_json_parser_results(sent_parse_json):
     return results
 
 
-########################################################################################################################
 def parseText(sentences):
 
-    if isinstance(sentences, str):  # the sentence(s) need to be parsed
-        json_parse_result = json.loads(nlp.annotate(sentences, properties=props))['sentences']
-        parseResult = format_json_parser_results(json_parse_result)
-    else:
-        parseResult = sentences
+    with CoreNLPClient() as client:
+        json_parse_result = client.annotate(sentences, properties=props)['sentences']
+    parseResult = format_json_parser_results(json_parse_result)
 
     if len(parseResult['sentences']) == 1:
         return parseResult
@@ -65,7 +61,7 @@ def parseText(sentences):
                         w = ''
                         for l in range(len(tokens)-1):
                             w += tokens[l]
-                            if l<len(tokens)-2:
+                            if l < len(tokens)-2:
                                 w += '-'
                         parseResult['sentences'][i]['dependencies'][j][k] = w + '-' + str(newWordIndex)
 
@@ -83,13 +79,9 @@ def parseText(sentences):
     parseResult['sentences'] = parseResult['sentences'][0:1]
 
     return parseResult
-########################################################################################################################
 
 
-
-########################################################################################################################
 def nerWordAnnotator(parseResult):
-
     res = []
 
     wordIndex = 1
@@ -100,12 +92,9 @@ def nerWordAnnotator(parseResult):
         if tag[3] != 'O':
             res.append(tag)
 
-
     return res
-########################################################################################################################
 
 
-########################################################################################################################
 def ner(parseResult):
 
     nerWordAnnotations = nerWordAnnotator(parseResult)
@@ -143,10 +132,8 @@ def ner(parseResult):
                 namedEntities.append([currentCharacterOffsets, currentWordOffsets, currentNE, nerWordAnnotations[i][3]])
 
     return namedEntities    
-########################################################################################################################
 
 
-########################################################################################################################
 def posTag(parseResult):
 
     res = []
@@ -157,16 +144,10 @@ def posTag(parseResult):
         wordIndex += 1
         res.append(tag)
 
-
     return res
-########################################################################################################################
 
 
-
-
-########################################################################################################################
 def lemmatize(parseResult):
-
     res = []
 
     wordIndex = 1
@@ -174,38 +155,32 @@ def lemmatize(parseResult):
         tag = [[parseResult['sentences'][0]['words'][i][1]['CharacterOffsetBegin'], parseResult['sentences'][0]['words'][i][1]['CharacterOffsetEnd']], wordIndex, parseResult['sentences'][0]['words'][i][0], parseResult['sentences'][0]['words'][i][1]['Lemma']]
         wordIndex += 1
         res.append(tag)
-
-
     return res
-########################################################################################################################
 
 
-
-
-
-########################################################################################################################
 def dependencyParseAndPutOffsets(parseResult):
-    # returns dependency parse of the sentence whhere each item is of the form (rel, left{charStartOffset, charEndOffset, wordNumber}, right{charStartOffset, charEndOffset, wordNumber})
+    # returns dependency parse of the sentence where each item is of the form:
+    # (rel, left{charStartOffset, charEndOffset, wordNumber}, right{charStartOffset, charEndOffset, wordNumber})
 
     dParse = parseResult['sentences'][0]['dependencies']
     words = parseResult['sentences'][0]['words']
 
-    #for item in dParse:
-        #print item
-
     result = []
 
     for item in dParse:
-        newItem = []
-
         # copy 'rel'
-        newItem.append(item[0])
+        newItem = [item[0]]
 
         # construct and append entry for 'left'
         left = item[1][0:item[1].rindex("-")]
         wordNumber = item[1][item[1].rindex("-")+1:]
         if not wordNumber.isdigit():
             continue
+
+        # left += (f"{words[int(wordNumber) - 1][1]['CharacterOffsetBegin']} "
+        #          f"{words[int(wordNumber) - 1][1]['CharacterOffsetEnd']} "
+        #          f"{wordNumber}")
+
         left += '{' + words[int(wordNumber)-1][1]['CharacterOffsetBegin'] + ' ' + words[int(wordNumber)-1][1]['CharacterOffsetEnd'] + ' ' + wordNumber + '}'
         newItem.append(left)
 
@@ -220,11 +195,8 @@ def dependencyParseAndPutOffsets(parseResult):
         result.append(newItem)
 
     return result
-########################################################################################################################
 
 
-
-########################################################################################################################
 def findParents(dependencyParse, wordIndex, word):
     # word index assumed to be starting at 1
     # the third parameter is needed because of the collapsed representation of the dependencies...
@@ -232,7 +204,6 @@ def findParents(dependencyParse, wordIndex, word):
     wordsWithIndices = ((int(item[2].split('{')[1].split('}')[0].split(' ')[2]), item[2].split('{')[0]) for item in dependencyParse)
     wordsWithIndices = list(set(wordsWithIndices))
     wordsWithIndices = sorted(wordsWithIndices, key=lambda item: item[0])
-    #print wordsWithIndices
 
     wordIndexPresentInTheList = False
     for item in wordsWithIndices:
@@ -255,7 +226,7 @@ def findParents(dependencyParse, wordIndex, word):
                 nextIndex = wordsWithIndices[i][0]
                 break
         if nextIndex == 0:
-            return [] #?
+            return []  # ?
         for i in range(len(dependencyParse)):
             if int(dependencyParse[i][2].split('{')[1].split('}')[0].split(' ')[2]) == nextIndex:
                 pos = i
@@ -267,12 +238,8 @@ def findParents(dependencyParse, wordIndex, word):
                 break
         
     return parentsWithRelation
-########################################################################################################################
 
 
-
-
-########################################################################################################################
 def findChildren(dependencyParse, wordIndex, word):
     # word index assumed to be starting at 1
     # the third parameter is needed because of the collapsed representation of the dependencies...
@@ -290,7 +257,6 @@ def findChildren(dependencyParse, wordIndex, word):
     childrenWithRelation = []
 
     if wordIndexPresentInTheList:
-        #print True
         for item in dependencyParse:
             currentIndex = int(item[1].split('{')[1].split('}')[0].split(' ')[2])
             if currentIndex == wordIndex:
@@ -307,8 +273,8 @@ def findChildren(dependencyParse, wordIndex, word):
             return []
         for i in range(len(dependencyParse)):
             if int(dependencyParse[i][2].split('{')[1].split('}')[0].split(' ')[2]) == nextIndex:
-                   pos = i
-                   break
+                pos = i
+                break
         for i in range(pos, len(dependencyParse)):
             if '_' in dependencyParse[i][0] and word in dependencyParse[i][0]:
                 child = [int(dependencyParse[i][2].split('{')[1].split('}')[0].split(' ')[2]), dependencyParse[i][2].split('{')[0], dependencyParse[i][0]]
@@ -316,4 +282,3 @@ def findChildren(dependencyParse, wordIndex, word):
                 break
         
     return childrenWithRelation
-########################################################################################################################

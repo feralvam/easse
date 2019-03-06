@@ -1,22 +1,13 @@
 from easse.aligner.config import *
 
 
-########################################################################################################################
 def isSublist(A, B):
     # returns True if A is a sublist of B, False otherwise
-    sub = True
-
-    for item in A:
-        if item not in B:
-            sub = False
-            break
-    
-    return sub
-########################################################################################################################
+    return set(A).issubset(set(B))
 
 
-########################################################################################################################
-def findAllCommonContiguousSublists(A, B, turnToLowerCases=True): # this is a very inefficient implementation, you can use suffix trees to devise a much faster method
+def findAllCommonContiguousSublists(A, B, turnToLowerCases=True):
+    # this is a very inefficient implementation, you can use suffix trees to devise a much faster method
     # returns all the contiguous sublists in order of decreasing length
     # output format (0-indexed):
     # [
@@ -56,17 +47,14 @@ def findAllCommonContiguousSublists(A, B, turnToLowerCases=True): # this is a ve
                 if a[i:i+size] == b[j:j+size]:
                     # check if a contiguous superset has already been inserted; don't insert this one in that case
                     alreadyInserted = False
-                    currentAIndices = [item for item in range(i,i+size)]
-                    currentBIndices = [item for item in range(j,j+size)]
+                    currentAIndices = [item for item in range(i, i+size)]
+                    currentBIndices = [item for item in range(j, j+size)]
                     for item in commonContiguousSublists:
                         if isSublist(currentAIndices, item[0]) and isSublist(currentBIndices, item[1]):
                             alreadyInserted = True
                             break
                     if not alreadyInserted:
                         commonContiguousSublists.append([currentAIndices, currentBIndices])
-    
-    
-    
 
     if swapped:
         for item in commonContiguousSublists:
@@ -74,15 +62,12 @@ def findAllCommonContiguousSublists(A, B, turnToLowerCases=True): # this is a ve
             item[0] = item[1]
             item[1] = temp
 
-                        
     return commonContiguousSublists
-########################################################################################################################
 
 
-
-########################################################################################################################
 def findTextualNeighborhood(sentenceDetails, wordIndex, leftSpan, rightSpan):
-    # return the lemmas in the span [wordIndex-leftSpan, wordIndex+rightSpan] and the positions actually available, left and right
+    # return the lemmas in the span [wordIndex-leftSpan, wordIndex+rightSpan]
+    # and the positions actually available, left and right
 
     global punctuations
 
@@ -102,10 +87,8 @@ def findTextualNeighborhood(sentenceDetails, wordIndex, leftSpan, rightSpan):
             lemmas.append(item[3])
             wordIndices.append(item[1])
     return [wordIndices, lemmas, wordIndex-startWordIndex, endWordIndex-wordIndex]
-########################################################################################################################
 
 
-########################################################################################################################
 def isAcronym(word, namedEntity):
     # returns whether 'word' is an acronym of 'namedEntity', which is a list of the component words
     canonicalWord = word.replace('.', '')
@@ -119,5 +102,48 @@ def isAcronym(word, namedEntity):
             break
 
     return acronym
-########################################################################################################################
 
+
+def group_sentence_alignments(sent1_parse_lst, sent2_parse_lst, sent_aligns):
+    sent1_parse = []
+    sent2_parse = []
+    sent1_map = {}
+    sent2_map = {}
+    for index_pair in sent_aligns:
+        sent1_index, sent2_index = map(int, index_pair.strip().split('\t'))
+        print(sent1_index, sent2_index)
+        sent1_added = sent1_index in sent1_map
+        sent2_added = sent2_index in sent2_map
+
+        if sent1_added and not sent2_added:  # it is a split
+            sent_group_index = sent1_map[sent1_index]
+            if len(sent1_parse[sent_group_index]) > 1:  # check to prevent M-to-N alignments
+                sent_group_index = len(sent1_parse)
+                sent1_map[sent1_index] = sent_group_index
+                sent2_map[sent2_index] = sent_group_index
+                sent2_parse.insert(sent_group_index, [sent2_parse_lst[sent2_index]])
+                sent1_parse.insert(sent_group_index, [sent1_parse_lst[sent1_index]])
+            else:
+                sent2_map[sent2_index] = sent_group_index
+                sent2_parse[sent_group_index].append(sent2_parse_lst[sent2_index])
+        elif sent2_added and not sent1_added:  # it is a join
+            sent_group_index = sent2_map[sent2_index]
+            if len(sent2_parse[sent_group_index]) > 1:  # check to prevent M-to-N alignments
+                sent_group_index = len(sent2_parse)
+                sent1_map[sent1_index] = sent_group_index
+                sent2_map[sent2_index] = sent_group_index
+                sent1_parse.insert(sent_group_index, [sent1_parse_lst[sent1_index]])
+                sent2_parse.insert(sent_group_index, [sent2_parse_lst[sent2_index]])
+            else:
+                sent1_map[sent1_index] = sent_group_index
+                sent1_parse[sent_group_index].append(sent1_parse_lst[sent1_index])
+        else:
+            # not sent1_added and not sent2_added: it is a new pair. We treat as 1-to-1
+            # sent1_added and sent2_added: it is a M-to-N (not supported). We add it as a 1-to-1
+            sent_group_index = len(sent1_parse)
+            sent1_map[sent1_index] = sent_group_index
+            sent2_map[sent2_index] = sent_group_index
+            sent1_parse.insert(sent_group_index, [sent1_parse_lst[sent1_index]])
+            sent2_parse.insert(sent_group_index, [sent2_parse_lst[sent2_index]])
+
+    return zip(sent1_parse, sent2_parse)
