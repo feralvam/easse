@@ -1,9 +1,5 @@
-
-
-
-from ucca import layer0, layer1, convert, core
-from xml.etree.ElementTree import ElementTree, tostring, fromstring
-
+from ucca import convert
+from xml.etree.ElementTree import fromstring
 
 import nltk
 import ast
@@ -27,6 +23,7 @@ def get_num_sentences(P):
     corpusReader = nltk.corpus.PlaintextCorpusReader(folder, P)
 
     return len(corpusReader.sents())
+
 
 def get_cmrelations(P):
     """
@@ -69,11 +66,6 @@ def get_cmrelations(P):
         output.append(output2)
 
     return(output)
-
-
-
-
-
 
 
 def get_cparticipants(P):
@@ -187,9 +179,6 @@ def get_cparticipants(P):
     return(y)
 
 
-
-
-
 index = list(range(0,100))
 
 for t in index:
@@ -251,9 +240,6 @@ for t in index:
             v = 0.5*scorem[i] + 0.5*(1/d)*sum(scorea[i])
             scoresc.append(v)
         score = (L2/(L1**2))*sum(scoresc)
-
-
-
     else:
         f1 = open('scene_sentence_alignment_output/a%s.txt' %t)
         s = f1.read()
@@ -300,7 +286,6 @@ for t in index:
             v = 0.5*scorem[i] + 0.5*(1/d)*sum(scorea[i])
             scoresc.append(v)
         score = (1/L1)*sum(scoresc)
-
 
     print(score)
 

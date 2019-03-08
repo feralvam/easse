@@ -2,8 +2,7 @@
 
 from collections import Counter
 from typing import List
-import sacrebleu
-import sacremoses
+import easse.utils.preprocessing as utils_prep
 
 # n-gram order. Don't change this.
 NGRAM_ORDER = 4
@@ -186,34 +185,19 @@ def compute_sari(add_sys_correct, add_sys_total, add_ref_total,
     return sari_score / 3
 
 
-def normalize(sentence, lowercase: bool, tokenizer: str):
-    if lowercase:
-        sentence = sentence.lower()
-
-    if tokenizer == "13a":
-        normalized_sent = sacrebleu.tokenize_13a(sentence)
-    elif tokenizer == "intl":
-        normalized_sent = sacrebleu.tokenize_v14_international(sentence)
-    elif tokenizer == "moses":
-        normalized_sent = sacremoses.MosesTokenizer().tokenize(sentence, return_str=True)
-    else:
-        normalized_sent = sentence
-
-    return normalized_sent
-
-
 def sari_corpus(orig_sentences: List[str], sys_sentences: List[str], refs_sentences: List[List[str]],
                 lowercase: bool = False, tokenizer: str = '13a'):
 
     # orig_sentences = [normalize(sent, lowercase, tokenizer) for sent in orig_sentences]
-    sys_sentences = [normalize(sent, lowercase, tokenizer) for sent in sys_sentences]
-    refs_sentences = [[normalize(sent, lowercase, tokenizer) for sent in ref_sents] for ref_sents in refs_sentences]
+    sys_sentences = [utils_prep.normalize(sent, lowercase, tokenizer) for sent in sys_sentences]
+    refs_sentences = [[utils_prep.normalize(sent, lowercase, tokenizer) for sent in ref_sents]
+                      for ref_sents in refs_sentences]
 
     stats = compute_ngram_stats(orig_sentences, sys_sentences, refs_sentences)
 
     return compute_sari(*stats, corpus_level=True)
 
-#
-# def sari_sentence(orig_sent: str, hyp_sent: str, ref_sents: List[str]):
-#     stats = compute_ngram_stats([orig_sent], [hyp_sent], [ref_sents])
-#     return compute_sari(*stats, corpus_level=False)
+
+def sari_sentence(orig_sent: str, hyp_sent: str, ref_sents: List[str]):
+    stats = compute_ngram_stats([orig_sent], [hyp_sent], [ref_sents])
+    return compute_sari(*stats, corpus_level=False)

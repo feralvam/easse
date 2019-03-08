@@ -1,5 +1,5 @@
 import pytest
-import easse.sari as sari
+import easse.sari.sari_score as sari
 
 
 def read_file(filename):

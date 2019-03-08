@@ -11,9 +11,9 @@ def findAllCommonContiguousSublists(A, B, turnToLowerCases=True):
     # returns all the contiguous sublists in order of decreasing length
     # output format (0-indexed):
     # [
-    #    [[indices in 'A' for common sublist 1], [indices in 'B' for common sublist 1]],
+    #    [[indices in 'A' for utils sublist 1], [indices in 'B' for utils sublist 1]],
     #    ...,
-    #    [[indices in 'A' for common sublist n], [indices in 'B' for common sublist n]]
+    #    [[indices in 'A' for utils sublist n], [indices in 'B' for utils sublist n]]
     # ]
 
     a = []

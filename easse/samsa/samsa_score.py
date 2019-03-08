@@ -1,5 +1,20 @@
-from easse.samsa.scene_sentence_extraction import get_scenes, get_sentences, get_ucca_passage
-from easse.samsa.scene_sentence_alignment import align_scenes_sentences
+from typing import List
+
+from easse.samsa.ucca_utils import get_scenes
+from easse.aligner.aligner import align
+import easse.utils.preprocessing as utils_prep
+
+
+def align_scenes_sentences(scenes, sentences):
+    all_scenes_alignments = []
+    for scene in scenes:
+        scene_alignments = []
+        for sentence in sentences:
+            # word_alignments = [[word1_scene, word1_sentence], [word2_scene, word3_sentence], ...]
+            word_alignments = align(scene, sentence)[1]
+            scene_alignments.append(word_alignments)
+        all_scenes_alignments.append(scene_alignments)
+    return all_scenes_alignments
 
 
 def get_num_scenes(ucca_passage):
@@ -8,10 +23,6 @@ def get_num_scenes(ucca_passage):
     """
     scenes = [x for x in ucca_passage.layer("1").all if x.tag == "FN" and x.is_scene()]
     return len(scenes)
-
-
-def get_num_sentences(text):
-    return len(get_sentences(text))
 
 
 def get_cmrelations(P):
@@ -38,22 +49,22 @@ def get_cmrelations(P):
     output = []
     for scp in m:
         for par in scp:
-            output2 =[]
+            output2 = []
             p = []
             d = par.get_terminals(False,True)
-            for i in list(range(0,len(d))):
+            for i in range(0, len(d)):
                 p.append(d[i].position)
 
             for k in p:
 
-                if(len(output2)) == 0:
+                if len(output2) == 0:
                     output2.append(str(y.by_position(k)))
                 elif str(y.by_position(k)) != output2[-1]:
                     output2.append(str(y.by_position(k)))
 
         output.append(output2)
 
-    return(output)
+    return output
 
 
 def get_cparticipants(P):
@@ -62,15 +73,15 @@ def get_cparticipants(P):
     """
     scenes = [x for x in P.layer("1").all if x.tag == "FN" and x.is_scene()]
     n = []
-    for sc in scenes:  #find participant nodes
+    for sc in scenes:  # find participant nodes
         m = []
         participants = [e.child for e in sc.outgoing if e.tag == 'A']
         for pa in participants:
-            centers = [e.child for e in pa.outgoing if e.tag == 'C' ]
-            if centers != []:
-                while centers != []:
+            centers = [e.child for e in pa.outgoing if e.tag == 'C']
+            if centers:
+                while centers:
                     for c in centers:
-                        ccenters = [e.child for e in c.outgoing if e.tag == 'C' or e.tag =='P' or e.tag =='S']   #also addresses center Scenes
+                        ccenters = [e.child for e in c.outgoing if e.tag == 'C' or e.tag == 'P' or e.tag == 'S']   #also addresses center Scenes
                     lcenters = centers
                     centers = ccenters
                 m.append(lcenters)
@@ -78,8 +89,8 @@ def get_cparticipants(P):
                 scenters = [e.child for e in pa.outgoing if e.tag == 'P' or e.tag == 'S']
                 for scc in scenters:
                     centers = [e.child for e in scc.outgoing if e.tag == 'C']
-                    if centers != []:
-                        while centers != []:
+                    if centers:
+                        while centers:
                             for c in centers:
                                 ccenters = [e.child for e in c.outgoing if e.tag == 'C']
                             lcenters = centers
@@ -94,8 +105,8 @@ def get_cparticipants(P):
                     hrelations = [e.child for e in h.outgoing if e.tag == 'P' or e.tag == 'S']  # in case of multiple parallel scenes we generate new multiple centers
                     for hr in hrelations:
                         centers = [e.child for e in hr.outgoing if e.tag == 'C']
-                        if centers != []:
-                            while centers != []:
+                        if centers:
+                            while centers:
                                 for c in centers:
                                     ccenters = [e.child for e in c.outgoing if e.tag == 'C']
                                 lcenters = centers
@@ -119,7 +130,7 @@ def get_cparticipants(P):
         for par in scp:
             if len(par) > 1:
                 d = scp.index(par)
-                par = [par[i:i+1] for i in range(0,len(par))]
+                par = [par[i:i+1] for i in range(len(par))]
                 for c in par:
                     r.append(c)
                 I.append([u,d])
@@ -130,10 +141,10 @@ def get_cparticipants(P):
     for scp in s:  # find the spans of the participant nodes
         output1 = []
         for [par] in scp:
-            output2 =[]
+            output2 = []
             p = []
             d = par.get_terminals(False,True)
-            for i in list(range(0,len(d))):
+            for i in range(0, len(d)):
                 p.append(d[i].position)
 
             for k in p:
@@ -152,22 +163,21 @@ def get_cparticipants(P):
         for par in scp:
             for v in I:
                 if par == output[v[0]][v[1]]:
-                    for l in list(range(1,len(n[v[0]][v[1]]))):
+                    for l in range(1,len(n[v[0]][v[1]])):
                         par.append((output[v[0]][v[1]+l])[0])
 
                     x.append(par)
-                elif all(par != output[v[0]][v[1]+l] for l in list(range(1,len(n[v[0]][v[1]])))):
+                elif all(par != output[v[0]][v[1]+l] for l in range(1, len(n[v[0]][v[1]]))):
                     x.append(par)
-            if I == []:
+            if not I:
                 x.append(par)
         y.append(x)
 
     return y
 
 
-def samsa_sentence(orig_sentence, sys_output):
+def compute_samsa(orig_sentence, sys_sentences):
     orig_scenes = get_scenes(orig_sentence)
-    sys_sentences = get_sentences(sys_output)
     all_scenes_alignments = align_scenes_sentences(orig_scenes, sys_sentences)
 
     orig_ucca_passage = get_ucca_passage(orig_sentence)
@@ -180,7 +190,6 @@ def samsa_sentence(orig_sentence, sys_output):
         score = 0.0
     elif orig_num_scenes == sys_num_sents:
         t = all_scenes_alignments
-
         match = []
         for i in range(orig_num_scenes):
             match_value = 0
@@ -195,20 +204,20 @@ def samsa_sentence(orig_sentence, sys_output):
         for i in range(orig_num_scenes):
             j = match[i]
             r = [t[i][j][k][0] for k in range(len(t[i][j]))]
-            if M1[i]==[]:
-               s = 0.5
+            if not M1[i]:
+                s = 0.5
             elif all(M1[i][l] in r for l in range(len(M1[i]))):
-               s = 1
+                s = 1
             else:
-               s = 0
+                s = 0
             scorem.append(s)
             sa = []
-            if A1[i] == []:
+            if not A1[i]:
                 sa = [0.5]
                 scorea.append(sa)
             else:
                 for a in A1[i]:
-                    if a == []:
+                    if not a:
                         p = 0.5
                     elif all(a[l] in r for l in range(len(a))):
                         p = 1
@@ -239,7 +248,7 @@ def samsa_sentence(orig_sentence, sys_output):
         for i in range(orig_num_scenes):
             j = match[i]
             r = [t[i][j][k][0] for k in range(len(t[i][j]))]
-            if M1[i]==[]:
+            if not M1[i]:
                 s = 0.5
             elif all(M1[i][l] in r for l in range(len(M1[i]))):
                 s = 1
@@ -247,12 +256,12 @@ def samsa_sentence(orig_sentence, sys_output):
                 s = 0
             scorem.append(s)
             sa = []
-            if A1[i] == []:
+            if not A1[i]:
                 sa = [0.5]
                 scorea.append(sa)
             else:
                 for a in A1[i]:
-                    if a == []:
+                    if not a:
                         p = 0.5
                     elif all(a[l] in r for l in range(len(a))):
                         p = 1
@@ -268,3 +277,18 @@ def samsa_sentence(orig_sentence, sys_output):
             scoresc.append(v)
         score = (sys_num_sents/(orig_num_scenes**2))*sum(scoresc)
     return score
+
+
+def samsa_corpus(orig_sentences: List[str], sys_outputs: List[str], lowercase: bool = False, tokenizer: str = '13a'):
+
+    orig_sentences = [utils_prep.normalize(sent, lowercase, tokenizer) for sent in orig_sentences]
+    sys_sentences = [utils_prep.split_into_sentences(utils_prep.normalize(output, lowercase, tokenizer))
+                     for output in sys_outputs]
+
+    samsa_score = 0.0
+    for orig_sent, sys_sents in zip(orig_sentences, sys_sentences):
+        samsa_score += compute_samsa(orig_sent, sys_sents)
+
+    samsa_score /= len(orig_sentences)
+
+    return samsa_score

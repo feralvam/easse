@@ -1,6 +1,6 @@
 from easse.aligner.word_sim import *
 from easse.aligner.utils import *
-from easse.aligner.corenlp_util import *
+from easse.aligner.corenlp_utils import *
 
 
 def alignNouns(source, target, sourceParseResult, targetParseResult, existingAlignments):
@@ -57,7 +57,7 @@ def alignNouns(source, target, sourceParseResult, targetParseResult, existingAli
             targetWordParents = findParents(targetDParse, j, targetWords[j-1])
             targetWordChildren = findChildren(targetDParse, j, targetWords[j-1])
 
-            # search for common or equivalent parents
+            # search for utils or equivalent parents
             groupOfSimilarRelationsForNounParent = ['pos', 'nn', 'prep_of', 'prep_in', 'prep_at', 'prep_for']
             group1OfSimilarRelationsForVerbParent = ['agent', 'nsubj', 'xsubj']
             group2OfSimilarRelationsForVerbParent = ['ccomp', 'dobj', 'nsubjpass', 'rel', 'partmod']
@@ -85,7 +85,7 @@ def alignNouns(source, target, sourceParseResult, targetParseResult, existingAli
                             relativeAlignmentsMatrix[(i, j)] = []
                             relativeAlignmentsMatrix[(i, j)].append([ktem[0], ltem[0]])
 
-            # search for common or equivalent children
+            # search for utils or equivalent children
             groupOfSimilarRelationsForNounChild = ['pos', 'nn' 'prep_of', 'prep_in', 'prep_at', 'prep_for']
             groupOfSimilarRelationsForVerbChild = ['infmod', 'partmod', 'rcmod']
             groupOfSimilarRelationsForAdjectiveChild = ['amod', 'rcmod']
@@ -250,7 +250,7 @@ def alignMainVerbs(source, target, sourceParseResult, targetParseResult, existin
             targetWordParents = findParents(targetDParse, j, targetWords[j-1])
             targetWordChildren = findChildren(targetDParse, j, targetWords[j-1])
 
-            # search for common or equivalent children
+            # search for utils or equivalent children
             group1OfSimilarRelationsForNounChild = ['agent', 'nsubj' 'xsubj']
             group2OfSimilarRelationsForNounChild = ['ccomp', 'dobj' 'nsubjpass', 'rel', 'partmod']
             group3OfSimilarRelationsForNounChild = ['tmod', 'prep_in', 'prep_at', 'prep_on']
@@ -280,7 +280,7 @@ def alignMainVerbs(source, target, sourceParseResult, targetParseResult, existin
                             relativeAlignmentsMatrix[(i, j)].append([ktem[0], ltem[0]])
 
 
-            # search for common or equivalent parents
+            # search for utils or equivalent parents
             groupOfSimilarRelationsForNounParent = ['infmod', 'partmod', 'rcmod']
             groupOfSimilarRelationsForVerbParent = ['purpcl', 'xcomp']
 
@@ -447,7 +447,7 @@ def alignAdjectives(source, target, sourceParseResult, targetParseResult, existi
             targetWordChildren = findChildren(targetDParse, j, targetWords[j-1])
 
 
-            # search for common or equivalent parents
+            # search for utils or equivalent parents
             groupOfSimilarRelationsForNounParent = ['amod', 'rcmod']
 
             for ktem in sourceWordParents:
@@ -465,7 +465,7 @@ def alignAdjectives(source, target, sourceParseResult, targetParseResult, existi
                             relativeAlignmentsMatrix[(i, j)] = []
                             relativeAlignmentsMatrix[(i, j)].append([ktem[0], ltem[0]])
 
-            # search for common children
+            # search for utils children
             for ktem in sourceWordChildren:
                 for ltem in targetWordChildren:
                     if ((ktem[0], ltem[0]) in existingAlignments+adjectiveAlignments or max(wordRelatedness(ktem[1], sourcePosTags[ktem[0]-1], ltem[1], targetPosTags[ltem[0]-1]), wordRelatedness(sourceLemmas[ktem[0]-1], sourcePosTags[ktem[0]-1], targetLemmas[ltem[0]-1], targetPosTags[ltem[0]-1]))>=ppdbSim) and (ktem[2]==ltem[2]):
@@ -626,7 +626,7 @@ def alignAdverbs(source, target, sourceParseResult, targetParseResult, existingA
             targetWordChildren = findChildren(targetDParse, j, targetWords[j-1])
 
 
-            # search for common parents            
+            # search for utils parents
             for ktem in sourceWordParents:
                 for ltem in targetWordParents:
                     if ((ktem[0], ltem[0]) in existingAlignments+adverbAlignments or max(wordRelatedness(ktem[1], sourcePosTags[ktem[0]-1], ltem[1], targetPosTags[ltem[0]-1]), wordRelatedness(sourceLemmas[ktem[0]-1], sourcePosTags[ktem[0]-1], targetLemmas[ltem[0]-1], targetPosTags[ltem[0]-1]))>=ppdbSim) and (ktem[2]==ltem[2]):
@@ -641,7 +641,7 @@ def alignAdverbs(source, target, sourceParseResult, targetParseResult, existingA
                             relativeAlignmentsMatrix[(i, j)] = []
                             relativeAlignmentsMatrix[(i, j)].append([ktem[0], ltem[0]])
 
-            # search for common children
+            # search for utils children
             for ktem in sourceWordChildren:
                 for ltem in targetWordChildren:
                     if ((ktem[0], ltem[0]) in existingAlignments+adverbAlignments or max(wordRelatedness(ktem[1], sourcePosTags[ktem[0]-1], ltem[1], targetPosTags[ltem[0]-1]), wordRelatedness(sourceLemmas[ktem[0]-1], sourcePosTags[ktem[0]-1], targetLemmas[ltem[0]-1], targetPosTags[ltem[0]-1]))>=ppdbSim) and (ktem[2]==ltem[2]):
