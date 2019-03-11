@@ -1,6 +1,6 @@
 from typing import List
 
-from easse.samsa.ucca_utils import get_scenes
+from easse.samsa.ucca_utils import get_scenes, ucca_parse_text
 from easse.aligner.aligner import align
 import easse.utils.preprocessing as utils_prep
 
@@ -25,14 +25,14 @@ def get_num_scenes(ucca_passage):
     return len(scenes)
 
 
-def get_cmrelations(P):
+def get_relations_minimal_centers(ucca_passage):
     """
-    P is a ucca passage. Return all the most internal centers of main relations in each passage
+    Return all the most internal centers of main relations in each passage
     """
-    scenes = [x for x in P.layer("1").all if x.tag == "FN" and x.is_scene()]
-    m = []
+    scenes = [x for x in ucca_passage.layer("1").all if x.tag == "FN" and x.is_scene()]
+    minimal_centers = []
     for sc in scenes:
-        mrelations = [e.child for e in sc.outgoing if e.tag == 'P' or e.tag == 'S']
+        mrelations = [e.child for e in sc.outgoing if e.tag == 'ucca_passage' or e.tag == 'S']
         for mr in mrelations:
             centers = [e.child for e in mr.outgoing if e.tag == 'C']
             if centers:
@@ -41,33 +41,28 @@ def get_cmrelations(P):
                         ccenters = [e.child for e in c.outgoing if e.tag == 'C']
                     lcenters = centers
                     centers = ccenters
-                m.append(lcenters)
+                minimal_centers.append(lcenters)
             else:
-                m.append(mrelations)
+                minimal_centers.append(mrelations)
 
-    y = P.layer("0")
+    y = ucca_passage.layer("0")
     output = []
-    for scp in m:
+    for scp in minimal_centers:
         for par in scp:
             output2 = []
-            p = []
-            d = par.get_terminals(False,True)
-            for i in range(0, len(d)):
-                p.append(d[i].position)
-
-            for k in p:
-
-                if len(output2) == 0:
-                    output2.append(str(y.by_position(k)))
-                elif str(y.by_position(k)) != output2[-1]:
-                    output2.append(str(y.by_position(k)))
+            positions = [d.position for d in par.get_terminals(False, True)]
+            for pos in positions:
+                if not output2:
+                    output2.append(str(y.by_position(pos)))
+                elif str(y.by_position(pos)) != output2[-1]:
+                    output2.append(str(y.by_position(pos)))
 
         output.append(output2)
 
     return output
 
 
-def get_cparticipants(P):
+def get_participants_minimal_centers(P):
     """
     P is a ucca passage. Return all the minimal participant centers in each scene
     """
@@ -78,8 +73,8 @@ def get_cparticipants(P):
         participants = [e.child for e in sc.outgoing if e.tag == 'A']
         for pa in participants:
             centers = [e.child for e in pa.outgoing if e.tag == 'C']
-            if centers:
-                while centers:
+            if centers != []:
+                while centers != []:
                     for c in centers:
                         ccenters = [e.child for e in c.outgoing if e.tag == 'C' or e.tag == 'P' or e.tag == 'S']   #also addresses center Scenes
                     lcenters = centers
@@ -89,8 +84,8 @@ def get_cparticipants(P):
                 scenters = [e.child for e in pa.outgoing if e.tag == 'P' or e.tag == 'S']
                 for scc in scenters:
                     centers = [e.child for e in scc.outgoing if e.tag == 'C']
-                    if centers:
-                        while centers:
+                    if centers != []:
+                        while centers != []:
                             for c in centers:
                                 ccenters = [e.child for e in c.outgoing if e.tag == 'C']
                             lcenters = centers
@@ -105,8 +100,8 @@ def get_cparticipants(P):
                     hrelations = [e.child for e in h.outgoing if e.tag == 'P' or e.tag == 'S']  # in case of multiple parallel scenes we generate new multiple centers
                     for hr in hrelations:
                         centers = [e.child for e in hr.outgoing if e.tag == 'C']
-                        if centers:
-                            while centers:
+                        if centers != []:
+                            while centers != []:
                                 for c in centers:
                                     ccenters = [e.child for e in c.outgoing if e.tag == 'C']
                                 lcenters = centers
@@ -177,14 +172,16 @@ def get_cparticipants(P):
 
 
 def compute_samsa(orig_sentence, sys_sentences):
-    orig_scenes = get_scenes(orig_sentence)
+    orig_ucca_passage = ucca_parse_text(orig_sentence)
+    orig_scenes = get_scenes(orig_ucca_passage)
+
     all_scenes_alignments = align_scenes_sentences(orig_scenes, sys_sentences)
 
-    orig_ucca_passage = get_ucca_passage(orig_sentence)
-    orig_num_scenes = get_num_scenes(orig_ucca_passage)
+    orig_num_scenes = get_num_scenes(orig_ucca_passage)  # len(orig_scenes)
     sys_num_sents = len(sys_sentences)
-    M1 = get_cmrelations(orig_ucca_passage)
-    A1 = get_cparticipants(orig_ucca_passage)
+
+    M1 = get_relations_minimal_centers(orig_ucca_passage)
+    A1 = get_participants_minimal_centers(orig_ucca_passage)
 
     if orig_num_scenes < sys_num_sents:
         score = 0.0
