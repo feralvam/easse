@@ -1,0 +1,4 @@
+{
+  "DATASETS": ["turk", "pwkp", "hplit"],
+  "METRICS": ["bleu", "sari", "samsa"]
+}
