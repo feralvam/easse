@@ -19,8 +19,6 @@ setup(
     packages=find_packages(exclude=['tests']),
     test_suite='tests',
     entry_points={'console_scripts': [
-        "evaluate = cli:evaluate",
-        "register = cli:register",
-        "ranking = cli:ranking"
+        "easse = easse.cli.cli:cli"
     ]},
 )
