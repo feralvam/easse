@@ -17,81 +17,77 @@ def read_file(filename):
 #
 #     sys_sent = "About 95 you now get in ."
 #     sari_score = sari.sari_sentence(orig_sent, sys_sent, ref_sents)
-#     assert sari_score == pytest.approx(0.2682782411698074)
+#     assert sari_score == pytest.approx(26.82782411698074)
 #
 #     sys_sent = "About 95 species are now agreed ."
 #     sari_score = sari.sari_sentence(orig_sent, sys_sent, ref_sents)
-#     assert sari_score == pytest.approx(0.5889995423074248)
+#     assert sari_score == pytest.approx(58.89995423074248)
 #
 #     sys_sent = "About 95 species are currently agreed ."
 #     sari_score = sari.sari_sentence(orig_sent, sys_sent, ref_sents)
-#     assert sari_score == pytest.approx(0.5071608864657479)
+#     assert sari_score == pytest.approx(50.71608864657479)
 
 
 def test_sari_corpus_plain():
-    orig_sents = read_file("data/turkcorpus/test.8turkers.tok.norm")
+    orig_sents = read_file("data/test_sets/turk/test.8turkers.tok.norm")
+    ref_sents = []
     for n in range(8):
-        ref_lines = read_file(f"data/turkcorpus/test.8turkers.tok.turk.{n}")
-        if n == 0:
-            ref_sents = [[line] for line in ref_lines]
-        else:
-            ref_sents = [x + [y] for x, y in zip(ref_sents, ref_lines)]
+        ref_lines = read_file(f"data/test_sets/turk/test.8turkers.tok.turk.{n}")
+        ref_sents.append(ref_lines)
 
-    hyp_sents = read_file("data/system_outputs/lower/Dress-Ls.lower")
+    hyp_sents = read_file("data/system_outputs/turk/lower/Dress-Ls.tok.low")
     sari_score = sari.sari_corpus(orig_sents, hyp_sents, ref_sents, tokenizer='plain')
-    assert sari_score == pytest.approx(0.3673586275692667)
+    assert sari_score == pytest.approx(36.73586275692667)
 
-    hyp_sents = read_file("data/system_outputs/lower/Dress.lower")
+    hyp_sents = read_file("data/system_outputs/turk/lower/Dress.tok.low")
     sari_score = sari.sari_corpus(orig_sents, hyp_sents, ref_sents, tokenizer='plain')
-    assert sari_score == pytest.approx(0.365859900146575)
+    assert sari_score == pytest.approx(36.5859900146575)
 
-    hyp_sents = read_file("data/system_outputs/lower/EncDecA.lower")
+    hyp_sents = read_file("data/system_outputs/turk/lower/EncDecA.tok.low")
     sari_score = sari.sari_corpus(orig_sents, hyp_sents, ref_sents, tokenizer='plain')
-    assert sari_score == pytest.approx(0.3473946658449856)
+    assert sari_score == pytest.approx(34.73946658449856)
 
-    hyp_sents = read_file("data/system_outputs/lower/Hybrid.lower")
+    hyp_sents = read_file("data/system_outputs/turk/lower/Hybrid.tok.low")
     sari_score = sari.sari_corpus(orig_sents, hyp_sents, ref_sents, tokenizer='plain')
-    assert sari_score == pytest.approx(0.31008109926854227)
+    assert sari_score == pytest.approx(31.008109926854227)
 
-    hyp_sents = read_file("data/system_outputs/lower/PBMT-R.lower")
+    hyp_sents = read_file("data/system_outputs/turk/lower/PBMT-R.tok.low")
     sari_score = sari.sari_corpus(orig_sents, hyp_sents, ref_sents, tokenizer='plain')
-    assert sari_score == pytest.approx(0.37817966679481013)
+    assert sari_score == pytest.approx(37.817966679481013)
 
-    hyp_sents = read_file("data/system_outputs/lower/SBMT-SARI.lower")
+    hyp_sents = read_file("data/system_outputs/turk/lower/SBMT-SARI.tok.low")
     sari_score = sari.sari_corpus(orig_sents, hyp_sents, ref_sents, tokenizer='plain')
-    assert sari_score == pytest.approx(0.39360477024519125)
+    assert sari_score == pytest.approx(39.360477024519125)
 
 
 def test_sari_corpus_tokenize():
-    orig_sents = read_file("data/turkcorpus/test.8turkers.tok.norm")
+    orig_sents = read_file("data/test_sets/turk/test.8turkers.tok.norm")
+    ref_sents = []
     for n in range(8):
-        ref_lines = read_file(f"data/turkcorpus/test.8turkers.tok.turk.{n}")
-        if n == 0:
-            ref_sents = [[line] for line in ref_lines]
-        else:
-            ref_sents = [x + [y] for x, y in zip(ref_sents, ref_lines)]
+        ref_lines = read_file(f"data/test_sets/turk/test.8turkers.tok.turk.{n}")
+        ref_sents.append(ref_lines)
 
-    hyp_sents = read_file("data/system_outputs/lower/Dress-Ls.lower")
+    hyp_sents = read_file("data/system_outputs/turk/lower/Dress-Ls.tok.low")
     sari_score = sari.sari_corpus(orig_sents, hyp_sents, ref_sents)
-    assert sari_score == pytest.approx(0.37266058818588216)
+    assert sari_score == pytest.approx(37.266058818588216)
 
-    hyp_sents = read_file("data/system_outputs/lower/Dress.lower")
+    hyp_sents = read_file("data/system_outputs/turk/lower/Dress.tok.low")
     sari_score = sari.sari_corpus(orig_sents, hyp_sents, ref_sents)
-    assert sari_score == pytest.approx(0.3708210095744638)
+    assert sari_score == pytest.approx(37.08210095744638)
 
-    hyp_sents = read_file("data/system_outputs/lower/EncDecA.lower")
+    hyp_sents = read_file("data/system_outputs/turk/lower/EncDecA.tok.low")
     sari_score = sari.sari_corpus(orig_sents, hyp_sents, ref_sents)
-    assert sari_score == pytest.approx(0.3565754396121206)
+    assert sari_score == pytest.approx(35.65754396121206)
 
-    hyp_sents = read_file("data/system_outputs/lower/Hybrid.lower")
+    hyp_sents = read_file("data/system_outputs/turk/lower/Hybrid.tok.low")
     sari_score = sari.sari_corpus(orig_sents, hyp_sents, ref_sents)
-    assert sari_score == pytest.approx(0.3139665078989411)
+    assert sari_score == pytest.approx(31.39665078989411)
 
-    hyp_sents = read_file("data/system_outputs/lower/PBMT-R.lower")
+    hyp_sents = read_file("data/system_outputs/turk/lower/PBMT-R.tok.low")
     sari_score = sari.sari_corpus(orig_sents, hyp_sents, ref_sents)
-    assert sari_score == pytest.approx(0.38558843050332037)
+    assert sari_score == pytest.approx(38.558843050332037)
 
-    hyp_sents = read_file("data/system_outputs/lower/SBMT-SARI.lower")
+    hyp_sents = read_file("data/system_outputs/turk/lower/SBMT-SARI.tok.low")
     sari_score = sari.sari_corpus(orig_sents, hyp_sents, ref_sents)
-    assert sari_score == pytest.approx(0.39964857928109127)
+    assert sari_score == pytest.approx(39.964857928109127)
 

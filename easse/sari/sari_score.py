@@ -101,7 +101,8 @@ def compute_ngram_stats(orig_sentences: List[str], sys_sentences: List[str], ref
     del_sys_total = [0] * NGRAM_ORDER
     del_ref_total = [0] * NGRAM_ORDER
 
-    for orig_sent, sys_sent, ref_sents in zip(orig_sentences, sys_sentences, refs_sentences):
+    fhs = [orig_sentences] + [sys_sentences] + refs_sentences
+    for orig_sent, sys_sent, *ref_sents in zip(*fhs):
         orig_ngrams = extract_ngrams(orig_sent)
         sys_ngrams = extract_ngrams(sys_sent)
 
@@ -182,7 +183,7 @@ def compute_sari(add_sys_correct, add_sys_total, add_ref_total,
         sari_score += keep_f1_ngram / NGRAM_ORDER
         sari_score += del_score_ngram / NGRAM_ORDER
 
-    return sari_score / 3
+    return 100. * (sari_score / 3)
 
 
 def sari_corpus(orig_sentences: List[str], sys_sentences: List[str], refs_sentences: List[List[str]],
