@@ -54,9 +54,9 @@ def evaluate_system_output(test_set, tokenizer, metrics):
         sari_score = sari.sari_corpus(orig_sents, sys_output, refs_sents, tokenizer=tokenizer)
         click.echo(f"SARI: {sari_score}")
 
-    # if 'samsa' in metrics:
-    #     samsa_score = samsa.samsa_corpus(orig_sents, sys_output, tokenizer=tokenizer)
-    #     click.echo(f"SAMSA: {samsa_score}")
+    if 'samsa' in metrics:
+        samsa_score = samsa.samsa_corpus(orig_sents, sys_output, tokenizer=tokenizer, verbose=True)
+        click.echo(f"SAMSA: {samsa_score}")
 
 
 @cli.command('register')
