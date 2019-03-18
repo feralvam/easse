@@ -21,4 +21,5 @@ setup(
     entry_points={'console_scripts': [
         "easse = easse.cli.cli:cli"
     ]},
+    install_requires=['sacrebleu', 'sacremoses', 'stanfordnlp', 'tupa', 'nltk']
 )
