@@ -1,5 +1,8 @@
+from typing import List
 import os
 from stanfordnlp.server import CoreNLPClient
+from tqdm import tqdm
+
 
 os.environ['CORENLP_HOME'] = "/tools/stanford-corenlp-full-2018-10-05"
 props = {'annotators': 'tokenize,ssplit,pos,lemma,ner,depparse',
@@ -69,7 +72,7 @@ def _collapse_dependencies(dependency_parse):
     return dep_tree_formatted
 
 
-def format_parser_results(sentence_parse):
+def format_parser_output(sentence_parse):
     results = {"sentences": []}
     for sent_json in sentence_parse:
         sent_formatted = {'words': []}
@@ -91,15 +94,43 @@ def format_parser_results(sentence_parse):
     return results
 
 
-def parseText(sentences):
+def syntactic_parse_texts(texts: List[str], tokenize=False, sentence_split=False, verbose=False):
+    if verbose:
+        print(f"Parsing {len(texts)} texts...")
 
-    with CoreNLPClient() as client:
-        raw_parse_result = client.annotate(sentences, properties=props)
-    parseResult = format_parser_results(raw_parse_result['sentences'])
+    corenlp_annotators = ['tokenize','ssplit','pos','lemma','ner','depparse']
+    annotators_properties = {'tokenize.whitespace': not tokenize,
+                             'ssplit.eolonly': not sentence_split,
+                             'depparse.model': "edu/stanford/nlp/models/parser/nndep/english_SD.gz",
+                             'outputFormat': 'json'}
+    parse_results = []
+    with CoreNLPClient(annotators=corenlp_annotators) as client:
+        for text in tqdm(texts, disable=(not verbose)):
+            if isinstance(text, List):
+                text = ' '.join(text)
 
-    if len(parseResult['sentences']) == 1:
-        return parseResult
+            raw_parse_result = client.annotate(text, properties=annotators_properties)
 
+            parse_result = format_parser_output(raw_parse_result['sentences'])
+
+            if len(parse_result['sentences']) > 1 and not sentence_split:
+                parse_result = join_parse_result(parse_result)
+            elif sentence_split:
+                parse_result = split_parse_result(parse_result['sentences'])
+
+            parse_results.append(parse_result)
+
+    return parse_results
+
+
+def split_parse_result(parse_result):
+    split_results = []
+    for sent_json in parse_result:
+        split_results.append({"sentences": [sent_json]})
+    return split_results
+
+
+def join_parse_result(parseResult):
     wordOffset = 0
 
     for i in range(len(parseResult['sentences'])):
@@ -112,16 +143,16 @@ def parseText(sentences):
                     if tokens[0] == 'ROOT':
                         newWordIndex = 0
                     else:
-                        if not tokens[len(tokens)-1].isdigit():  # forced to do this because of entries like u"lost-8'" in parseResult
+                        if not tokens[len(tokens) - 1].isdigit():  # forced to do this because of entries like u"lost-8'" in parseResult
                             continue
-                        newWordIndex = int(tokens[len(tokens)-1])+wordOffset
+                        newWordIndex = int(tokens[len(tokens) - 1]) + wordOffset
                     if len(tokens) == 2:
                         parseResult['sentences'][i]['dependencies'][j][k] = tokens[0] + '-' + str(newWordIndex)
                     else:
                         w = ''
-                        for l in range(len(tokens)-1):
+                        for l in range(len(tokens) - 1):
                             w += tokens[l]
-                            if l < len(tokens)-2:
+                            if l < len(tokens) - 2:
                                 w += '-'
                         parseResult['sentences'][i]['dependencies'][j][k] = w + '-' + str(newWordIndex)
 
@@ -146,7 +177,8 @@ def nerWordAnnotator(parseResult):
 
     wordIndex = 1
     for i in range(len(parseResult['sentences'][0]['words'])):
-        tag = [[parseResult['sentences'][0]['words'][i][1]['CharacterOffsetBegin'], parseResult['sentences'][0]['words'][i][1]['CharacterOffsetEnd']], wordIndex, parseResult['sentences'][0]['words'][i][0], parseResult['sentences'][0]['words'][i][1]['NamedEntityTag']]
+        tag = [[parseResult['sentences'][0]['words'][i][1]['CharacterOffsetBegin'], parseResult['sentences'][0]['words'][i][1]['CharacterOffsetEnd']],
+               wordIndex, parseResult['sentences'][0]['words'][i][0], parseResult['sentences'][0]['words'][i][1]['NamedEntityTag']]
         wordIndex += 1
 
         if tag[3] != 'O':
