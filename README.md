@@ -30,7 +30,7 @@ you made of the source repository.
 
 Once EASSE has been installed, you can run the command-line interface with the `easse` command.
 
-```bash
+```
 $ easse
 Usage: easse [OPTIONS] COMMAND [ARGS]...
 
