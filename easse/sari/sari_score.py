@@ -4,67 +4,67 @@ from collections import Counter
 from typing import List
 import easse.utils.preprocessing as utils_prep
 
-# n-gram order. Don't change this.
+
 NGRAM_ORDER = 4
 
 
-# def compute_precision     _recall(correct, total_precision, total_recall):
-#     precision = 0
-#     if total_precision > 0:
-#         precision = correct / total_precision
-#
-#     recall = 0
-#     if total_recall > 0:
-#         recall = correct / total_recall
-#
-#     return precision, recall
-#
-#
-# def compute_f1(precision, recall):
-#     f1 = 0
-#     if precision > 0 or recall > 0:
-#         f1 = 2 * precision * recall / (precision + recall)
-#     return f1
-#
-#
-# def compute_sari(add_hyp_correct, add_hyp_total, add_ref_total,
-#                  keep_hyp_correct, keep_hyp_total, keep_ref_total,
-#                  del_hyp_correct, del_hyp_total, del_ref_total,
-#                  corpus_level=True):
-#     add_precision = [0] * NGRAM_ORDER
-#     add_recall = [0] * NGRAM_ORDER
-#     keep_precision = [0] * NGRAM_ORDER
-#     keep_recall = [0] * NGRAM_ORDER
-#     del_precision = [0] * NGRAM_ORDER
-#     del_recall = [0] * NGRAM_ORDER
-#
-#     for n in range(NGRAM_ORDER):
-#         add_precision[n], add_recall[n] = compute_precision_recall(add_hyp_correct[n], add_hyp_total[n],
-#                                                                    add_ref_total[n])
-#         keep_precision[n], keep_recall[n] = compute_precision_recall(keep_hyp_correct[n], keep_hyp_total[n],
-#                                                                      keep_ref_total[n])
-#         del_precision[n], del_recall[n] = compute_precision_recall(del_hyp_correct[n], del_hyp_total[n],
-#                                                                    del_ref_total[n])
-#
-#     avg_add_precision = sum(add_precision) / NGRAM_ORDER
-#     avg_add_recall = sum(add_recall) / NGRAM_ORDER
-#     avg_keep_precision = sum(keep_precision) / NGRAM_ORDER
-#     avg_keep_recall = sum(keep_recall) / NGRAM_ORDER
-#     avg_del_precision = sum(del_precision) / NGRAM_ORDER
-#     avg_del_recall = sum(del_recall) / NGRAM_ORDER
-#
-#     add_f1 = compute_f1(avg_add_precision, avg_add_recall)
-#
-#     keep_f1 = compute_f1(avg_keep_precision, avg_keep_recall)
-#
-#     if corpus_level:
-#         del_score = compute_f1(avg_del_precision, avg_del_recall)
-#     else:
-#         del_score = avg_del_precision
-#
-#     sari_score = (add_f1 + keep_f1 + del_score) / 3
-#
-#     return sari_score
+def compute_precision_recall(sys_correct, sys_total, ref_total):
+    precision = 0.0
+    if sys_total > 0:
+        precision = sys_correct / sys_total
+
+    recall = 0.0
+    if ref_total > 0:
+        recall = sys_correct / ref_total
+
+    return precision, recall
+
+
+def compute_f1(precision, recall):
+    f1 = 0.0
+    if precision > 0 or recall > 0:
+        f1 = 2 * precision * recall / (precision + recall)
+    return f1
+
+
+def compute_micro_sari(add_hyp_correct, add_hyp_total, add_ref_total,
+                       keep_hyp_correct, keep_hyp_total, keep_ref_total,
+                       del_hyp_correct, del_hyp_total, del_ref_total,
+                       corpus_level=True):
+    add_precision = [0] * NGRAM_ORDER
+    add_recall = [0] * NGRAM_ORDER
+    keep_precision = [0] * NGRAM_ORDER
+    keep_recall = [0] * NGRAM_ORDER
+    del_precision = [0] * NGRAM_ORDER
+    del_recall = [0] * NGRAM_ORDER
+
+    for n in range(NGRAM_ORDER):
+        add_precision[n], add_recall[n] = compute_precision_recall(add_hyp_correct[n], add_hyp_total[n],
+                                                                   add_ref_total[n])
+        keep_precision[n], keep_recall[n] = compute_precision_recall(keep_hyp_correct[n], keep_hyp_total[n],
+                                                                     keep_ref_total[n])
+        del_precision[n], del_recall[n] = compute_precision_recall(del_hyp_correct[n], del_hyp_total[n],
+                                                                   del_ref_total[n])
+
+    avg_add_precision = sum(add_precision) / NGRAM_ORDER
+    avg_add_recall = sum(add_recall) / NGRAM_ORDER
+    avg_keep_precision = sum(keep_precision) / NGRAM_ORDER
+    avg_keep_recall = sum(keep_recall) / NGRAM_ORDER
+    avg_del_precision = sum(del_precision) / NGRAM_ORDER
+    avg_del_recall = sum(del_recall) / NGRAM_ORDER
+
+    add_f1 = compute_f1(avg_add_precision, avg_add_recall)
+
+    keep_f1 = compute_f1(avg_keep_precision, avg_keep_recall)
+
+    if corpus_level:
+        del_score = compute_f1(avg_del_precision, avg_del_recall)
+    else:
+        del_score = avg_del_precision
+
+    sari_score = 100. * (add_f1 + keep_f1 + del_score) / 3
+
+    return sari_score
 
 
 def extract_ngrams(line, min_order=1, max_order=NGRAM_ORDER) -> List[Counter]:
@@ -149,7 +149,7 @@ def compute_ngram_stats(orig_sentences: List[str], sys_sentences: List[str], ref
            del_sys_correct, del_sys_total, del_ref_total
 
 
-def compute_f1(sys_correct, sys_total, ref_total):
+def compute_precision_recall_f1(sys_correct, sys_total, ref_total):
     precision = 0.0
     if sys_total > 0:
         precision = sys_correct / sys_total
@@ -165,19 +165,19 @@ def compute_f1(sys_correct, sys_total, ref_total):
     return precision, recall, f1
 
 
-def compute_sari(add_sys_correct, add_sys_total, add_ref_total,
-                 keep_sys_correct, keep_sys_total, keep_ref_total,
-                 del_sys_correct, del_sys_total, del_ref_total,
-                 corpus_level=True):
+def compute_macro_sari(add_sys_correct, add_sys_total, add_ref_total,
+                       keep_sys_correct, keep_sys_total, keep_ref_total,
+                       del_sys_correct, del_sys_total, del_ref_total,
+                       corpus_level=True):
 
     sari_score = 0.0
     for n in range(NGRAM_ORDER):
-        _, _, add_f1_ngram = compute_f1(add_sys_correct[n], add_sys_total[n], add_ref_total[n])
-        _, _, keep_f1_ngram = compute_f1(keep_sys_correct[n], keep_sys_total[n], keep_ref_total[n])
+        _, _, add_f1_ngram = compute_precision_recall_f1(add_sys_correct[n], add_sys_total[n], add_ref_total[n])
+        _, _, keep_f1_ngram = compute_precision_recall_f1(keep_sys_correct[n], keep_sys_total[n], keep_ref_total[n])
         if corpus_level:
-            _, _, del_score_ngram = compute_f1(del_sys_correct[n], del_sys_total[n], del_ref_total[n])
+            _, _, del_score_ngram = compute_precision_recall_f1(del_sys_correct[n], del_sys_total[n], del_ref_total[n])
         else:
-            del_score_ngram, _, _ = compute_f1(del_sys_correct[n], del_sys_total[n], del_ref_total[n])
+            del_score_ngram, _, _ = compute_precision_recall_f1(del_sys_correct[n], del_sys_total[n], del_ref_total[n])
 
         sari_score += add_f1_ngram / NGRAM_ORDER
         sari_score += keep_f1_ngram / NGRAM_ORDER
@@ -196,9 +196,9 @@ def sari_corpus(orig_sentences: List[str], sys_sentences: List[str], refs_senten
 
     stats = compute_ngram_stats(orig_sentences, sys_sentences, refs_sentences)
 
-    return compute_sari(*stats, corpus_level=True)
+    return compute_micro_sari(*stats, corpus_level=True)
 
 
 def sari_sentence(orig_sent: str, hyp_sent: str, ref_sents: List[str]):
     stats = compute_ngram_stats([orig_sent], [hyp_sent], [ref_sents])
-    return compute_sari(*stats, corpus_level=False)
+    return compute_macro_sari(*stats, corpus_level=False)

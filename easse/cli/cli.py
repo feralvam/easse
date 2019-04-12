@@ -1,8 +1,10 @@
 import click
-import easse.cli.utils as cli_utils
 import sacrebleu
+
+import easse.cli.utils as cli_utils
 import easse.sari.sari_score as sari
 import easse.samsa.samsa_score as samsa
+import easse.annotation.word_level as annotation
 
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 
@@ -20,7 +22,9 @@ def cli():
               help="Tokenization method to use.")
 @click.option('--metrics', '-m', type=str, default=cli_utils.get_valid_metrics(as_str=True),
               help=f"Comma-separated list of metrics to compute. Default: {cli_utils.get_valid_metrics(as_str=True)}")
-def evaluate_system_output(test_set, tokenizer, metrics):
+@click.option('--analysis', '-a', is_flag=True,
+              help=f"Perform word-level transformation analysis.")
+def evaluate_system_output(test_set, tokenizer, metrics, analysis):
     """
     Evaluate a system output in a standard test set with appropriate automatic metrics.
     """
@@ -33,10 +37,14 @@ def evaluate_system_output(test_set, tokenizer, metrics):
 
     # get the references from the test set
     if test_set == 'turk':
+        lowercase = False
         refs_sents = []
         for n in range(8):
             ref_lines = cli_utils.read_file(f"data/test_sets/turk/test.8turkers.tok.turk.{n}")
             refs_sents.append(ref_lines)
+
+        # ref_lines = cli_utils.read_file(f"data/test_sets/turk/test.8turkers.tok.simp")
+        # refs_sents.append(ref_lines)
 
         if 'sari' in metrics:
             # read the original sentences in plain text
@@ -45,18 +53,37 @@ def evaluate_system_output(test_set, tokenizer, metrics):
         # if 'samsa' in metrics:
         #     # read the original sentences ucca-parsed by TUPA
 
+    if test_set == 'hsplit':
+        sys_output = sys_output[:70]
+        lowercase = True
+
+        if 'sari' in metrics or 'bleu' in metrics:
+            refs_sents = []
+            for n in range(4):
+                ref_lines = cli_utils.read_file(f"data/test_sets/hsplit/hsplit.tok.{n+1}")
+                refs_sents.append(ref_lines)
+
+        if 'sari' in metrics or 'samsa' in metrics:
+            # read the original sentences in plain text
+            orig_sents = cli_utils.read_file("data/test_sets/turk/test.8turkers.tok.norm")[:70]
+
     # compute each metric
     if 'bleu' in metrics:
-        bleu_score = sacrebleu.corpus_bleu(sys_output, refs_sents, force=True, tokenize=tokenizer)
+        bleu_score = sacrebleu.corpus_bleu(sys_output, refs_sents, force=True, tokenize=tokenizer, lowercase=lowercase)
         click.echo(f"BLEU: {bleu_score.score}")
 
     if 'sari' in metrics:
-        sari_score = sari.sari_corpus(orig_sents, sys_output, refs_sents, tokenizer=tokenizer)
+        sari_score = sari.sari_corpus(orig_sents, sys_output, refs_sents, tokenizer=tokenizer, lowercase=lowercase)
         click.echo(f"SARI: {sari_score}")
 
     if 'samsa' in metrics:
-        samsa_score = samsa.samsa_corpus(orig_sents, sys_output, tokenizer=tokenizer, verbose=True)
+        samsa_score = samsa.samsa_corpus(orig_sents, sys_output, tokenizer=tokenizer, verbose=True, lowercase=lowercase)
         click.echo(f"SAMSA: {samsa_score}")
+
+    if analysis:
+        word_level_analysis = annotation.analyse_wordlevel_operations(orig_sents, sys_output, refs_sents,
+                                                                      verbose=False, as_str=True)
+        click.echo(f"Word-level Analysis: {word_level_analysis}")
 
 
 @cli.command('register')

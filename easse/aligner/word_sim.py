@@ -68,4 +68,4 @@ def wordRelatedness(word1, pos1, word2, pos2):
         return 0
 
 
-loadPPDB()
+# loadPPDB()

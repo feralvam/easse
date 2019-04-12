@@ -1,5 +1,4 @@
 import json
-import os
 
 
 def get_valid_test_sets(as_str=False):

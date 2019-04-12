@@ -98,7 +98,7 @@ def syntactic_parse_texts(texts: List[str], tokenize=False, sentence_split=False
     if verbose:
         print(f"Parsing {len(texts)} texts...")
 
-    corenlp_annotators = ['tokenize','ssplit','pos','lemma','ner','depparse']
+    corenlp_annotators = ['tokenize', 'ssplit', 'pos', 'lemma', 'ner', 'depparse']
     annotators_properties = {'tokenize.whitespace': not tokenize,
                              'ssplit.eolonly': not sentence_split,
                              'depparse.model': "edu/stanford/nlp/models/parser/nndep/english_SD.gz",
@@ -108,9 +108,7 @@ def syntactic_parse_texts(texts: List[str], tokenize=False, sentence_split=False
         for text in tqdm(texts, disable=(not verbose)):
             if isinstance(text, List):
                 text = ' '.join(text)
-
             raw_parse_result = client.annotate(text, properties=annotators_properties)
-
             parse_result = format_parser_output(raw_parse_result['sentences'])
 
             if len(parse_result['sentences']) > 1 and not sentence_split:
