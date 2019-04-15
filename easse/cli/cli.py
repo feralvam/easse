@@ -26,7 +26,7 @@ def cli():
               help=f"Perform word-level transformation analysis.")
 def evaluate_system_output(test_set, tokenizer, metrics, analysis):
     """
-    Evaluate a system output in a standard test set with appropriate automatic metrics.
+    Evaluate a system output with automatic metrics.
     """
     # read the system output
     with click.get_text_stream('stdin', encoding='utf-8') as system_output_file:
@@ -95,7 +95,7 @@ def evaluate_system_output(test_set, tokenizer, metrics, analysis):
               help="Path to the text file with the simplified sentences.")
 def register_test_set(name, orig_file, simp_file):
     """
-    Register a new test set to pre-process it and store it locally so future computations are faster.
+    Preprocess and store a test set locally.
     """
     return
 
@@ -106,6 +106,6 @@ def register_test_set(name, orig_file, simp_file):
               help="Metric to use for sorting the systems' scores.")
 def print_ranking(test_set, sort_by):
     """
-    Print the ranking of all published system outputs in a standard test set.
+    Rank all available system outputs in a standard test set.
     """
     return

@@ -1,5 +1,5 @@
 # EASSE
-Easier Automatic Sentence Simplification Evaluation
+**E**asier **A**utomatic **S**entence **S**implification **E**valuation
 
 ## Installation
 <!--
@@ -43,3 +43,25 @@ Commands:
   ranking   Rank all available system outputs in a standard test set.
   register  Preprocess and store a test set locally.
 ```
+
+### evaluate
+```
+$ easse evaluate -h
+Usage: easse evaluate [OPTIONS]
+
+  Evaluate a system output with automatic metrics.
+
+Options:
+  -t, --test_set [turk|pwkp|hsplit]
+                                  test set to use.  [required]
+  -tok, --tokenizer [13a|intl|moses|plain]
+                                  Tokenization method to use.
+  -m, --metrics TEXT              Comma-separated list of metrics to compute.
+                                  Default: bleu,sari,samsa
+  -a, --analysis                  Perform word-level transformation analysis.
+  -h, --help                      Show this message and exit.
+```
+
+### ranking
+
+### register

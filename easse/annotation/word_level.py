@@ -5,7 +5,6 @@ This module contains functions for annotating simplification operations at the s
 from typing import List
 from operator import itemgetter
 
-from nltk.tree import ParentedTree
 from tqdm import tqdm
 from sklearn.metrics import f1_score
 import numpy as np
