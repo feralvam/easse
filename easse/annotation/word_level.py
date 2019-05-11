@@ -1,10 +1,13 @@
 """
 This module contains functions for annotating simplification operations at the sentencelevel.
 """
+import time
+
 
 from typing import List
 from operator import itemgetter
 
+import multiprocessing as mp
 from tqdm import tqdm
 from sklearn.metrics import f1_score
 import numpy as np
@@ -16,8 +19,8 @@ from easse.aligner.aligner import align
 # Constants
 # =============================================================================
 
-
 SIMOP_LABELS = ['B-A', 'B-D', 'B-M', 'B-R', 'I-A', 'I-D', 'I-M', 'I-R']
+ORIG_OPS_LABELS = ['D', 'M', 'R', 'C']
 
 # =============================================================================
 # Internal Functions
@@ -26,14 +29,8 @@ SIMOP_LABELS = ['B-A', 'B-D', 'B-M', 'B-R', 'I-A', 'I-D', 'I-M', 'I-R']
 
 def _have_same_postag(src_index, ref_index, src_parse, ref_parse):
     """Check if two tokens in two parse trees have the same part-of-speech tag, given their indexes."""
-    # print("src_index: ", src_index)
-    # print("ref_index: ", ref_index)
-
     src_postags = posTag(src_parse)
-    # print("src_postags: ", src_postags)
-
     ref_postags = posTag(ref_parse)
-    # print("ref_postags: ", ref_postags)
 
     src_token_info = src_postags[src_index - 1]
     assert src_token_info[1] == src_index
@@ -213,14 +210,36 @@ def _from_annots_to_labels(sent_annots, labels_to_include=SIMOP_LABELS, default_
     return labels
 
 
-def analyse_wordlevel_operations(orig_sentences: List[str], sys_sentences: List[str], refs_sentences: List[List[str]],
-                                 as_str=False, verbose=False):
-    orig_ops_labels = ['D', 'M', 'R', 'C']
-    # simp_ops_labels = ['A', 'O']
+def analyse_operations_sentence(orig_sent, sys_sent, ref_sents, orig_parse, sys_parse, ref_parses):
+    word_aligns_orig_sys = align(orig_parse, sys_parse)[0]
+    orig_annots, sys_annots = annotate_sentence(orig_sent.split(), sys_sent.split(),
+                                                word_aligns_orig_sys, orig_parse, sys_parse)
 
+    orig_auto_labels = _from_annots_to_labels(orig_annots, ORIG_OPS_LABELS, 'C')
+
+    curr_sent_scores = []
+    for ref_sent, ref_parse in zip(ref_sents, ref_parses):
+        word_aligns_orig_ref = align(orig_parse, ref_parse)[0]
+
+        orig_annots, ref_annots = annotate_sentence(orig_sent.split(), ref_sent.split(),
+                                                    word_aligns_orig_ref, orig_parse, ref_parse)
+
+        orig_silver_labels = _from_annots_to_labels(orig_annots, ORIG_OPS_LABELS, 'C')
+
+        f1_per_label = f1_score(orig_silver_labels, orig_auto_labels, labels=ORIG_OPS_LABELS, average=None)
+
+        curr_sent_scores.append(f1_per_label)
+
+    return np.amax(curr_sent_scores, axis=0)
+
+
+def analyse_operations_corpus(orig_sentences: List[str], sys_sentences: List[str], refs_sentences: List[List[str]],
+                              as_str=False, verbose=False):
     orig_parses = syntactic_parse_texts(orig_sentences, verbose=verbose)
     sys_parses = syntactic_parse_texts(sys_sentences, verbose=verbose)
     refs_parses = [syntactic_parse_texts(ref_sents, verbose=verbose) for ref_sents in refs_sentences]
+
+    time_start = time.time()
 
     all_parsers = [orig_parses] + [sys_parses] + refs_parses
     all_parsers = zip(*all_parsers)
@@ -228,46 +247,31 @@ def analyse_wordlevel_operations(orig_sentences: List[str], sys_sentences: List[
     all_sentences = [orig_sentences] + [sys_sentences] + refs_sentences
     all_sentences = zip(*all_sentences)
 
-    all_scores = []
     if verbose:
         print("Analysing word-level operations")
+
+    pool = mp.Pool()
+    corpus_scores = []
     for sentences, parsers in tqdm(zip(all_sentences, all_parsers), disable=(not verbose)):
         orig_sent, sys_sent, *ref_sents = sentences
         orig_parse, sys_parse, *ref_parses = parsers
 
-        word_aligns_orig_sys = align(orig_parse, sys_parse)[0]
-        orig_annots, sys_annots = annotate_sentence(orig_sent.split(), sys_sent.split(),
-                                                    word_aligns_orig_sys, orig_parse, sys_parse)
+        # sent_scores = pool.apply(analyse_operations_sentence,
+        #                          args=(orig_sent, sys_sent, ref_sents, orig_parse, sys_parse, ref_parses))
 
-        orig_auto_labels = _from_annots_to_labels(orig_annots, orig_ops_labels, 'C')
-        # sys_auto_labels = _from_annots_to_labels(sys_annots, simp_ops_labels, 'O')
+        sent_scores = analyse_operations_sentence(orig_sent, sys_sent, ref_sents, orig_parse, sys_parse, ref_parses)
 
-        curr_sent_scores = []
-        for ref_sent, ref_parse in zip(ref_sents, ref_parses):
-            word_aligns_orig_ref = align(orig_parse, ref_parse)[0]
+        corpus_scores.append(sent_scores)
 
-            orig_annots, ref_annots = annotate_sentence(orig_sent.split(), ref_sent.split(),
-                                                        word_aligns_orig_ref, orig_parse, ref_parse)
+    label_scores = np.mean(corpus_scores, axis=0)
 
-            orig_silver_labels = _from_annots_to_labels(orig_annots, orig_ops_labels, 'C')
-            # ref_silver_labels = _from_annots_to_labels(ref_annots, simp_ops_labels, 'O')
-
-            f1_per_label = f1_score(orig_silver_labels, orig_auto_labels, labels=orig_ops_labels, average=None)
-            # coverage_per_label = _calculate_coverage(ref_silver_labels, sys_auto_labels, labels=simp_ops_labels)
-
-            # all_scores.append(np.concatenate([f1_per_label, coverage_per_label]))
-            curr_sent_scores.append(f1_per_label)
-
-        all_scores.append(np.amax(curr_sent_scores, axis=0))
-
-    label_scores = np.mean(all_scores, axis=0)
-    # all_labels = orig_ops_labels + simp_ops_labels
-    all_labels = orig_ops_labels
-
-    assert len(label_scores) == len(all_labels)
-    score_per_label = list(zip(all_labels, label_scores))
+    assert len(label_scores) == len(ORIG_OPS_LABELS)
+    score_per_label = list(zip(ORIG_OPS_LABELS, label_scores))
 
     if as_str:
         score_per_label = " ".join([f"{label}={100.* score:.2f}" for label, score in score_per_label])
+
+    time_end = time.time() - time_start
+    print(f"Time: {time_end}")
 
     return score_per_label

@@ -36,22 +36,22 @@ def evaluate_system_output(test_set, tokenizer, metrics, analysis):
     metrics = metrics.split(',')
 
     # get the references from the test set
-    if test_set == 'turk':
+    if test_set in ['turk', 'turk_valid']:
         lowercase = False
         refs_sents = []
-        for n in range(8):
-            ref_lines = cli_utils.read_file(f"data/test_sets/turk/test.8turkers.tok.turk.{n}")
-            refs_sents.append(ref_lines)
 
-        # ref_lines = cli_utils.read_file(f"data/test_sets/turk/test.8turkers.tok.simp")
-        # refs_sents.append(ref_lines)
+        if test_set == 'turk':
+            for n in range(8):
+                ref_lines = cli_utils.read_file(f"data/test_sets/turk/test.8turkers.tok.turk.{n}")
+                refs_sents.append(ref_lines)
+        else:
+            for n in range(8):
+                ref_lines = cli_utils.read_file(f"data/test_sets/turk_valid/tune.8turkers.tok.turk.{n}")
+                refs_sents.append(ref_lines)
 
         if 'sari' in metrics:
             # read the original sentences in plain text
             orig_sents = cli_utils.read_file("data/test_sets/turk/test.8turkers.tok.norm")
-
-        # if 'samsa' in metrics:
-        #     # read the original sentences ucca-parsed by TUPA
 
     if test_set == 'hsplit':
         sys_output = sys_output[:70]
@@ -81,8 +81,8 @@ def evaluate_system_output(test_set, tokenizer, metrics, analysis):
         click.echo(f"SAMSA: {samsa_score}")
 
     if analysis:
-        word_level_analysis = annotation.analyse_wordlevel_operations(orig_sents, sys_output, refs_sents,
-                                                                      verbose=False, as_str=True)
+        word_level_analysis = annotation.analyse_operations_corpus(orig_sents, sys_output, refs_sents,
+                                                                   verbose=False, as_str=True)
         click.echo(f"Word-level Analysis: {word_level_analysis}")
 
 
