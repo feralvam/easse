@@ -1,7 +1,8 @@
 import pytest
-import easse.samsa.samsa_score as samsa
 import csv
+
 from easse.samsa.ucca_utils import get_scenes, ucca_parse_texts
+from easse import samsa
 
 
 # def test_get_scenes():
