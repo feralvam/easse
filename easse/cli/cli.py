@@ -2,8 +2,8 @@ import click
 import sacrebleu
 
 import easse.cli.utils as cli_utils
-import easse.sari.sari_score as sari
-import easse.samsa.samsa_score as samsa
+from easse import sari
+from easse import samsa
 import easse.annotation.word_level as annotation
 
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
