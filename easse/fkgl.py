@@ -1,3 +1,6 @@
+from typing import List
+
+from easse.utils.preprocessing import normalize
 from easse.utils.text import to_sentences, count_words, count_syllables_in_sentence
 
 
@@ -23,15 +26,8 @@ class FKGLScorer:
         return max(0, 0.39 * (self.nb_words / self.nb_sentences) + 11.8 * (self.nb_syllables / self.nb_words) - 15.59)
 
 
-def get_fkgl(filepath):
+def corpus_fkgl(sentences: List[str], tokenizer: str = '13a'):
     scorer = FKGLScorer()
-    with open(filepath, 'r') as f:
-        for line in f:
-            scorer.add(line.strip())
-    return scorer.score()
-
-
-def get_sentence_fkgl(sentence):
-    scorer = FKGLScorer()
-    scorer.add(sentence)
+    for sentence in sentences:
+            scorer.add(normalize(sentence, tokenizer=tokenizer))
     return scorer.score()
