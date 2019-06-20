@@ -1,10 +1,16 @@
 from typing import List
 import os
+
 from stanfordnlp.server import CoreNLPClient
 from tqdm import tqdm
 
+from easse.utils.resources import download_stanford_corenlp
+from easse.utils.paths import STANFORD_CORENLP_PATH
 
-os.environ['CORENLP_HOME'] = "/tools/stanford-corenlp-full-2018-10-05"
+
+if not STANFORD_CORENLP_PATH.exists():
+    download_stanford_corenlp()
+os.environ['CORENLP_HOME'] = str(STANFORD_CORENLP_PATH)
 props = {'annotators': 'tokenize,ssplit,pos,lemma,ner,depparse',
          'pipelineLanguage': 'en',
          'depparse.model': "edu/stanford/nlp/models/parser/nndep/english_SD.gz",
