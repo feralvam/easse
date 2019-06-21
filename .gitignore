@@ -106,3 +106,6 @@ venv.bak/
 # Pycharm
 .idea
 .DS_Store
+
+# easse
+tools/
