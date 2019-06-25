@@ -2,8 +2,9 @@ import click
 import sacrebleu
 
 import easse.cli.utils as cli_utils
-from easse import sari
-from easse import samsa
+from easse.sari import sari_corpus
+from easse.samsa import samsa_corpus
+from easse.quality_estimation import corpus_quality_estimation
 import easse.annotation.word_level as annotation
 
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
@@ -35,6 +36,8 @@ def evaluate_system_output(test_set, tokenizer, metrics, analysis):
     # get the metrics that need to be computed
     metrics = metrics.split(',')
 
+    load_orig_sents = ('sari' in metrics) or ('samsa' in metrics) or ('quality_estimation' in metrics)
+    load_ref_sents = ('sari' in metrics) or ('bleu' in metrics)
     # get the references from the test set
     if test_set in ['turk', 'turk_valid']:
         lowercase = False
@@ -49,7 +52,7 @@ def evaluate_system_output(test_set, tokenizer, metrics, analysis):
                 ref_lines = cli_utils.read_file(f"data/test_sets/turk_valid/tune.8turkers.tok.turk.{n}")
                 refs_sents.append(ref_lines)
 
-        if 'sari' in metrics:
+        if load_orig_sents:
             # read the original sentences in plain text
             orig_sents = cli_utils.read_file("data/test_sets/turk/test.8turkers.tok.norm")
 
@@ -57,13 +60,13 @@ def evaluate_system_output(test_set, tokenizer, metrics, analysis):
         sys_output = sys_output[:70]
         lowercase = True
 
-        if 'sari' in metrics or 'bleu' in metrics:
+        if load_ref_sents:
             refs_sents = []
             for n in range(4):
                 ref_lines = cli_utils.read_file(f"data/test_sets/hsplit/hsplit.tok.{n+1}")
                 refs_sents.append(ref_lines)
 
-        if 'sari' in metrics or 'samsa' in metrics:
+        if load_orig_sents:
             # read the original sentences in plain text
             orig_sents = cli_utils.read_file("data/test_sets/turk/test.8turkers.tok.norm")[:70]
 
@@ -73,12 +76,22 @@ def evaluate_system_output(test_set, tokenizer, metrics, analysis):
         click.echo(f"BLEU: {bleu_score.score}")
 
     if 'sari' in metrics:
-        sari_score = sari.sari_corpus(orig_sents, sys_output, refs_sents, tokenizer=tokenizer, lowercase=lowercase)
+        sari_score = sari_corpus(orig_sents, sys_output, refs_sents, tokenizer=tokenizer, lowercase=lowercase)
         click.echo(f"SARI: {sari_score}")
 
     if 'samsa' in metrics:
-        samsa_score = samsa.samsa_corpus(orig_sents, sys_output, tokenizer=tokenizer, verbose=True, lowercase=lowercase)
+        samsa_score = samsa_corpus(orig_sents, sys_output, tokenizer=tokenizer, verbose=True, lowercase=lowercase)
         click.echo(f"SAMSA: {samsa_score}")
+
+    if 'quality_estimation' in metrics:
+        quality_estimation_scores = corpus_quality_estimation(
+                orig_sents,
+                sys_output,
+                tokenizer=tokenizer,
+                lowercase=lowercase
+                )
+        quality_estimation_scores = {k: round(v, 2) for k, v in quality_estimation_scores.items()}
+        click.echo(f"Quality estimation: {quality_estimation_scores}")
 
     if analysis:
         word_level_analysis = annotation.analyse_operations_corpus(orig_sents, sys_output, refs_sents,
