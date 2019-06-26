@@ -4,6 +4,7 @@ import sacrebleu
 import easse.cli.utils as cli_utils
 from easse.sari import sari_corpus
 from easse.samsa import samsa_corpus
+from easse.fkgl import corpus_fkgl
 from easse.quality_estimation import corpus_quality_estimation
 import easse.annotation.word_level as annotation
 
@@ -75,15 +76,19 @@ def evaluate_system_output(test_set, tokenizer, metrics, analysis, quality_estim
     # compute each metric
     if 'bleu' in metrics:
         bleu_score = sacrebleu.corpus_bleu(sys_output, refs_sents, force=True, tokenize=tokenizer, lowercase=lowercase)
-        click.echo(f"BLEU: {bleu_score.score}")
+        click.echo(f"BLEU: {bleu_score.score:.2f}")
 
     if 'sari' in metrics:
         sari_score = sari_corpus(orig_sents, sys_output, refs_sents, tokenizer=tokenizer, lowercase=lowercase)
-        click.echo(f"SARI: {sari_score}")
+        click.echo(f"SARI: {sari_score:.2f}")
 
     if 'samsa' in metrics:
         samsa_score = samsa_corpus(orig_sents, sys_output, tokenizer=tokenizer, verbose=True, lowercase=lowercase)
-        click.echo(f"SAMSA: {samsa_score}")
+        click.echo(f"SAMSA: {samsa_score:.2f}")
+
+    if 'fkgl' in metrics:
+        fkgl_score = corpus_fkgl(sys_output, tokenizer=tokenizer)
+        click.echo(f"FKGL: {fkgl_score:.2f}")
 
     if analysis:
         word_level_analysis = annotation.analyse_operations_corpus(orig_sents, sys_output, refs_sents,

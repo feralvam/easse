@@ -1,6 +1,8 @@
 from typing import List
 
-from tseval.feature_extraction import get_compression_ratio, count_sentence_splits, get_levenshtein_similarity, is_exact_match
+from tseval.feature_extraction import (get_compression_ratio, count_sentence_splits, get_levenshtein_similarity,
+                                       is_exact_match, get_additions_proportion, get_deletions_proportion,
+                                       get_wordrank_score, wrap_single_sentence_vectorizer)
 
 from easse.utils.preprocessing import normalize
 
@@ -23,4 +25,11 @@ def corpus_quality_estimation(orig_sentences: List[str], sys_sentences: List[str
             'Sentence splits': get_average(count_sentence_splits, orig_sentences, sys_sentences),
             'Levenshtein similarity': get_average(get_levenshtein_similarity, orig_sentences, sys_sentences),
             'Exact matches': get_average(is_exact_match, orig_sentences, sys_sentences),
+            'Additions proportion': get_average(get_additions_proportion, orig_sentences, sys_sentences),
+            'Deletions proportion': get_average(get_deletions_proportion, orig_sentences, sys_sentences),
+            'Lexical complexity score': get_average(
+                wrap_single_sentence_vectorizer(get_wordrank_score),
+                orig_sentences,
+                sys_sentences
+                ),
     }
