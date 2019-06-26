@@ -2,8 +2,8 @@ import click
 import sacrebleu
 
 import easse.cli.utils as cli_utils
-from easse.sari import sari_corpus
-from easse.samsa import samsa_corpus
+from easse.sari import corpus_sari
+from easse.samsa import corpus_samsa
 from easse.fkgl import corpus_fkgl
 from easse.quality_estimation import corpus_quality_estimation
 import easse.annotation.word_level as annotation
@@ -79,11 +79,11 @@ def evaluate_system_output(test_set, tokenizer, metrics, analysis, quality_estim
         click.echo(f"BLEU: {bleu_score.score:.2f}")
 
     if 'sari' in metrics:
-        sari_score = sari_corpus(orig_sents, sys_output, refs_sents, tokenizer=tokenizer, lowercase=lowercase)
+        sari_score = corpus_sari(orig_sents, sys_output, refs_sents, tokenizer=tokenizer, lowercase=lowercase)
         click.echo(f"SARI: {sari_score:.2f}")
 
     if 'samsa' in metrics:
-        samsa_score = samsa_corpus(orig_sents, sys_output, tokenizer=tokenizer, verbose=True, lowercase=lowercase)
+        samsa_score = corpus_samsa(orig_sents, sys_output, tokenizer=tokenizer, verbose=True, lowercase=lowercase)
         click.echo(f"SAMSA: {samsa_score:.2f}")
 
     if 'fkgl' in metrics:

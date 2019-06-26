@@ -1,1 +1,1 @@
-from easse.samsa.samsa_score import samsa_corpus
+from easse.samsa.samsa_score import corpus_samsa

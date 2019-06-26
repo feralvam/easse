@@ -186,7 +186,7 @@ def compute_macro_sari(add_sys_correct, add_sys_total, add_ref_total,
     return 100. * (sari_score / 3)
 
 
-def sari_corpus(orig_sentences: List[str], sys_sentences: List[str], refs_sentences: List[List[str]],
+def corpus_sari(orig_sentences: List[str], sys_sentences: List[str], refs_sentences: List[List[str]],
                 lowercase: bool = False, tokenizer: str = '13a'):
 
     # orig_sentences = [normalize(sent, lowercase, tokenizer) for sent in orig_sentences]
