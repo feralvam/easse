@@ -25,7 +25,9 @@ def cli():
               help=f"Comma-separated list of metrics to compute. Default: {cli_utils.get_valid_metrics(as_str=True)}")
 @click.option('--analysis', '-a', is_flag=True,
               help=f"Perform word-level transformation analysis.")
-def evaluate_system_output(test_set, tokenizer, metrics, analysis):
+@click.option('--quality_estimation', '-q', is_flag=True,
+              help="Perform quality estimation.")
+def evaluate_system_output(test_set, tokenizer, metrics, analysis, quality_estimation):
     """
     Evaluate a system output with automatic metrics.
     """
@@ -36,8 +38,8 @@ def evaluate_system_output(test_set, tokenizer, metrics, analysis):
     # get the metrics that need to be computed
     metrics = metrics.split(',')
 
-    load_orig_sents = ('sari' in metrics) or ('samsa' in metrics) or ('quality_estimation' in metrics)
-    load_ref_sents = ('sari' in metrics) or ('bleu' in metrics)
+    load_orig_sents = ('sari' in metrics) or ('samsa' in metrics) or analysis or quality_estimation
+    load_ref_sents = ('sari' in metrics) or ('bleu' in metrics) or analysis
     # get the references from the test set
     if test_set in ['turk', 'turk_valid']:
         lowercase = False
@@ -83,7 +85,12 @@ def evaluate_system_output(test_set, tokenizer, metrics, analysis):
         samsa_score = samsa_corpus(orig_sents, sys_output, tokenizer=tokenizer, verbose=True, lowercase=lowercase)
         click.echo(f"SAMSA: {samsa_score}")
 
-    if 'quality_estimation' in metrics:
+    if analysis:
+        word_level_analysis = annotation.analyse_operations_corpus(orig_sents, sys_output, refs_sents,
+                                                                   verbose=False, as_str=True)
+        click.echo(f"Word-level Analysis: {word_level_analysis}")
+
+    if quality_estimation:
         quality_estimation_scores = corpus_quality_estimation(
                 orig_sents,
                 sys_output,
@@ -92,11 +99,6 @@ def evaluate_system_output(test_set, tokenizer, metrics, analysis):
                 )
         quality_estimation_scores = {k: round(v, 2) for k, v in quality_estimation_scores.items()}
         click.echo(f"Quality estimation: {quality_estimation_scores}")
-
-    if analysis:
-        word_level_analysis = annotation.analyse_operations_corpus(orig_sents, sys_output, refs_sents,
-                                                                   verbose=False, as_str=True)
-        click.echo(f"Word-level Analysis: {word_level_analysis}")
 
 
 @cli.command('register')
