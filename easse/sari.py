@@ -88,7 +88,7 @@ def multiply_counter(c, v):
     return c_aux
 
 
-def compute_ngram_stats(orig_sentences: List[str], sys_sentences: List[str], refs_sentences: List[List[str]]):
+def compute_ngram_stats(orig_sents: List[str], sys_sents: List[str], refs_sents: List[List[str]]):
     add_sys_correct = [0] * NGRAM_ORDER
     add_sys_total = [0] * NGRAM_ORDER
     add_ref_total = [0] * NGRAM_ORDER
@@ -101,7 +101,7 @@ def compute_ngram_stats(orig_sentences: List[str], sys_sentences: List[str], ref
     del_sys_total = [0] * NGRAM_ORDER
     del_ref_total = [0] * NGRAM_ORDER
 
-    fhs = [orig_sentences] + [sys_sentences] + refs_sentences
+    fhs = [orig_sents] + [sys_sents] + refs_sents
     for orig_sent, sys_sent, *ref_sents in zip(*fhs):
         orig_ngrams = extract_ngrams(orig_sent)
         sys_ngrams = extract_ngrams(sys_sent)
@@ -186,15 +186,15 @@ def compute_macro_sari(add_sys_correct, add_sys_total, add_ref_total,
     return 100. * (sari_score / 3)
 
 
-def corpus_sari(orig_sentences: List[str], sys_sentences: List[str], refs_sentences: List[List[str]],
+def corpus_sari(orig_sents: List[str], sys_sents: List[str], refs_sents: List[List[str]],
                 lowercase: bool = False, tokenizer: str = '13a'):
 
-    # orig_sentences = [normalize(sent, lowercase, tokenizer) for sent in orig_sentences]
-    sys_sentences = [utils_prep.normalize(sent, lowercase, tokenizer) for sent in sys_sentences]
-    refs_sentences = [[utils_prep.normalize(sent, lowercase, tokenizer) for sent in ref_sents]
-                      for ref_sents in refs_sentences]
+    # orig_sents = [normalize(sent, lowercase, tokenizer) for sent in orig_sents]
+    sys_sents = [utils_prep.normalize(sent, lowercase, tokenizer) for sent in sys_sents]
+    refs_sents = [[utils_prep.normalize(sent, lowercase, tokenizer) for sent in ref_sents]
+                      for ref_sents in refs_sents]
 
-    stats = compute_ngram_stats(orig_sentences, sys_sentences, refs_sentences)
+    stats = compute_ngram_stats(orig_sents, sys_sents, refs_sents)
 
     return compute_micro_sari(*stats, corpus_level=True)
 
