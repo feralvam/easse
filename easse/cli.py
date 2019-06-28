@@ -1,12 +1,36 @@
+import json
+
 import click
 import sacrebleu
 
-import easse.cli.utils as cli_utils
-from easse.sari import corpus_sari
-from easse.samsa import corpus_samsa
+from easse.annotation.word_level import analyse_operations_corpus
 from easse.fkgl import corpus_fkgl
 from easse.quality_estimation import corpus_quality_estimation
-import easse.annotation.word_level as annotation
+from easse.sari import corpus_sari
+from easse.samsa import corpus_samsa
+from easse.utils.resources import (get_turk_orig_sents, get_turk_refs_sents, get_hsplit_orig_sents,
+                                   get_hsplit_refs_sents)
+
+
+def get_valid_test_sets(as_str=False):
+    with open('easse/config.json', 'r') as config_file:
+        config = json.load(config_file)
+
+    if as_str:
+        return ','.join(config["DATASETS"])
+    else:
+        return config["DATASETS"]
+
+
+def get_valid_metrics(as_str=False):
+    with open('easse/config.json', 'r') as config_file:
+        config = json.load(config_file)
+
+    if as_str:
+        return ','.join(config["METRICS"])
+    else:
+        return config["METRICS"]
+
 
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 
@@ -18,12 +42,12 @@ def cli():
 
 
 @cli.command('evaluate')
-@click.option('--test_set', '-t', type=click.Choice(cli_utils.get_valid_test_sets()), required=True,
+@click.option('--test_set', '-t', type=click.Choice(get_valid_test_sets()), required=True,
               help="test set to use.")
 @click.option('--tokenizer', '-tok', type=click.Choice(['13a', 'intl', 'moses', 'plain']), default='13a',
               help="Tokenization method to use.")
-@click.option('--metrics', '-m', type=str, default=cli_utils.get_valid_metrics(as_str=True),
-              help=f"Comma-separated list of metrics to compute. Default: {cli_utils.get_valid_metrics(as_str=True)}")
+@click.option('--metrics', '-m', type=str, default=get_valid_metrics(as_str=True),
+              help=f"Comma-separated list of metrics to compute. Default: {get_valid_metrics(as_str=True)}")
 @click.option('--analysis', '-a', is_flag=True,
               help=f"Perform word-level transformation analysis.")
 @click.option('--quality_estimation', '-q', is_flag=True,
@@ -40,38 +64,24 @@ def evaluate_system_output(test_set, tokenizer, metrics, analysis, quality_estim
     metrics = metrics.split(',')
 
     load_orig_sents = ('sari' in metrics) or ('samsa' in metrics) or analysis or quality_estimation
-    load_ref_sents = ('sari' in metrics) or ('bleu' in metrics) or analysis
+    load_refs_sents = ('sari' in metrics) or ('bleu' in metrics) or analysis
     # get the references from the test set
     if test_set in ['turk', 'turk_valid']:
         lowercase = False
-        refs_sents = []
-
-        if test_set == 'turk':
-            for n in range(8):
-                ref_lines = cli_utils.read_file(f"data/test_sets/turk/test.8turkers.tok.turk.{n}")
-                refs_sents.append(ref_lines)
-        else:
-            for n in range(8):
-                ref_lines = cli_utils.read_file(f"data/test_sets/turk_valid/tune.8turkers.tok.turk.{n}")
-                refs_sents.append(ref_lines)
-
+        phase = 'test' if test_set == 'turk' else 'valid'
+        if load_refs_sents:
+            refs_sents = get_turk_refs_sents(phase=phase)
         if load_orig_sents:
-            # read the original sentences in plain text
-            orig_sents = cli_utils.read_file("data/test_sets/turk/test.8turkers.tok.norm")
+            orig_sents = get_turk_orig_sents(phase=phase)
 
     if test_set == 'hsplit':
         sys_output = sys_output[:70]
         lowercase = True
 
-        if load_ref_sents:
-            refs_sents = []
-            for n in range(4):
-                ref_lines = cli_utils.read_file(f"data/test_sets/hsplit/hsplit.tok.{n+1}")
-                refs_sents.append(ref_lines)
-
+        if load_refs_sents:
+            refs_sents = get_hsplit_refs_sents()
         if load_orig_sents:
-            # read the original sentences in plain text
-            orig_sents = cli_utils.read_file("data/test_sets/turk/test.8turkers.tok.norm")[:70]
+            orig_sents = get_hsplit_orig_sents()
 
     # compute each metric
     if 'bleu' in metrics:
@@ -91,8 +101,8 @@ def evaluate_system_output(test_set, tokenizer, metrics, analysis, quality_estim
         click.echo(f"FKGL: {fkgl_score:.2f}")
 
     if analysis:
-        word_level_analysis = annotation.analyse_operations_corpus(orig_sents, sys_output, refs_sents,
-                                                                   verbose=False, as_str=True)
+        word_level_analysis = analyse_operations_corpus(orig_sents, sys_output, refs_sents,
+                                                        verbose=False, as_str=True)
         click.echo(f"Word-level Analysis: {word_level_analysis}")
 
     if quality_estimation:

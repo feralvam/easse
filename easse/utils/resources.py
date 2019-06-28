@@ -4,8 +4,8 @@ import time
 from urllib.request import urlretrieve
 import zipfile
 
-from easse.utils.paths import STANFORD_CORENLP_PATH
-from easse.utils.helpers import get_temp_filepath
+from easse.utils.paths import STANFORD_CORENLP_PATH, DATA_DIR
+from easse.utils.helpers import get_temp_filepath, read_lines
 
 
 def reporthook(count, block_size, total_size):
@@ -44,3 +44,27 @@ def download_stanford_corenlp():
     download(url, temp_filepath)
     STANFORD_CORENLP_PATH.mkdir(parents=True, exist_ok=True)
     unzip(temp_filepath, STANFORD_CORENLP_PATH.parent)
+
+
+def get_turk_orig_sents(phase):
+    assert phase in ['valid', 'test']
+    if phase == 'valid':
+        phase = 'tune'
+    return read_lines(DATA_DIR / f'test_sets/turk/{phase}.8turkers.tok.norm')
+
+
+def get_turk_refs_sents(phase):
+    assert phase in ['valid', 'test']
+    if phase == 'valid':
+        phase = 'tune'
+    return [read_lines(DATA_DIR / f'test_sets/turk/{phase}.8turkers.tok.turk.{i}')
+            for i in range(8)]
+
+
+def get_hsplit_orig_sents():
+    return get_turk_orig_sents(phase='test')[:70]
+
+
+def get_hsplit_refs_sents():
+    return [read_lines(DATA_DIR / f'test_sets/hsplit/hsplit.tok.{i+1}')
+            for i in range(4)]
