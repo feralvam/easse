@@ -20,7 +20,6 @@ class FKGLScorer:
 
     def score(self):
         # Flesch-Kincaid grade level
-        print(self.nb_sentences, self.nb_words, self.nb_syllables)
         if self.nb_sentences == 0 or self.nb_words == 0:
             return 0
         return max(0, 0.39 * (self.nb_words / self.nb_sentences) + 11.8 * (self.nb_syllables / self.nb_words) - 15.59)
