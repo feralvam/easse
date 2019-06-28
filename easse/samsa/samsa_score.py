@@ -353,7 +353,7 @@ def compute_samsa_new(orig_ucca_passage: Passage, sys_synt_parse):
     return score
 
 
-def samsa_corpus(orig_sentences: List[str], sys_outputs: List[str], lowercase: bool = False, tokenizer: str = '13a',
+def corpus_samsa(orig_sentences: List[str], sys_outputs: List[str], lowercase: bool = False, tokenizer: str = '13a',
                  verbose: bool = False):
     orig_sentences = [utils_prep.normalize(sent, lowercase, tokenizer) for sent in orig_sentences]
     orig_ucca_sents = ucca_parse_texts(orig_sentences)
