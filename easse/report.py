@@ -1,8 +1,12 @@
 from collections import OrderedDict
+from pathlib import Path
 from typing import List
 
+import matplotlib.pyplot as plt
+import numpy as np
 from sacrebleu import corpus_bleu
-from tseval.feature_extraction import get_levenshtein_distance, get_compression_ratio, count_sentence_splits
+import seaborn as sns
+from tseval.feature_extraction import get_levenshtein_similarity, get_compression_ratio, count_sentence_splits
 from yattag import Doc, indent
 
 from easse.fkgl import corpus_fkgl
@@ -39,16 +43,19 @@ def make_differing_words_bold(orig_sent, sys_sent, make_bold):
     def format_words(words, mutual_words):
         '''Makes all words bold except the mutual ones'''
         words_generator = iter(words)
-        formatted_words = []
+        formatted_string = ''
         for mutual_word in mutual_words:
             word = next(words_generator)
+            bold_text = ''
             while word != mutual_word:
-                formatted_words.append(make_bold(word))
+                bold_text += ' ' + word
                 word = next(words_generator)
-            formatted_words.append(word)
+            if bold_text != '':
+                formatted_string += ' ' + make_bold(bold_text)
+            formatted_string += ' ' + word
         # Add remaining words
-        formatted_words.extend([make_bold(word) for word in words_generator])
-        return ' '.join(formatted_words)
+        formatted_string += make_bold(' '.join(words_generator))
+        return formatted_string.strip()
 
     orig_words = to_words(orig_sent)
     sys_words = to_words(sys_sent)
@@ -70,8 +77,8 @@ def get_qualitative_html_examples(orig_sents, sys_sents):
          lambda c, s: -count_sentence_splits(c, s)),
         ('Wikilarge predictions with the lowest compression ratio',
          lambda c, s: get_compression_ratio(c, s)),
-        ('Wikilarge predictions with the highest Levenshtein distances',
-         lambda c, s: -get_levenshtein_distance(c, s)),
+        ('Wikilarge predictions with the lowest Levenshtein similarity',
+         lambda c, s: get_levenshtein_similarity(c, s)),
     ]
     doc = Doc()
     doc.line('h2', 'Qualitative evaluation')
@@ -88,6 +95,61 @@ def get_qualitative_html_examples(orig_sents, sys_sents):
                 doc.asis(orig_sent_bold)
                 doc.stag('br')
                 doc.asis(sys_sent_bold)
+    return doc.getvalue()
+
+
+def save_histogram(sys_values, ref_values, filepath, title, xmax=1.5):
+    step = 0.02
+    linewidth = 0.9
+    plt.hist(sys_values, bins=np.arange(0, 1.5, step), density=True, label='System output', color='firebrick',
+             linewidth=linewidth, alpha=0.8)
+    plt.hist(ref_values, bins=np.arange(0, 1.5, step), density=True, label='Ground truth', color='forestgreen',
+             linewidth=linewidth, alpha=0.4)
+    plt.legend()
+    plt.title(title)
+    plt.xlim(0, xmax)
+    #plt.ylim(0, 9)
+    plt.xticks(np.arange(0, xmax + 0.1, 0.25), [f'{int(ratio*100)}%' for ratio in np.arange(0, 1.51, 0.25)])
+    plt.savefig(filepath)
+    plt.clf()
+
+
+def get_compression_ratios_plot_html(orig_sents, sys_sents, ref_sents, plots_dirpath):
+    doc = Doc()
+    pred_values = []
+    ref_values = []
+    for orig_sent, sys_sent, ref_sent in zip(orig_sents, sys_sents, ref_sents):
+        pred_values.append(get_compression_ratio(orig_sent, sys_sent))
+        ref_values.append(get_compression_ratio(orig_sent, ref_sent))
+    filepath = plots_dirpath / 'compression_ratios.png'
+    title = 'Compression ratios'
+    save_histogram(pred_values, ref_values, filepath=filepath, title=title, xmax=1.5)
+    doc.stag('img', src=str(filepath))
+    return doc.getvalue()
+
+
+def get_levenshtein_similarity_plot_html(orig_sents, sys_sents, ref_sents, plots_dirpath):
+    doc = Doc()
+    pred_values = []
+    ref_values = []
+    for orig_sent, sys_sent, ref_sent in zip(orig_sents, sys_sents, ref_sents):
+        pred_values.append(get_levenshtein_similarity(orig_sent, sys_sent))
+        ref_values.append(get_levenshtein_similarity(orig_sent, ref_sent))
+    filepath = plots_dirpath / 'levenshtein_similarity.png'
+    title = 'Levenshtein similarity'
+    save_histogram(pred_values, ref_values, filepath=filepath, title=title, xmax=1)
+    doc.stag('img', src=str(filepath))
+    return doc.getvalue()
+
+
+def get_plots_html(orig_sents, sys_sents, ref_sents, plots_dirpath):
+    doc = Doc()
+    plots_dirpath = Path(plots_dirpath)
+    plots_dirpath.mkdir(exist_ok=True)
+    with doc.tag('div', klass='container'):
+        doc.stag('h2', 'Plots')
+        doc.asis(get_compression_ratios_plot_html(orig_sents, sys_sents, ref_sents, plots_dirpath))
+        doc.asis(get_levenshtein_similarity_plot_html(orig_sents, sys_sents, ref_sents, plots_dirpath))
     return doc.getvalue()
 
 
@@ -125,7 +187,7 @@ def get_table_html(header, rows, row_names=None):
         header.insert(0, '')
     else:
         row_names = [None] * len(rows)
-    with doc.tag('table', klass='table table-bordered table-responsive'):
+    with doc.tag('table', klass='table table-bordered table-responsive table-striped'):
         with doc.tag('thead', klass='thead-light'):
             add_header(doc, header)
         with doc.tag('tbody'):
@@ -134,8 +196,9 @@ def get_table_html(header, rows, row_names=None):
     return doc.getvalue()
 
 
-def get_html_report(orig_sents: List[str], sys_sents: List[str], refs_sents: List[List[str]],
+def get_html_report(orig_sents: List[str], sys_sents: List[str], refs_sents: List[List[str]], plots_dirpath=None,
                     lowercase: bool = False, tokenizer: str = '13a'):
+    sns.set_style('darkgrid')
     doc = Doc()
     doc.asis('<!doctype html>')
     with doc.tag('html', lang='en'):
@@ -154,10 +217,15 @@ def get_html_report(orig_sents: List[str], sys_sents: List[str], refs_sents: Lis
                     row_names=['System output', 'Reference'],
                     ))
             doc.stag('hr')
+            if plots_dirpath is None:
+                plots_dirpath = Path.cwd()
+            doc.asis(get_plots_html(orig_sents, sys_sents, refs_sents[0], plots_dirpath))
+            doc.stag('hr')
             doc.asis(get_qualitative_html_examples(orig_sents, sys_sents))
     return indent(doc.getvalue())
 
 
 def write_html_report(filepath, *args, **kwargs):
     with open(filepath, 'w') as f:
-        f.write(get_html_report(*args, **kwargs) + '\n')
+        plots_dirpath = Path(filepath).parent / 'html_plots'
+        f.write(get_html_report(*args, plots_dirpath=plots_dirpath, **kwargs) + '\n')
