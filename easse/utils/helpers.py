@@ -15,3 +15,7 @@ def read_lines(filename):
         lines = f.readlines()
         lines = [x.strip() for x in lines]
     return lines
+
+
+def add_dicts(*dicts):
+    return {k: v for dic in dicts for k, v in dic.items()}

@@ -10,6 +10,7 @@ from easse.sari import corpus_sari
 from easse.samsa import corpus_samsa
 from easse.utils.resources import (get_turk_orig_sents, get_turk_refs_sents, get_hsplit_orig_sents,
                                    get_hsplit_refs_sents)
+from easse.report import write_html_report
 
 
 def get_valid_test_sets(as_str=False):
@@ -85,8 +86,9 @@ def evaluate_system_output(test_set, tokenizer, metrics, analysis, quality_estim
 
     # compute each metric
     if 'bleu' in metrics:
-        bleu_score = sacrebleu.corpus_bleu(sys_output, refs_sents, force=True, tokenize=tokenizer, lowercase=lowercase)
-        click.echo(f"BLEU: {bleu_score.score:.2f}")
+        bleu_score = sacrebleu.corpus_bleu(sys_output, refs_sents,
+                                           force=True, tokenize=tokenizer, lowercase=lowercase).score
+        click.echo(f"BLEU: {bleu_score:.2f}")
 
     if 'sari' in metrics:
         sari_score = corpus_sari(orig_sents, sys_output, refs_sents, tokenizer=tokenizer, lowercase=lowercase)
@@ -139,3 +141,30 @@ def print_ranking(test_set, sort_by):
     Rank all available system outputs in a standard test set.
     """
     return
+
+
+@cli.command('report')
+@click.option('--test_set', '-t', type=click.Choice(get_valid_test_sets()), required=True,
+              help="test set to use.")
+@click.option('--tokenizer', '-tok', type=click.Choice(['13a', 'intl', 'moses', 'plain']), default='13a',
+              help="Tokenization method to use.")
+@click.option('--report_path', '-p', type=click.Path(), default='report.html',
+              help='Path top the output HTML report')
+def report(test_set, tokenizer, report_path):
+    """
+    Create an HTML report file for a prediction on turkcorpus
+    """
+    # read the system output
+    with click.get_text_stream('stdin', encoding='utf-8') as system_output_file:
+        sys_output = system_output_file.read().splitlines()
+    if test_set in ['turk', 'turk_valid']:
+        lowercase = False
+        phase = 'test' if test_set == 'turk' else 'valid'
+        refs_sents = get_turk_refs_sents(phase=phase)
+        orig_sents = get_turk_orig_sents(phase=phase)
+    if test_set == 'hsplit':
+        sys_output = sys_output[:70]
+        lowercase = True
+        refs_sents = get_hsplit_refs_sents()
+        orig_sents = get_hsplit_orig_sents()
+    write_html_report(report_path, orig_sents, sys_output, refs_sents, lowercase=lowercase, tokenizer=tokenizer)
