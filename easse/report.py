@@ -105,17 +105,18 @@ def get_qualitative_html_examples(orig_sents, sys_sents):
     return doc.getvalue()
 
 
-def save_histogram(sys_values, ref_values, filepath, title, xmax=1.5):
+def save_histogram(sys_values, ref_values, filepath, title, xlabel, xmax):
     step = 0.02
     linewidth = 0.9
-    plt.hist(sys_values, bins=np.arange(0, 1.5, step), density=True, label='System output', color='firebrick',
+    plt.hist(sys_values, bins=np.arange(0, 1.5, step), label='System output', color='firebrick',
              linewidth=linewidth, alpha=0.8)
-    plt.hist(ref_values, bins=np.arange(0, 1.5, step), density=True, label='Reference', color='forestgreen',
+    plt.hist(ref_values, bins=np.arange(0, 1.5, step), label='Reference', color='forestgreen',
              linewidth=linewidth, alpha=0.4)
     plt.legend()
+    plt.xlabel(xlabel)
+    plt.ylabel('Count')
     plt.title(title)
     plt.xlim(0, xmax)
-    plt.ylim(0, 10)
     plt.xticks(np.arange(0, xmax + 0.1, 0.25), [f'{int(ratio*100)}%' for ratio in np.arange(0, 1.51, 0.25)])
     plt.savefig(filepath)
     plt.clf()
@@ -130,7 +131,7 @@ def get_compression_ratios_plot_html(orig_sents, sys_sents, ref_sents, plots_dir
         ref_values.append(get_compression_ratio(orig_sent, ref_sent))
     filepath = plots_dirpath / 'compression_ratios.png'
     title = 'Compression ratios'
-    save_histogram(pred_values, ref_values, filepath=filepath, title=title, xmax=1.5)
+    save_histogram(pred_values, ref_values, filepath=filepath, title=title, xlabel='compression ratio', xmax=1.5)
     doc.stag('img', src=str(filepath))
     return doc.getvalue()
 
@@ -144,7 +145,7 @@ def get_levenshtein_similarity_plot_html(orig_sents, sys_sents, ref_sents, plots
         ref_values.append(get_levenshtein_similarity(orig_sent, ref_sent))
     filepath = plots_dirpath / 'levenshtein_similarity.png'
     title = 'Levenshtein similarity'
-    save_histogram(pred_values, ref_values, filepath=filepath, title=title, xmax=1)
+    save_histogram(pred_values, ref_values, filepath=filepath, title=title, xlabel='Levenshtein similarity', xmax=1)
     doc.stag('img', src=str(filepath))
     return doc.getvalue()
 
