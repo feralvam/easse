@@ -10,7 +10,7 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     classifiers=[
-        "Development Status :: 1 - Planning",
+        "Development Status :: 2 - Pre-Alpha",
         "Environment :: Console",
         "Intended Audience :: Science/Research",
         "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
@@ -25,6 +25,6 @@ setup(
     entry_points={'console_scripts': [
         "easse = easse.cli:cli"
     ]},
-    install_requires=['sacrebleu', 'sacremoses', 'stanfordnlp', 'tupa', 'nltk'],
+    install_requires=['sacrebleu', 'sacremoses', 'stanfordnlp', 'tupa', 'nltk', 'click'],
     dependency_links=['https://github.com/facebookresearch/text-simplification-evaluation/tarball/master'],
 )
