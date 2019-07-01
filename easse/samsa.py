@@ -1,7 +1,7 @@
 from typing import List
 from ucca.core import Passage
 
-from utils.ucca_utils import get_scenes, ucca_parse_texts
+from easse.utils.ucca_utils import get_scenes, ucca_parse_texts
 from easse.aligner.aligner import align
 from easse.aligner.corenlp_utils import syntactic_parse_texts
 import easse.utils.preprocessing as utils_prep
