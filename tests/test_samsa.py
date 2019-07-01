@@ -1,7 +1,3 @@
-import pytest
-import csv
-
-from easse.samsa.ucca_utils import get_scenes, ucca_parse_texts
 from easse import samsa
 
 

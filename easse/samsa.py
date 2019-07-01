@@ -1,7 +1,7 @@
 from typing import List
 from ucca.core import Passage
 
-from easse.samsa.ucca_utils import get_scenes, ucca_parse_texts
+from utils.ucca_utils import get_scenes, ucca_parse_texts
 from easse.aligner.aligner import align
 from easse.aligner.corenlp_utils import syntactic_parse_texts
 import easse.utils.preprocessing as utils_prep
@@ -199,110 +199,6 @@ def get_participants_minimal_centers(P: Passage):
 
 def compute_samsa(orig_ucca_passage: Passage, sys_synt_parse):
     orig_scenes = get_scenes(orig_ucca_passage)
-    rel_min_centers = get_relations_minimal_centers(orig_ucca_passage)
-    part_min_centers = get_participants_minimal_centers(orig_ucca_passage)
-
-    orig_scenes_sys_sentences_alignments = align_scenes_sentences(orig_scenes, sys_synt_parse)
-
-    orig_num_scenes = len(orig_scenes)  # get_num_scenes(orig_ucca_passage)
-    sys_num_sents = len(sys_synt_parse)
-
-    if orig_num_scenes < sys_num_sents:
-        score = 0.0
-    elif orig_num_scenes == sys_num_sents:
-        t = orig_scenes_sys_sentences_alignments
-        match = []
-        for i in range(orig_num_scenes):
-            match_value = 0
-            for j in range(sys_num_sents):
-                if len(t[i][j]) > match_value and j not in match:
-                    match_value = len(t[i][j])
-                    m = j
-            match.append(m)
-
-        scorem = []
-        scorea = []
-        for i in range(orig_num_scenes):
-            j = match[i]
-            r = [t[i][j][k][0] for k in range(len(t[i][j]))]
-            if not rel_min_centers[i]:
-                s = 0.5
-            elif all(rel_min_centers[i][l] in r for l in range(len(rel_min_centers[i]))):
-                s = 1.0
-            else:
-                s = 0.0
-            scorem.append(s)
-
-            sa = []
-            if not part_min_centers[i]:
-                sa = [0.5]
-                scorea.append(sa)
-            else:
-                for a in part_min_centers[i]:
-                    if not a:
-                        p = 0.5
-                    elif all(a[l] in r for l in range(len(a))):
-                        p = 1
-                    else:
-                        p = 0
-                    sa.append(p)
-                scorea.append(sa)
-
-        scoresc = []
-        for i in range(orig_num_scenes):
-            d = len(scorea[i])
-            v = 0.5*scorem[i] + 0.5*(1/d)*sum(scorea[i])
-            scoresc.append(v)
-        score = (sys_num_sents/(orig_num_scenes**2))*sum(scoresc)
-    else:
-        t = orig_scenes_sys_sentences_alignments
-        match = []
-        for i in range(orig_num_scenes):
-            match_value = 0
-            for j in range(sys_num_sents):
-                if len(t[i][j]) > match_value:
-                    match_value = len(t[i][j])
-                    m = j
-            match.append(m)
-
-        scorem = []
-        scorea = []
-        for i in range(orig_num_scenes):
-            j = match[i]
-            r = [t[i][j][k][0] for k in range(len(t[i][j]))]
-            if not rel_min_centers[i]:
-                s = 0.5
-            elif all(rel_min_centers[i][l] in r for l in range(len(rel_min_centers[i]))):
-                s = 1
-            else:
-                s = 0
-            scorem.append(s)
-            sa = []
-            if not part_min_centers[i]:
-                sa = [0.5]
-                scorea.append(sa)
-            else:
-                for a in part_min_centers[i]:
-                    if not a:
-                        p = 0.5
-                    elif all(a[l] in r for l in range(len(a))):
-                        p = 1
-                    else:
-                        p = 0
-                    sa.append(p)
-                scorea.append(sa)
-
-        scoresc = []
-        for i in range(orig_num_scenes):
-            d = len(scorea[i])
-            v = 0.5*scorem[i] + 0.5*(1/d)*sum(scorea[i])
-            scoresc.append(v)
-        score = (sys_num_sents/(orig_num_scenes**2))*sum(scoresc)
-    return score
-
-
-def compute_samsa_new(orig_ucca_passage: Passage, sys_synt_parse):
-    orig_scenes = get_scenes(orig_ucca_passage)
 
     orig_num_scenes = len(orig_scenes)
     sys_num_sents = len(sys_synt_parse)
@@ -366,8 +262,7 @@ def corpus_samsa(orig_sentences: List[str], sys_outputs: List[str], lowercase: b
 
     samsa_score = 0.0
     for orig_ucca, sys_synt in tqdm(zip(orig_ucca_sents, sys_synt_outputs), disable=(not verbose)):
-        # print(orig_ucca)
-        samsa_score += compute_samsa_new(orig_ucca, sys_synt)
+        samsa_score += compute_samsa(orig_ucca, sys_synt)
 
     samsa_score /= len(orig_sentences)
 
