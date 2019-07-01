@@ -3,7 +3,7 @@ import json
 import click
 import sacrebleu
 
-from easse.annotation.word_level import analyse_operations_corpus
+from easse.annotation.word_level import corpus_analyse_operations
 from easse.fkgl import corpus_fkgl
 from easse.quality_estimation import corpus_quality_estimation
 from easse.sari import corpus_sari
@@ -103,7 +103,7 @@ def evaluate_system_output(test_set, tokenizer, metrics, analysis, quality_estim
         click.echo(f"FKGL: {fkgl_score:.2f}")
 
     if analysis:
-        word_level_analysis = analyse_operations_corpus(orig_sents, sys_output, refs_sents,
+        word_level_analysis = corpus_analyse_operations(orig_sents, sys_output, refs_sents,
                                                         verbose=False, as_str=True)
         click.echo(f"Word-level Analysis: {word_level_analysis}")
 
@@ -116,31 +116,6 @@ def evaluate_system_output(test_set, tokenizer, metrics, analysis, quality_estim
                 )
         quality_estimation_scores = {k: round(v, 2) for k, v in quality_estimation_scores.items()}
         click.echo(f"Quality estimation: {quality_estimation_scores}")
-
-
-@cli.command('register')
-@click.option('-n', "--name", required=True,
-              help="Name of the test set. If not given, the folder name with be used.")
-@click.option('-o', "--orig_file", required=True,
-              help="Path of the text file with the original sentences.")
-@click.option('-s', "--simp_file", required=True,
-              help="Path to the text file with the simplified sentences.")
-def register_test_set(name, orig_file, simp_file):
-    """
-    Preprocess and store a test set locally.
-    """
-    return
-
-
-@cli.command('ranking')
-@click.argument('test_set')
-@click.option('-sb', "--sort_by", type=click.Choice(['bleu', 'sari', 'samsa']),
-              help="Metric to use for sorting the systems' scores.")
-def print_ranking(test_set, sort_by):
-    """
-    Rank all available system outputs in a standard test set.
-    """
-    return
 
 
 @cli.command('report')
@@ -168,3 +143,28 @@ def report(test_set, tokenizer, report_path):
         refs_sents = get_hsplit_refs_sents()
         orig_sents = get_hsplit_orig_sents()
     write_html_report(report_path, orig_sents, sys_output, refs_sents, lowercase=lowercase, tokenizer=tokenizer)
+
+
+# @cli.command('register')
+# @click.option('-n', "--name", required=True,
+#               help="Name of the test set. If not given, the folder name with be used.")
+# @click.option('-o', "--orig_file", required=True,
+#               help="Path of the text file with the original sentences.")
+# @click.option('-s', "--simp_file", required=True,
+#               help="Path to the text file with the simplified sentences.")
+# def register_test_set(name, orig_file, simp_file):
+#     """
+#     Preprocess and store a test set locally.
+#     """
+#     return
+#
+#
+# @cli.command('ranking')
+# @click.argument('test_set')
+# @click.option('-sb', "--sort_by", type=click.Choice(['bleu', 'sari', 'samsa']),
+#               help="Metric to use for sorting the systems' scores.")
+# def print_ranking(test_set, sort_by):
+#     """
+#     Rank all available system outputs in a standard test set.
+#     """
+#     return
