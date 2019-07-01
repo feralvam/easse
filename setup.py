@@ -1,9 +1,14 @@
 from setuptools import setup, find_packages
 
+with open("README.md", "r") as fh:
+    long_description = fh.read()
+
 setup(
     name='easse',
     version='0.1',
     description='Easier Automatic Sentence Simplification Evaluation',
+    long_description=long_description,
+    long_description_content_type="text/markdown",
     classifiers=[
         "Development Status :: 1 - Planning",
         "Environment :: Console",
@@ -13,8 +18,7 @@ setup(
         "Topic :: Text Processing :: Linguistic",
         "Topic :: Scientific/Engineering :: Artificial Intelligence",
     ],
-    author='Fernando Alva-Manchego',
-    author_email='feralvam@gmail.com',
+    author='Fernando Alva-Manchego <feralvam@gmail.com>, Louis Martin <louismartincs@gmail.com>',
     url='https://github.com/feralvam/easse',
     packages=find_packages(exclude=['tests']),
     test_suite='tests',
