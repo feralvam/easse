@@ -40,8 +40,7 @@ Options:
 
 Commands:
   evaluate  Evaluate a system output with automatic metrics.
-  ranking   Rank all available system outputs in a standard test set.
-  register  Preprocess and store a test set locally.
+  report    Create a HTML report file with automatic metrics, plots and samples.
 ```
 
 ### evaluate
@@ -62,6 +61,18 @@ Options:
   -h, --help                      Show this message and exit.
 ```
 
-### ranking
+### report
+```
+$ easse report -h
+Usage: easse report [OPTIONS]
 
-### register
+  Create a HTML report file with automatic metrics, plots and samples.
+
+Options:
+  -t, --test_set [turk|turk_valid|pwkp|hsplit]
+                                  test set to use.  [required]
+  -tok, --tokenizer [13a|intl|moses|plain]
+                                  Tokenization method to use.
+  -p, --report_path PATH          Path to the output HTML report.
+  -h, --help                      Show this message and exit.
+```
