@@ -15,7 +15,7 @@ from easse.quality_estimation import corpus_quality_estimation
 from easse.samsa import corpus_samsa
 from easse.sari import corpus_sari
 from easse.utils.helpers import add_dicts
-from easse.utils.text import to_words
+from easse.utils.text import to_words, count_words
 from easse.annotation.lcs import get_lcs
 
 
@@ -72,14 +72,20 @@ def make_text_bold_html(text):
 
 def get_qualitative_html_examples(orig_sents, sys_sents):
     title_key = [
-        ('Random Wikilarge predictions',
+        ('Random simplifications',
          lambda c, s: 0),
-        ('Wikilarge predictions with the most sentence splits',
-         lambda c, s: -count_sentence_splits(c, s)),
-        ('Wikilarge predictions with the lowest compression ratio',
+        ('Simplifications with only one differing word',
+         lambda c, s: -(count_words(c) == count_words(s) == len(get_lcs(to_words(c), to_words(s))) + 1)),
+        ('Simplifications with that compress the source the most',
          lambda c, s: get_compression_ratio(c, s)),
-        ('Wikilarge predictions with the lowest Levenshtein similarity',
+        ('Simplifications that are longer than the source',
+         lambda c, s: -get_compression_ratio(c, s)),
+        ('Simplifications that are most dissimilar to the source',
          lambda c, s: get_levenshtein_similarity(c, s)),
+        ('Simplifications that are the most similar to the source (excluding exact matches)',
+         lambda c, s: -get_levenshtein_similarity(c, s) * int(c != s)),
+        ('Simplifications with the most sentence splits (if there are some)',
+         lambda c, s: -count_sentence_splits(c, s)),
     ]
     doc = Doc()
     for title, sort_key in title_key:
