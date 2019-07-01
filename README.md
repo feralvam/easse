@@ -61,6 +61,7 @@ Options:
   -q, --quality_estimation        Perform quality estimation.
   -h, --help                      Show this message and exit.
 ```
+<img src="https://github.com/feralvam/easse/blob/master/demo/evaluate.gif">
 
 ### report
 ```
@@ -77,3 +78,4 @@ Options:
   -p, --report_path PATH          Path to the output HTML report.
   -h, --help                      Show this message and exit.
 ```
+<img src="https://github.com/feralvam/easse/blob/master/demo/report.gif">
