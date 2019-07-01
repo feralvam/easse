@@ -51,13 +51,14 @@ Usage: easse evaluate [OPTIONS]
   Evaluate a system output with automatic metrics.
 
 Options:
-  -t, --test_set [turk|pwkp|hsplit]
+  -t, --test_set [turk|turk_valid|pwkp|hsplit]
                                   test set to use.  [required]
   -tok, --tokenizer [13a|intl|moses|plain]
                                   Tokenization method to use.
   -m, --metrics TEXT              Comma-separated list of metrics to compute.
-                                  Default: bleu,sari,samsa
+                                  Default: bleu,sari,samsa,fkgl
   -a, --analysis                  Perform word-level transformation analysis.
+  -q, --quality_estimation        Perform quality estimation.
   -h, --help                      Show this message and exit.
 ```
 
