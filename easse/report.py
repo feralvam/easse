@@ -76,7 +76,7 @@ def get_qualitative_html_examples(orig_sents, sys_sents):
          lambda c, s: 0),
         ('Simplifications with only one differing word',
          lambda c, s: -(count_words(c) == count_words(s) == len(get_lcs(to_words(c), to_words(s))) + 1)),
-        ('Simplifications with that compress the source the most',
+        ('Simplifications with the highest compression',
          lambda c, s: get_compression_ratio(c, s)),
         ('Simplifications that are longer than the source',
          lambda c, s: -get_compression_ratio(c, s)),
@@ -84,7 +84,7 @@ def get_qualitative_html_examples(orig_sents, sys_sents):
          lambda c, s: get_levenshtein_similarity(c, s)),
         ('Simplifications that are the most similar to the source (excluding exact matches)',
          lambda c, s: -get_levenshtein_similarity(c, s) * int(c != s)),
-        ('Simplifications with the most sentence splits (if there are some)',
+        ('Simplifications with the most sentence splits (if there are any)',
          lambda c, s: -count_sentence_splits(c, s)),
     ]
     doc = Doc()
