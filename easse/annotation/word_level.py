@@ -233,7 +233,7 @@ def analyse_operations_sentence(orig_sent, sys_sent, ref_sents, orig_parse, sys_
     return np.amax(curr_sent_scores, axis=0)
 
 
-def analyse_operations_corpus(orig_sentences: List[str], sys_sentences: List[str], refs_sentences: List[List[str]],
+def corpus_analyse_operations(orig_sentences: List[str], sys_sentences: List[str], refs_sentences: List[List[str]],
                               as_str=False, verbose=False):
     orig_parses = syntactic_parse_texts(orig_sentences, verbose=verbose)
     sys_parses = syntactic_parse_texts(sys_sentences, verbose=verbose)
