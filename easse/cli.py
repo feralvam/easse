@@ -124,10 +124,10 @@ def evaluate_system_output(test_set, tokenizer, metrics, analysis, quality_estim
 @click.option('--tokenizer', '-tok', type=click.Choice(['13a', 'intl', 'moses', 'plain']), default='13a',
               help="Tokenization method to use.")
 @click.option('--report_path', '-p', type=click.Path(), default='report.html',
-              help='Path top the output HTML report')
+              help='Path to the output HTML report.')
 def report(test_set, tokenizer, report_path):
     """
-    Create an HTML report file for a prediction on turkcorpus
+    Create a HTML report file with automatic metrics, plots and samples.
     """
     # read the system output
     with click.get_text_stream('stdin', encoding='utf-8') as system_output_file:

@@ -72,7 +72,7 @@ def make_text_bold_html(text):
 
 def get_qualitative_html_examples(orig_sents, sys_sents):
     title_key = [
-        ('Random simplifications',
+        ('Randomly sampled simplifications',
          lambda c, s: 0),
         ('Simplifications with only one differing word',
          lambda c, s: -(count_words(c) == count_words(s) == len(get_lcs(to_words(c), to_words(s))) + 1)),
