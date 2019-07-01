@@ -196,7 +196,7 @@ def corpus_sari(orig_sents: List[str], sys_sents: List[str], refs_sents: List[Li
 
     stats = compute_ngram_stats(orig_sents, sys_sents, refs_sents)
 
-    return compute_micro_sari(*stats, corpus_level=True)
+    return compute_macro_sari(*stats, corpus_level=True)
 
 
 def sari_sentence(orig_sent: str, hyp_sent: str, ref_sents: List[str]):
