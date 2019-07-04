@@ -5,6 +5,7 @@ import sacrebleu
 
 from easse.annotation.word_level import corpus_analyse_operations
 from easse.fkgl import corpus_fkgl
+from easse.utils.helpers import read_lines
 from easse.quality_estimation import corpus_quality_estimation
 from easse.sari import corpus_sari
 from easse.samsa import corpus_samsa
@@ -53,13 +54,18 @@ def cli():
               help=f"Perform word-level transformation analysis.")
 @click.option('--quality_estimation', '-q', is_flag=True,
               help="Perform quality estimation.")
-def evaluate_system_output(test_set, tokenizer, metrics, analysis, quality_estimation):
+@click.option('--input_path', '-i', type=click.Path(), default=None,
+              help='Path to the system predictions input file that is to be evaluated.')
+def evaluate_system_output(test_set, tokenizer, metrics, analysis, quality_estimation, input_path=None):
     """
     Evaluate a system output with automatic metrics.
     """
-    # read the system output
-    with click.get_text_stream('stdin', encoding='utf-8') as system_output_file:
-        sys_output = system_output_file.read().splitlines()
+    if input_path is not None:
+        sys_output = read_lines(input_path)
+    else:
+        # read the system output
+        with click.get_text_stream('stdin', encoding='utf-8') as system_output_file:
+            sys_output = system_output_file.read().splitlines()
 
     # get the metrics that need to be computed
     metrics = metrics.split(',')
@@ -125,13 +131,18 @@ def evaluate_system_output(test_set, tokenizer, metrics, analysis, quality_estim
               help="Tokenization method to use.")
 @click.option('--report_path', '-p', type=click.Path(), default='report.html',
               help='Path to the output HTML report.')
-def report(test_set, tokenizer, report_path):
+@click.option('--input_path', '-i', type=click.Path(), default=None,
+              help='Path to the system predictions input file that is to be evaluated.')
+def report(test_set, tokenizer, report_path, input_path=None):
     """
     Create a HTML report file with automatic metrics, plots and samples.
     """
-    # read the system output
-    with click.get_text_stream('stdin', encoding='utf-8') as system_output_file:
-        sys_output = system_output_file.read().splitlines()
+    if input_path is not None:
+        sys_output = read_lines(input_path)
+    else:
+        # read the system output
+        with click.get_text_stream('stdin', encoding='utf-8') as system_output_file:
+            sys_output = system_output_file.read().splitlines()
     if test_set in ['turk', 'turk_valid']:
         lowercase = False
         phase = 'test' if test_set == 'turk' else 'valid'
