@@ -29,9 +29,9 @@ def cli():
 @click.option('--metrics', '-m', type=str, default=','.join(DEFAULT_METRICS),
               help=f'Comma-separated list of metrics to compute. Valid: {",".join(VALID_METRICS)}')
 @click.option('--analysis', '-a', is_flag=True,
-              help=f"Perform word-level transformation analysis.")
+              help=f'Perform word-level transformation analysis.')
 @click.option('--quality_estimation', '-q', is_flag=True,
-              help="Perform quality estimation.")
+              help='Perform quality estimation.')
 def _evaluate_system_output(*args, **kwargs):
     evaluate_system_output(*args, **kwargs)
 
@@ -40,7 +40,7 @@ def evaluate_system_output(
         test_set,
         input_path=None,
         tokenizer='13a',
-        metrics=get_valid_metrics(as_str=True),
+        metrics=','.join(VALID_METRICS),
         analysis=False,
         quality_estimation=False,
         ):
@@ -81,24 +81,24 @@ def evaluate_system_output(
     if 'bleu' in metrics:
         bleu_score = sacrebleu.corpus_bleu(sys_output, refs_sents,
                                            force=True, tokenize=tokenizer, lowercase=lowercase).score
-        click.echo(f"BLEU: {bleu_score:.2f}")
+        click.echo(f'BLEU: {bleu_score:.2f}')
 
     if 'sari' in metrics:
         sari_score = corpus_sari(orig_sents, sys_output, refs_sents, tokenizer=tokenizer, lowercase=lowercase)
-        click.echo(f"SARI: {sari_score:.2f}")
+        click.echo(f'SARI: {sari_score:.2f}')
 
     if 'samsa' in metrics:
         samsa_score = corpus_samsa(orig_sents, sys_output, tokenizer=tokenizer, verbose=True, lowercase=lowercase)
-        click.echo(f"SAMSA: {samsa_score:.2f}")
+        click.echo(f'SAMSA: {samsa_score:.2f}')
 
     if 'fkgl' in metrics:
         fkgl_score = corpus_fkgl(sys_output, tokenizer=tokenizer)
-        click.echo(f"FKGL: {fkgl_score:.2f}")
+        click.echo(f'FKGL: {fkgl_score:.2f}')
 
     if analysis:
         word_level_analysis = corpus_analyse_operations(orig_sents, sys_output, refs_sents,
                                                         verbose=False, as_str=True)
-        click.echo(f"Word-level Analysis: {word_level_analysis}")
+        click.echo(f'Word-level Analysis: {word_level_analysis}')
 
     if quality_estimation:
         quality_estimation_scores = corpus_quality_estimation(
@@ -108,7 +108,7 @@ def evaluate_system_output(
                 lowercase=lowercase
                 )
         quality_estimation_scores = {k: round(v, 2) for k, v in quality_estimation_scores.items()}
-        click.echo(f"Quality estimation: {quality_estimation_scores}")
+        click.echo(f'Quality estimation: {quality_estimation_scores}')
 
 
 @cli.command('report')
@@ -119,7 +119,7 @@ def evaluate_system_output(
 @click.option('--report_path', '-p', type=click.Path(), default='report.html',
               help='Path to the output HTML report.')
 @click.option('--tokenizer', '-tok', type=click.Choice(['13a', 'intl', 'moses', 'plain']), default='13a',
-              help="Tokenization method to use.")
+              help='Tokenization method to use.')
 def _report(*args, **kwargs):
     report(*args, **kwargs)
 
