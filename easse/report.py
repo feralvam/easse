@@ -14,18 +14,25 @@ from easse.fkgl import corpus_fkgl
 from easse.quality_estimation import corpus_quality_estimation
 from easse.samsa import corpus_samsa
 from easse.sari import corpus_sari
+from easse.utils.constants import DEFAULT_METRICS
 from easse.utils.helpers import add_dicts
 from easse.utils.text import to_words, count_words
 from easse.annotation.lcs import get_lcs
 
 
-def get_all_scores(orig_sents: List[str], sys_sents: List[str], refs_sents: List[List[str]],
-                   lowercase: bool = False, tokenizer: str = '13a'):
+def get_all_scores(
+        orig_sents: List[str], sys_sents: List[str], refs_sents: List[List[str]],
+        lowercase: bool = False, tokenizer: str = '13a', metrics: List[str] = DEFAULT_METRICS,
+        ):
     scores = OrderedDict()
-    scores['BLEU'] = corpus_bleu(sys_sents, refs_sents, force=True, tokenize=tokenizer, lowercase=lowercase).score
-    scores['SARI'] = corpus_sari(orig_sents, sys_sents, refs_sents, tokenizer=tokenizer, lowercase=lowercase)
-    scores['SAMSA'] = corpus_samsa(orig_sents, sys_sents, tokenizer=tokenizer, verbose=True, lowercase=lowercase)
-    scores['FKGL'] = corpus_fkgl(sys_sents, tokenizer=tokenizer)
+    if 'bleu' in metrics:
+        scores['BLEU'] = corpus_bleu(sys_sents, refs_sents, force=True, tokenize=tokenizer, lowercase=lowercase).score
+    if 'sari' in metrics:
+        scores['SARI'] = corpus_sari(orig_sents, sys_sents, refs_sents, tokenizer=tokenizer, lowercase=lowercase)
+    if 'samsa' in metrics:
+        scores['SAMSA'] = corpus_samsa(orig_sents, sys_sents, tokenizer=tokenizer, verbose=True, lowercase=lowercase)
+    if 'fkgl' in metrics:
+        scores['FKGL'] = corpus_fkgl(sys_sents, tokenizer=tokenizer)
     quality_estimation_scores = corpus_quality_estimation(
             orig_sents,
             sys_sents,
@@ -159,7 +166,10 @@ def get_plots_html(orig_sents, sys_sents, ref_sents, plots_dirpath):
     return doc.getvalue()
 
 
-def get_scores_by_length_html(orig_sents, sys_sents, refs_sents, n_bins=5):
+def get_scores_by_length_html(
+        orig_sents, sys_sents, refs_sents, n_bins=5,
+        lowercase: bool = False, tokenizer: str = '13a', metrics: List[str] = DEFAULT_METRICS,
+        ):
     def get_intervals_from_limits(limits):
         return list(zip(limits[:-1], limits[1:]))
 
@@ -206,7 +216,8 @@ def get_scores_by_length_html(orig_sents, sys_sents, refs_sents, n_bins=5):
         splitted_orig_sents = orig_sents_by_bins[i]
         splitted_sys_sents = sys_sents_by_bins[i]
         splitted_refs_sents = [ref_sents_by_bins[i] for ref_sents_by_bins in refs_sents_by_bins]
-        scores = get_all_scores(splitted_orig_sents, splitted_sys_sents, splitted_refs_sents)
+        scores = get_all_scores(splitted_orig_sents, splitted_sys_sents, splitted_refs_sents,
+                                lowercase=lowercase, tokenizer=tokenizer, metrics=metrics)
         row_name = f'length=[{interval[0]};{interval[1]}]'
         df_bins = df_append_row(df_bins, scores, row_name)
     html = df_bins.round(2).to_html(classes='table table-bordered table-responsive table-striped')
@@ -257,7 +268,7 @@ def get_table_html(header, rows, row_names=None):
 
 
 def get_html_report(orig_sents: List[str], sys_sents: List[str], refs_sents: List[List[str]], plots_dirpath=None,
-                    lowercase: bool = False, tokenizer: str = '13a'):
+                    lowercase: bool = False, tokenizer: str = '13a', metrics: List[str] = DEFAULT_METRICS):
     sns.set_style('darkgrid')
     doc = Doc()
     doc.asis('<!doctype html>')
@@ -273,9 +284,9 @@ def get_html_report(orig_sents: List[str], sys_sents: List[str], refs_sents: Lis
                 doc.line('h3', 'System vs. Reference')
                 doc.stag('hr')
                 sys_scores = get_all_scores(orig_sents, sys_sents, refs_sents,
-                                            lowercase=False, tokenizer='13a')
+                                            lowercase=lowercase, tokenizer=tokenizer, metrics=metrics)
                 ref_scores = get_all_scores(orig_sents, refs_sents[0], refs_sents[1:],
-                                            lowercase=False, tokenizer='13a')
+                                            lowercase=lowercase, tokenizer=tokenizer, metrics=metrics)
                 assert sys_scores.keys() == ref_scores.keys()
                 doc.asis(get_table_html(
                         header=list(sys_scores.keys()),

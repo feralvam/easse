@@ -19,15 +19,29 @@ def cli():
     pass
 
 
+def common_options(function):
+    function = click.option(
+            '--test_set', '-t', type=click.Choice(VALID_TEST_SETS), required=True,
+            help='test set to use.',
+    )(function)
+    function = click.option(
+            '--input_path', '-i', type=click.Path(), default=None,
+            help='Path to the system predictions input file that is to be evaluated.',
+    )(function)
+    function = click.option(
+            '--tokenizer', '-tok', type=click.Choice(['13a', 'intl', 'moses', 'plain']), default='13a',
+            help='Tokenization method to use.',
+    )(function)
+    function = click.option(
+            '--metrics', '-m', type=str, default=','.join(DEFAULT_METRICS),
+            help=(f'Comma-separated list of metrics to compute. Valid: {",".join(VALID_METRICS)}'
+                  ' (SAMSA is disabled by default for the sake of speed'),
+    )(function)
+    return function
+
+
 @cli.command('evaluate')
-@click.option('--test_set', '-t', type=click.Choice(VALID_TEST_SETS), required=True,
-              help='test set to use.')
-@click.option('--input_path', '-i', type=click.Path(), default=None,
-              help='Path to the system predictions input file that is to be evaluated.')
-@click.option('--tokenizer', '-tok', type=click.Choice(['13a', 'intl', 'moses', 'plain']), default='13a',
-              help='Tokenization method to use.')
-@click.option('--metrics', '-m', type=str, default=','.join(DEFAULT_METRICS),
-              help=f'Comma-separated list of metrics to compute. Valid: {",".join(VALID_METRICS)}')
+@common_options
 @click.option('--analysis', '-a', is_flag=True,
               help=f'Perform word-level transformation analysis.')
 @click.option('--quality_estimation', '-q', is_flag=True,
@@ -112,19 +126,14 @@ def evaluate_system_output(
 
 
 @cli.command('report')
-@click.option('--test_set', '-t', type=click.Choice(VALID_TEST_SETS), required=True,
-              help='test set to use.')
-@click.option('--input_path', '-i', type=click.Path(), default=None,
-              help='Path to the system predictions input file that is to be evaluated.')
+@common_options
 @click.option('--report_path', '-p', type=click.Path(), default='report.html',
               help='Path to the output HTML report.')
-@click.option('--tokenizer', '-tok', type=click.Choice(['13a', 'intl', 'moses', 'plain']), default='13a',
-              help='Tokenization method to use.')
 def _report(*args, **kwargs):
     report(*args, **kwargs)
 
 
-def report(test_set, input_path=None, report_path='report.html', tokenizer='13a'):
+def report(test_set, input_path=None, report_path='report.html', tokenizer='13a', metrics=','.join(DEFAULT_METRICS)):
     """
     Create a HTML report file with automatic metrics, plots and samples.
     """
@@ -144,4 +153,7 @@ def report(test_set, input_path=None, report_path='report.html', tokenizer='13a'
         lowercase = True
         refs_sents = get_hsplit_refs_sents()
         orig_sents = get_hsplit_orig_sents()
-    write_html_report(report_path, orig_sents, sys_output, refs_sents, lowercase=lowercase, tokenizer=tokenizer)
+    write_html_report(
+            report_path, orig_sents, sys_output, refs_sents,
+            lowercase=lowercase, tokenizer=tokenizer, metrics=metrics,
+            )
