@@ -1,5 +1,3 @@
-import json
-
 import click
 import sacrebleu
 
@@ -11,48 +9,25 @@ from easse.sari import corpus_sari
 from easse.samsa import corpus_samsa
 from easse.utils.resources import (get_turk_orig_sents, get_turk_refs_sents, get_hsplit_orig_sents,
                                    get_hsplit_refs_sents)
-from  easse.utils.constants import CONFIG_PATH
+from easse.utils.constants import VALID_TEST_SETS, VALID_METRICS, DEFAULT_METRICS
 from easse.report import write_html_report
 
 
-def get_valid_test_sets(as_str=False):
-    with open(CONFIG_PATH, 'r') as config_file:
-        config = json.load(config_file)
-
-    if as_str:
-        return ','.join(config["DATASETS"])
-    else:
-        return config["DATASETS"]
-
-
-def get_valid_metrics(as_str=False):
-    with open(CONFIG_PATH, 'r') as config_file:
-        config = json.load(config_file)
-
-    if as_str:
-        return ','.join(config["METRICS"])
-    else:
-        return config["METRICS"]
-
-
-CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
-
-
-@click.group(context_settings=CONTEXT_SETTINGS)
+@click.group(context_settings={'help_option_names': ['-h', '--help']})
 @click.version_option()
 def cli():
     pass
 
 
 @cli.command('evaluate')
-@click.option('--test_set', '-t', type=click.Choice(get_valid_test_sets()), required=True,
-              help="test set to use.")
+@click.option('--test_set', '-t', type=click.Choice(VALID_TEST_SETS), required=True,
+              help='test set to use.')
 @click.option('--input_path', '-i', type=click.Path(), default=None,
               help='Path to the system predictions input file that is to be evaluated.')
 @click.option('--tokenizer', '-tok', type=click.Choice(['13a', 'intl', 'moses', 'plain']), default='13a',
-              help="Tokenization method to use.")
-@click.option('--metrics', '-m', type=str, default=get_valid_metrics(as_str=True),
-              help=f"Comma-separated list of metrics to compute. Default: {get_valid_metrics(as_str=True)}")
+              help='Tokenization method to use.')
+@click.option('--metrics', '-m', type=str, default=','.join(DEFAULT_METRICS),
+              help=f'Comma-separated list of metrics to compute. Valid: {",".join(VALID_METRICS)}')
 @click.option('--analysis', '-a', is_flag=True,
               help=f"Perform word-level transformation analysis.")
 @click.option('--quality_estimation', '-q', is_flag=True,
@@ -137,8 +112,8 @@ def evaluate_system_output(
 
 
 @cli.command('report')
-@click.option('--test_set', '-t', type=click.Choice(get_valid_test_sets()), required=True,
-              help="test set to use.")
+@click.option('--test_set', '-t', type=click.Choice(VALID_TEST_SETS), required=True,
+              help='test set to use.')
 @click.option('--input_path', '-i', type=click.Path(), default=None,
               help='Path to the system predictions input file that is to be evaluated.')
 @click.option('--report_path', '-p', type=click.Path(), default='report.html',
