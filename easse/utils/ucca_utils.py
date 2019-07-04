@@ -1,18 +1,19 @@
+from functools import lru_cache
 from typing import List
-from ucca.core import Passage
 
 from tupa.parse import Parser
+from ucca.core import Passage
 import ucca.convert
 
-PARSER_PATH = "resources/ucca/models/ucca-bilstm"
-PARSER = None
+from easse.utils.paths import UCCA_PARSER_PATH
+from easse.utils.resources import download_ucca_model
 
 
+@lru_cache(maxsize=1)
 def get_parser():
-    global PARSER
-    if PARSER is None:
-        PARSER = Parser(PARSER_PATH)
-    return PARSER
+    if not UCCA_PARSER_PATH.parent.exists():
+        download_ucca_model()
+    return Parser(str(UCCA_PARSER_PATH))
 
 
 def ucca_parse_texts(texts: List[str]):
