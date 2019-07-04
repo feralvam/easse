@@ -143,28 +143,3 @@ def report(test_set, tokenizer, report_path):
         refs_sents = get_hsplit_refs_sents()
         orig_sents = get_hsplit_orig_sents()
     write_html_report(report_path, orig_sents, sys_output, refs_sents, lowercase=lowercase, tokenizer=tokenizer)
-
-
-# @cli.command('register')
-# @click.option('-n', "--name", required=True,
-#               help="Name of the test set. If not given, the folder name with be used.")
-# @click.option('-o', "--orig_file", required=True,
-#               help="Path of the text file with the original sentences.")
-# @click.option('-s', "--simp_file", required=True,
-#               help="Path to the text file with the simplified sentences.")
-# def register_test_set(name, orig_file, simp_file):
-#     """
-#     Preprocess and store a test set locally.
-#     """
-#     return
-#
-#
-# @cli.command('ranking')
-# @click.argument('test_set')
-# @click.option('-sb', "--sort_by", type=click.Choice(['bleu', 'sari', 'samsa']),
-#               help="Metric to use for sorting the systems' scores.")
-# def print_ranking(test_set, sort_by):
-#     """
-#     Rank all available system outputs in a standard test set.
-#     """
-#     return
