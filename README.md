@@ -61,6 +61,11 @@ Options:
   -q, --quality_estimation        Perform quality estimation.
   -h, --help                      Show this message and exit.
 ```
+Example:
+```
+easse evaluate -t turk -m 'bleu,sari' -q < data/system_outputs/turk/lower/DMASS-DCSS.tok.low
+```
+
 <img src="https://github.com/feralvam/easse/blob/master/demo/evaluate.gif">
 
 ### report
@@ -77,5 +82,9 @@ Options:
                                   Tokenization method to use.
   -p, --report_path PATH          Path to the output HTML report.
   -h, --help                      Show this message and exit.
+```
+Example:
+```
+easse report -t turk < data/system_outputs/turk/lower/DMASS-DCSS.tok.low
 ```
 <img src="https://github.com/feralvam/easse/blob/master/demo/report.gif">
