@@ -11,7 +11,7 @@ from easse.sari import corpus_sari
 from easse.samsa import corpus_samsa
 from easse.utils.resources import (get_turk_orig_sents, get_turk_refs_sents, get_hsplit_orig_sents,
                                    get_hsplit_refs_sents)
-from  easse.utils.paths import CONFIG_PATH
+from  easse.utils.constants import CONFIG_PATH
 from easse.report import write_html_report
 
 

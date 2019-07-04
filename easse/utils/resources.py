@@ -6,7 +6,7 @@ import time
 from urllib.request import urlretrieve
 import zipfile
 
-from easse.utils.paths import DATA_DIR, STANFORD_CORENLP_DIR, UCCA_DIR, UCCA_PARSER_PATH
+from easse.utils.constants import DATA_DIR, STANFORD_CORENLP_DIR, UCCA_DIR, UCCA_PARSER_PATH
 from easse.utils.helpers import get_temp_filepath, read_lines
 
 

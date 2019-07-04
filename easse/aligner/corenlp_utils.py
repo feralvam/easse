@@ -5,7 +5,7 @@ from stanfordnlp.server import CoreNLPClient
 from tqdm import tqdm
 
 from easse.utils.resources import download_stanford_corenlp
-from easse.utils.paths import STANFORD_CORENLP_DIR
+from easse.utils.constants import STANFORD_CORENLP_DIR
 
 
 props = {'annotators': 'tokenize,ssplit,pos,lemma,ner,depparse',
