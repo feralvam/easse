@@ -5,7 +5,7 @@ from tupa.parse import Parser
 from ucca.core import Passage
 import ucca.convert
 
-from easse.utils.paths import UCCA_PARSER_PATH
+from easse.utils.constants import UCCA_PARSER_PATH
 from easse.utils.resources import download_ucca_model
 
 

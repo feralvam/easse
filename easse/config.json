@@ -1,4 +1,0 @@
-{
-  "DATASETS": ["turk", "turk_valid", "pwkp", "hsplit"],
-  "METRICS": ["bleu", "sari", "samsa", "fkgl"]
-}
