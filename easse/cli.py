@@ -46,6 +46,8 @@ def cli():
 @cli.command('evaluate')
 @click.option('--test_set', '-t', type=click.Choice(get_valid_test_sets()), required=True,
               help="test set to use.")
+@click.option('--input_path', '-i', type=click.Path(), default=None,
+              help='Path to the system predictions input file that is to be evaluated.')
 @click.option('--tokenizer', '-tok', type=click.Choice(['13a', 'intl', 'moses', 'plain']), default='13a',
               help="Tokenization method to use.")
 @click.option('--metrics', '-m', type=str, default=get_valid_metrics(as_str=True),
@@ -54,15 +56,13 @@ def cli():
               help=f"Perform word-level transformation analysis.")
 @click.option('--quality_estimation', '-q', is_flag=True,
               help="Perform quality estimation.")
-@click.option('--input_path', '-i', type=click.Path(), default=None,
-              help='Path to the system predictions input file that is to be evaluated.')
 def evaluate_system_output(
         test_set,
+        input_path=None,
         tokenizer='13a',
         metrics=get_valid_metrics(as_str=True),
         analysis=False,
         quality_estimation=False,
-        input_path=None,
         ):
     """
     Evaluate a system output with automatic metrics.
@@ -134,13 +134,13 @@ def evaluate_system_output(
 @cli.command('report')
 @click.option('--test_set', '-t', type=click.Choice(get_valid_test_sets()), required=True,
               help="test set to use.")
-@click.option('--tokenizer', '-tok', type=click.Choice(['13a', 'intl', 'moses', 'plain']), default='13a',
-              help="Tokenization method to use.")
-@click.option('--report_path', '-p', type=click.Path(), default='report.html',
-              help='Path to the output HTML report.')
 @click.option('--input_path', '-i', type=click.Path(), default=None,
               help='Path to the system predictions input file that is to be evaluated.')
-def report(test_set, tokenizer='13a', report_path='report.html', input_path=None):
+@click.option('--report_path', '-p', type=click.Path(), default='report.html',
+              help='Path to the output HTML report.')
+@click.option('--tokenizer', '-tok', type=click.Choice(['13a', 'intl', 'moses', 'plain']), default='13a',
+              help="Tokenization method to use.")
+def report(test_set, input_path=None, report_path='report.html', tokenizer='13a'):
     """
     Create a HTML report file with automatic metrics, plots and samples.
     """
