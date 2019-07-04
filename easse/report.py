@@ -188,6 +188,9 @@ def get_scores_by_length_html(orig_sents, sys_sents, refs_sents, n_bins=5):
         return sents_by_bin
 
     def df_append_row(df, row, row_name=None):
+        if df.empty and len(df.columns) == 0:
+            # This enforces the columns order
+            df = pd.DataFrame(columns=list(row.keys()))
         if row_name is None:
             return df.append(pd.Series(row), ignore_index=True)
         else:
@@ -263,8 +266,8 @@ def get_html_report(orig_sents: List[str], sys_sents: List[str], refs_sents: Lis
     doc.asis('<!doctype html>')
     with doc.tag('html', lang='en'):
         doc.asis(get_head_html())
-        with doc.tag('div', klass='container-fluid'):
-            doc.line('h1', 'EASSE report')
+        with doc.tag('div', klass='container-fluid m-2'):
+            doc.line('h1', 'EASSE report', klass='mt-4')
             doc.stag('hr')
 
             doc.line('h2', 'Scores')
