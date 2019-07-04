@@ -56,6 +56,10 @@ def cli():
               help=f"Perform word-level transformation analysis.")
 @click.option('--quality_estimation', '-q', is_flag=True,
               help="Perform quality estimation.")
+def _evaluate_system_output(*args, **kwargs):
+    evaluate_system_output(*args, **kwargs)
+
+
 def evaluate_system_output(
         test_set,
         input_path=None,
@@ -140,6 +144,10 @@ def evaluate_system_output(
               help='Path to the output HTML report.')
 @click.option('--tokenizer', '-tok', type=click.Choice(['13a', 'intl', 'moses', 'plain']), default='13a',
               help="Tokenization method to use.")
+def _report(*args, **kwargs):
+    report(*args, **kwargs)
+
+
 def report(test_set, input_path=None, report_path='report.html', tokenizer='13a'):
     """
     Create a HTML report file with automatic metrics, plots and samples.
