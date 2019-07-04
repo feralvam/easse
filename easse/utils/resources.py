@@ -1,10 +1,12 @@
+import json
 import os
 import sys
+import tarfile
 import time
 from urllib.request import urlretrieve
 import zipfile
 
-from easse.utils.paths import STANFORD_CORENLP_PATH, DATA_DIR
+from easse.utils.paths import DATA_DIR, STANFORD_CORENLP_DIR, UCCA_DIR, UCCA_PARSER_PATH
 from easse.utils.helpers import get_temp_filepath, read_lines
 
 
@@ -38,12 +40,32 @@ def unzip(compressed_path, output_dir):
         f.extractall(output_dir)
 
 
+def untar(compressed_path, output_dir):
+    with tarfile.open(compressed_path) as f:
+        f.extractall(output_dir)
+
+
 def download_stanford_corenlp():
     url = 'http://nlp.stanford.edu/software/stanford-corenlp-full-2018-10-05.zip'
     temp_filepath = get_temp_filepath()
     download(url, temp_filepath)
-    STANFORD_CORENLP_PATH.mkdir(parents=True, exist_ok=True)
-    unzip(temp_filepath, STANFORD_CORENLP_PATH.parent)
+    STANFORD_CORENLP_DIR.mkdir(parents=True, exist_ok=True)
+    unzip(temp_filepath, STANFORD_CORENLP_DIR.parent)
+
+
+def download_ucca_model():
+    url = 'https://github.com/huji-nlp/tupa/releases/download/v1.3.10/ucca-bilstm-1.3.10.tar.gz'
+    temp_filepath = get_temp_filepath()
+    download(url, temp_filepath)
+    UCCA_DIR.mkdir(parents=True, exist_ok=True)
+    untar(temp_filepath, UCCA_DIR)
+    # HACK: Change vocab_path from relative to absolute path
+    json_path = str(UCCA_PARSER_PATH) + '.nlp.json'
+    with open(json_path, 'r') as f:
+        config_json = json.load(f)
+    config_json['vocab'] = str(UCCA_DIR / config_json['vocab'])
+    with open(json_path, 'w') as f:
+            json.dump(config_json, f)
 
 
 def get_turk_orig_sents(phase):

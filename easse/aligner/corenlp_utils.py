@@ -5,12 +5,9 @@ from stanfordnlp.server import CoreNLPClient
 from tqdm import tqdm
 
 from easse.utils.resources import download_stanford_corenlp
-from easse.utils.paths import STANFORD_CORENLP_PATH
+from easse.utils.paths import STANFORD_CORENLP_DIR
 
 
-if not STANFORD_CORENLP_PATH.exists():
-    download_stanford_corenlp()
-os.environ['CORENLP_HOME'] = str(STANFORD_CORENLP_PATH)
 props = {'annotators': 'tokenize,ssplit,pos,lemma,ner,depparse',
          'pipelineLanguage': 'en',
          'depparse.model': "edu/stanford/nlp/models/parser/nndep/english_SD.gz",
@@ -109,6 +106,10 @@ def syntactic_parse_texts(texts: List[str], tokenize=False, sentence_split=False
                              'ssplit.eolonly': not sentence_split,
                              'depparse.model': "edu/stanford/nlp/models/parser/nndep/english_SD.gz",
                              'outputFormat': 'json'}
+    if not STANFORD_CORENLP_DIR.exists():
+        download_stanford_corenlp()
+    os.environ['CORENLP_HOME'] = str(STANFORD_CORENLP_DIR)
+
     parse_results = []
     with CoreNLPClient(annotators=corenlp_annotators) as client:
         for text in tqdm(texts, disable=(not verbose)):
