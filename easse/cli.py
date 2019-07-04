@@ -10,11 +10,12 @@ from easse.sari import corpus_sari
 from easse.samsa import corpus_samsa
 from easse.utils.resources import (get_turk_orig_sents, get_turk_refs_sents, get_hsplit_orig_sents,
                                    get_hsplit_refs_sents)
+from  easse.utils.paths import CONFIG_PATH
 from easse.report import write_html_report
 
 
 def get_valid_test_sets(as_str=False):
-    with open('easse/config.json', 'r') as config_file:
+    with open(CONFIG_PATH, 'r') as config_file:
         config = json.load(config_file)
 
     if as_str:
@@ -24,7 +25,7 @@ def get_valid_test_sets(as_str=False):
 
 
 def get_valid_metrics(as_str=False):
-    with open('easse/config.json', 'r') as config_file:
+    with open(CONFIG_PATH, 'r') as config_file:
         config = json.load(config_file)
 
     if as_str:
