@@ -25,6 +25,8 @@ setup(
     entry_points={'console_scripts': [
         "easse = easse.cli:cli"
     ]},
-    install_requires=['sacrebleu', 'sacremoses', 'stanfordnlp', 'tupa>=1.3.10', 'nltk', 'click'],
-    dependency_links=['https://github.com/facebookresearch/text-simplification-evaluation/tarball/master'],
+    install_requires=[
+        'sacrebleu', 'sacremoses', 'stanfordnlp', 'tupa>=1.3.10', 'nltk', 'click',
+        'tseval @ git+https://github.com/facebookresearch/text-simplification-evaluation.git',
+        ],
 )
