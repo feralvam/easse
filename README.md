@@ -17,7 +17,7 @@ You can also install EASSE by cloning our git repository:
 git clone https://github.com/feralvam/easse.git
 ```
 
-Create a Python 3.6 virtual environment, and install EASSE in `editable` mode by running:
+Create a Python 3.6 virtual environment (make sure you have the latest pip), and install EASSE in `editable` mode by running:
 
 ```bash
 pip install --editable .
