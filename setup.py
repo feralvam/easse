@@ -26,7 +26,8 @@ setup(
         "easse = easse.cli:cli"
     ]},
     install_requires=[
-        'sacrebleu', 'sacremoses', 'stanfordnlp', 'tupa>=1.3.10', 'nltk', 'click',
+        'click', 'matplotlib', 'nltk', 'numpy', 'pandas', 'sacrebleu', 'sacremoses', 'seaborn', 'sklearn',
+        'stanfordnlp', 'tqdm', 'tupa>=1.3.0', 'ucca', 'yattag',
         'tseval @ git+https://github.com/facebookresearch/text-simplification-evaluation.git',
         ],
 )
