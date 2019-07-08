@@ -1,4 +1,6 @@
+from contextlib import contextmanager
 from functools import lru_cache
+import sys
 from typing import List
 
 from tupa.parse import Parser
@@ -9,11 +11,21 @@ from easse.utils.constants import UCCA_PARSER_PATH
 from easse.utils.resources import download_ucca_model
 
 
+@contextmanager
+def mock_sys_argv(argv):
+    original_sys_argv = sys.argv
+    sys.argv = argv
+    yield
+    sys.argv = original_sys_argv
+
+
 @lru_cache(maxsize=1)
 def get_parser():
     if not UCCA_PARSER_PATH.parent.exists():
         download_ucca_model()
-    return Parser(str(UCCA_PARSER_PATH))
+    with mock_sys_argv(['']):
+        # Need to mock sysargs otherwise the parser will use try to use them and throw an exception
+        return Parser(str(UCCA_PARSER_PATH))
 
 
 def ucca_parse_texts(texts: List[str]):
