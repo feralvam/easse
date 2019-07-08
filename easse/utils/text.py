@@ -13,7 +13,11 @@ def count_words(text):
 
 
 def to_sentences(text, language='english'):
-    tokenizer = nltk.data.load(f'tokenizers/punkt/{language}.pickle')
+    try:
+        tokenizer = nltk.data.load(f'tokenizers/punkt/{language}.pickle')
+    except LookupError:
+        nltk.download('punkt')
+        tokenizer = nltk.data.load(f'tokenizers/punkt/{language}.pickle')
     return tokenizer.tokenize(text)
 
 
