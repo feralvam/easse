@@ -25,7 +25,7 @@ def reporthook(count, block_size, total_size):
 
 
 def download(url, destination_path):
-    print('Downloading...')
+    print(f'Downloading {url}...')
     try:
         urlretrieve(url, destination_path, reporthook)
         sys.stdout.write('\n')
