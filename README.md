@@ -63,7 +63,7 @@ Options:
 ```
 Example:
 ```
-easse evaluate -t turk -m 'bleu,sari' -q < data/system_outputs/turk/lower/DMASS-DCSS.tok.low
+easse evaluate -t turk -m 'bleu,sari' -q < easse/resources/data/system_outputs/turk/lower/DMASS-DCSS.tok.low
 ```
 
 <img src="https://github.com/feralvam/easse/blob/master/demo/evaluate.gif">
@@ -85,6 +85,6 @@ Options:
 ```
 Example:
 ```
-easse report -t turk < data/system_outputs/turk/lower/DMASS-DCSS.tok.low
+easse report -t turk < easse/resources/data/system_outputs/turk/lower/DMASS-DCSS.tok.low
 ```
 <img src="https://github.com/feralvam/easse/blob/master/demo/report.gif">
