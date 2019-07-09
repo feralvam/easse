@@ -21,6 +21,7 @@ setup(
     author='Fernando Alva-Manchego <feralvam@gmail.com>, Louis Martin <louismartincs@gmail.com>',
     url='https://github.com/feralvam/easse',
     packages=find_packages(exclude=['tests']),
+    include_package_data=True,
     test_suite='tests',
     entry_points={'console_scripts': [
         "easse = easse.cli:cli"
