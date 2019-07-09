@@ -77,19 +77,23 @@ def evaluate_system_output(
     if test_set in ['turk', 'turk_valid']:
         lowercase = False
         phase = 'test' if test_set == 'turk' else 'valid'
-        if load_refs_sents:
-            refs_sents = get_turk_refs_sents(phase=phase)
         if load_orig_sents:
             orig_sents = get_turk_orig_sents(phase=phase)
+        if load_refs_sents:
+            refs_sents = get_turk_refs_sents(phase=phase)
 
     if test_set == 'hsplit':
         sys_output = sys_output[:70]
         lowercase = True
-
-        if load_refs_sents:
-            refs_sents = get_hsplit_refs_sents()
         if load_orig_sents:
             orig_sents = get_hsplit_orig_sents()
+        if load_refs_sents:
+            refs_sents = get_hsplit_refs_sents()
+
+    if load_orig_sents:
+        assert len(sys_output) == len(orig_sents)
+    if load_refs_sents:
+        assert len(sys_output) == len(refs_sents[0])
 
     # compute each metric
     if 'bleu' in metrics:
