@@ -137,6 +137,8 @@ def get_test_set_description_html(test_set_name, orig_sents, refs_sents):
     df.loc[test_set_name, '1-to-N alignments*'] = f'{ratio*100:.1f}%'
     ratio = np.average((expanded_orig_sent_counts > 1) & (refs_sent_counts > 1))
     df.loc[test_set_name, 'N-to-N alignments*'] = f'{ratio*100:.1f}%'
+    ratio = np.average((expanded_orig_sent_counts > 1) & (refs_sent_counts == 1))
+    df.loc[test_set_name, 'N-to-1 alignments*'] = f'{ratio*100:.1f}%'
     doc.asis(get_table_html_from_dataframe(df.round(2)))
     doc.line('p', klass='text-muted', text_content='* Alignment detection is not 100% accurate')
     return doc.getvalue()
