@@ -7,7 +7,8 @@ import numpy as np
 import pandas as pd
 from sacrebleu import corpus_bleu
 import seaborn as sns
-from tseval.feature_extraction import get_levenshtein_similarity, get_compression_ratio, count_sentence_splits
+from tseval.feature_extraction import (get_levenshtein_similarity, get_compression_ratio, count_sentence_splits,
+                                       count_sentences)
 from yattag import Doc, indent
 
 from easse.fkgl import corpus_fkgl
@@ -39,10 +40,11 @@ def get_all_scores(
             tokenizer=tokenizer,
             lowercase=lowercase
             )
-    return add_dicts(
+    scores = add_dicts(
             scores,
             quality_estimation_scores,
             )
+    return {key: round(value, 2) for key, value in scores.items()}
 
 
 def make_differing_words_bold(orig_sent, sys_sent, make_bold):
@@ -112,6 +114,36 @@ def get_qualitative_html_examples(orig_sents, sys_sents):
     return doc.getvalue()
 
 
+def get_test_set_description_html(test_set_name, orig_sents, refs_sents):
+    doc = Doc()
+    test_set_name  = test_set_name.capitalize()
+    doc.line('h4', test_set_name)
+    orig_sents = np.array(orig_sents)
+    refs_sents = np.array(refs_sents)
+    df = pd.DataFrame()
+    df.loc[test_set_name, '# of samples'] = str(len(orig_sents))
+    df.loc[test_set_name, '# of references'] = str(len(refs_sents))
+    df.loc[test_set_name, 'Words / source'] = np.average(np.vectorize(count_words)(orig_sents))
+    df.loc[test_set_name, 'Words / reference'] = np.average(np.vectorize(count_words)(refs_sents.flatten()))
+
+    def modified_count_sentences(sent):
+        return max(count_sentences(sent), 1)
+    orig_sent_counts = np.vectorize(modified_count_sentences)(orig_sents)
+    expanded_orig_sent_counts = np.expand_dims(orig_sent_counts, 0).repeat(len(refs_sents), axis=0)
+    refs_sent_counts = np.vectorize(modified_count_sentences)(refs_sents)
+    ratio = np.average((expanded_orig_sent_counts == 1) & (refs_sent_counts == 1))
+    df.loc[test_set_name, '1-to-1 alignments*'] = f'{ratio*100:.1f}%'
+    ratio = np.average((expanded_orig_sent_counts == 1) & (refs_sent_counts > 1))
+    df.loc[test_set_name, '1-to-N alignments*'] = f'{ratio*100:.1f}%'
+    ratio = np.average((expanded_orig_sent_counts > 1) & (refs_sent_counts > 1))
+    df.loc[test_set_name, 'N-to-N alignments*'] = f'{ratio*100:.1f}%'
+    ratio = np.average((expanded_orig_sent_counts > 1) & (refs_sent_counts == 1))
+    df.loc[test_set_name, 'N-to-1 alignments*'] = f'{ratio*100:.1f}%'
+    doc.asis(get_table_html_from_dataframe(df.round(2)))
+    doc.line('p', klass='text-muted', text_content='* Alignment detection is not 100% accurate')
+    return doc.getvalue()
+
+
 def save_histogram(sys_values, ref_values, filepath, title, xlabel, xmax):
     step = 0.02
     linewidth = 0.9
@@ -164,6 +196,11 @@ def get_plots_html(orig_sents, sys_sents, ref_sents, plots_dirpath):
     doc.asis(get_compression_ratios_plot_html(orig_sents, sys_sents, ref_sents, plots_dirpath))
     doc.asis(get_levenshtein_similarity_plot_html(orig_sents, sys_sents, ref_sents, plots_dirpath))
     return doc.getvalue()
+
+
+def get_table_html_from_dataframe(df):
+    html = df.to_html(classes='table table-bordered table-responsive table-striped')
+    return html.replace('<thead>', '<thead class="thead-light">')
 
 
 def get_scores_by_length_html(
@@ -223,8 +260,7 @@ def get_scores_by_length_html(
                                 lowercase=lowercase, tokenizer=tokenizer, metrics=metrics)
         row_name = f'length=[{interval[0]};{interval[1]}]'
         df_bins = df_append_row(df_bins, scores, row_name)
-    html = df_bins.round(2).to_html(classes='table table-bordered table-responsive table-striped')
-    return html.replace('<thead>', '<thead class="thead-light">')
+    return get_table_html_from_dataframe(df_bins.round(2))
 
 
 def get_head_html():
@@ -270,8 +306,9 @@ def get_table_html(header, rows, row_names=None):
     return doc.getvalue()
 
 
-def get_html_report(orig_sents: List[str], sys_sents: List[str], refs_sents: List[List[str]], plots_dirpath=None,
-                    lowercase: bool = False, tokenizer: str = '13a', metrics: List[str] = DEFAULT_METRICS):
+def get_html_report(orig_sents: List[str], sys_sents: List[str], refs_sents: List[List[str]], test_set_name,
+                    plots_dirpath=None, lowercase: bool = False, tokenizer: str = '13a',
+                    metrics: List[str] = DEFAULT_METRICS):
     sns.set_style('darkgrid')
     doc = Doc()
     doc.asis('<!doctype html>')
@@ -280,7 +317,14 @@ def get_html_report(orig_sents: List[str], sys_sents: List[str], refs_sents: Lis
         with doc.tag('div', klass='container-fluid m-2'):
             doc.line('h1', 'EASSE report', klass='mt-4')
             doc.stag('hr')
-
+            doc.line('h2', 'Test set')
+            doc.stag('hr')
+            with doc.tag('div', klass='container-fluid'):
+                doc.asis(get_test_set_description_html(
+                    test_set_name=test_set_name,
+                    orig_sents=orig_sents,
+                    refs_sents=refs_sents,
+                ))
             doc.line('h2', 'Scores')
             doc.stag('hr')
             with doc.tag('div', klass='container-fluid'):
@@ -288,14 +332,21 @@ def get_html_report(orig_sents: List[str], sys_sents: List[str], refs_sents: Lis
                 doc.stag('hr')
                 sys_scores = get_all_scores(orig_sents, sys_sents, refs_sents,
                                             lowercase=lowercase, tokenizer=tokenizer, metrics=metrics)
+                # TODO: The system and references should be evaluated with the same number of references
                 ref_scores = get_all_scores(orig_sents, refs_sents[0], refs_sents[1:],
                                             lowercase=lowercase, tokenizer=tokenizer, metrics=metrics)
                 assert sys_scores.keys() == ref_scores.keys()
                 doc.asis(get_table_html(
                         header=list(sys_scores.keys()),
                         rows=[sys_scores.values(), ref_scores.values()],
-                        row_names=['System output', 'Reference'],
+                        row_names=['System output', 'Reference*'],
                         ))
+                doc.line(
+                    'p',
+                    klass='text-muted',
+                    text_content=('* The Reference row represents one of the references (picked randomly) evaluated'
+                                  ' against the others.'),
+                )
                 doc.line('h3', 'By sentence length (characters)')
                 doc.stag('hr')
                 doc.asis(get_scores_by_length_html(orig_sents, sys_sents, refs_sents))

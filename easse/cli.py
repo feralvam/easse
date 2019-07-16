@@ -158,6 +158,6 @@ def report(test_set, input_path=None, report_path='report.html', tokenizer='13a'
         refs_sents = get_hsplit_refs_sents()
         orig_sents = get_hsplit_orig_sents()
     write_html_report(
-            report_path, orig_sents, sys_output, refs_sents,
+            report_path, orig_sents, sys_output, refs_sents, test_set_name=test_set,
             lowercase=lowercase, tokenizer=tokenizer, metrics=metrics,
             )
