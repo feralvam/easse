@@ -164,7 +164,7 @@ def get_plotly_histogram(orig_sents, sys_sents, ref_sents, feature_extractor, fe
     figure = px.histogram(
             pd.DataFrame(data), title=feature_name, x=feature_name, color='Model', nbins=100, histnorm=None,
             barmode='overlay', opacity=0.7, color_discrete_map={'Reference': '#228B22', 'System output': '#B22222'},
-            category_orders={'Model': ['System output', 'Reference']},
+            category_orders={'Model': ['System output', 'Reference']}, width=800,
     )
     figure.layout['hovermode'] = 'x'  # To compare on hover
     figure.data[-1]['marker']['opacity'] = 0.5  # So that the reference is transparent in front of the system output
@@ -177,9 +177,9 @@ def get_plots_html(orig_sents, sys_sents, ref_sents):
             'Compression ratio': get_compression_ratio,
             'Levenshtein similarity': get_levenshtein_similarity,
     }
-    with doc.tag('div', klass='contrainer-fluid'):
+    with doc.tag('div', klass='row'):
         for feature_name, feature_extractor in features.items():
-            with doc.tag('div', klass='container m-2'):
+            with doc.tag('div', klass='col-auto shadow-sm p-0 m-2'):
                 figure = get_plotly_histogram(orig_sents, sys_sents, ref_sents, feature_extractor, feature_name)
                 doc.asis(get_plotly_html(figure))
     return doc.getvalue()
@@ -345,7 +345,7 @@ def get_html_report(orig_sents: List[str], sys_sents: List[str], refs_sents: Lis
             doc.line('h2', 'Qualitative evaluation')
             doc.stag('hr')
             with doc.tag('div', klass='container-fluid'):
-                doc.asis(get_qualitative_html_examples(orig_sents, sys_sents))
+                doc.asis(get_qualitative_html_examples(orig_sents, sys_sents, refs_sents))
     return indent(doc.getvalue())
 
 
