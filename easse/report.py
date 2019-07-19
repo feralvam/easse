@@ -79,38 +79,55 @@ def make_text_bold_html(text):
     return doc.getvalue()
 
 
-def get_qualitative_html_examples(orig_sents, sys_sents):
-    title_key = [
+def get_qualitative_html_examples(orig_sents, sys_sents, refs_sents):
+    title_key_print = [
         ('Randomly sampled simplifications',
-         lambda c, s: 0),
+         lambda c, s, refs: 0,
+         lambda value: ''),
+        ('Best simplifications according to SARI',
+         lambda c, s, refs: -corpus_sari([c], [s], [refs]),
+         lambda value: f'SARI={-value:.2f}'),
+        ('Worst simplifications according to SARI',
+         lambda c, s, refs: corpus_sari([c], [s], [refs]),
+         lambda value: f'SARI={value:.2f}'),
         ('Simplifications with only one differing word',
-         lambda c, s: -(count_words(c) == count_words(s) == len(get_lcs(to_words(c), to_words(s))) + 1)),
-        ('Simplifications with the highest compression',
-         lambda c, s: get_compression_ratio(c, s)),
+         lambda c, s, refs: -(count_words(c) == count_words(s) == len(get_lcs(to_words(c), to_words(s))) + 1),
+         lambda value: ''),
+        ('Simplifications with the most compression',
+         lambda c, s, refs: get_compression_ratio(c, s),
+         lambda value: f'compression_ratio={value:.2f}'),
         ('Simplifications that are longer than the source',
-         lambda c, s: -get_compression_ratio(c, s)),
-        ('Simplifications that are most dissimilar to the source',
-         lambda c, s: get_levenshtein_similarity(c, s)),
+         lambda c, s, refs: -get_compression_ratio(c, s),
+         lambda value: f'compression_ratio={-value:.2f}'),
+        ('Simplifications that are paraphrase the source',
+         lambda c, s, refs: get_levenshtein_similarity(c, s) / get_compression_ratio(c, s),
+         lambda value: f'levenshtein_similarity={value:.2f}'),
         ('Simplifications that are the most similar to the source (excluding exact matches)',
-         lambda c, s: -get_levenshtein_similarity(c, s) * int(c != s)),
+         lambda c, s, refs: -get_levenshtein_similarity(c, s) * int(c != s),
+         lambda value: f'levenshtein_similarity={-value:.2f}'),
         ('Simplifications with the most sentence splits (if there are any)',
-         lambda c, s: -count_sentence_splits(c, s)),
+         lambda c, s, refs: -count_sentence_splits(c, s),
+         lambda value: f'nb_sentences_ratio={-value:.2f}'),
     ]
     doc = Doc()
-    for title, sort_key in title_key:
+    for title, sort_key, print_func in title_key_print:
         with doc.tag('div', klass='container-fluid mt-5'):
             doc.line('h3', title)
             doc.stag('hr')
             n_samples = 10
-            pair_generator = sorted(zip(orig_sents, sys_sents), key=lambda args: sort_key(*args))
-            for i, (orig_sent, sys_sent) in enumerate(pair_generator):
+            sample_generator = sorted(zip(orig_sents, sys_sents, zip(*refs_sents)), key=lambda args: sort_key(*args))
+            for i, (orig_sent, sys_sent, refs) in enumerate(sample_generator):
                 if i >= n_samples:
                     break
                 orig_sent_bold, sys_sent_bold = make_differing_words_bold(orig_sent, sys_sent, make_text_bold_html)
-                with doc.tag('p'):
-                    doc.asis(orig_sent_bold)
-                    doc.stag('br')
-                    doc.asis(sys_sent_bold)
+                with doc.tag('div', klass='m-2'):
+                    with doc.tag('p', klass='container-fluid mb-2'):
+                        with doc.tag('div', klass='text-muted small'):
+                            doc.asis(print_func(sort_key(orig_sent, sys_sent, refs)))
+                        with doc.tag('div'):
+                            doc.asis(orig_sent_bold)
+                        with doc.tag('div'):
+                            doc.asis(sys_sent_bold)
     return doc.getvalue()
 
 
