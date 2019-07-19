@@ -1,10 +1,10 @@
 from collections import OrderedDict
-from pathlib import Path
 from typing import List
+from uuid import uuid4
 
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import plotly.express as px
 from sacrebleu import corpus_bleu
 import seaborn as sns
 from tseval.feature_extraction import (get_levenshtein_similarity, get_compression_ratio, count_sentence_splits,
@@ -116,7 +116,7 @@ def get_qualitative_html_examples(orig_sents, sys_sents):
 
 def get_test_set_description_html(test_set_name, orig_sents, refs_sents):
     doc = Doc()
-    test_set_name  = test_set_name.capitalize()
+    test_set_name = test_set_name.capitalize()
     doc.line('h4', test_set_name)
     orig_sents = np.array(orig_sents)
     refs_sents = np.array(refs_sents)
@@ -144,57 +144,44 @@ def get_test_set_description_html(test_set_name, orig_sents, refs_sents):
     return doc.getvalue()
 
 
-def save_histogram(sys_values, ref_values, filepath, title, xlabel, xmax):
-    step = 0.02
-    linewidth = 0.9
-    plt.hist(sys_values, bins=np.arange(0, 1.5, step), label='System output', color='firebrick',
-             linewidth=linewidth, alpha=0.8)
-    plt.hist(ref_values, bins=np.arange(0, 1.5, step), label='Reference', color='forestgreen',
-             linewidth=linewidth, alpha=0.4)
-    plt.legend()
-    plt.xlabel(xlabel)
-    plt.ylabel('Count')
-    plt.title(title)
-    plt.xlim(0, xmax)
-    plt.xticks(np.arange(0, xmax + 0.1, 0.25), [f'{int(ratio*100)}%' for ratio in np.arange(0, 1.51, 0.25)])
-    plt.savefig(filepath)
-    plt.clf()
-
-
-def get_compression_ratios_plot_html(orig_sents, sys_sents, ref_sents, plots_dirpath):
+def get_plotly_html(plotly_figure):
     doc = Doc()
-    pred_values = []
-    ref_values = []
-    for orig_sent, sys_sent, ref_sent in zip(orig_sents, sys_sents, ref_sents):
-        pred_values.append(get_compression_ratio(orig_sent, sys_sent))
-        ref_values.append(get_compression_ratio(orig_sent, ref_sent))
-    filepath = plots_dirpath / 'compression_ratios.png'
-    title = 'Compression ratios'
-    save_histogram(pred_values, ref_values, filepath=filepath, title=title, xlabel='compression ratio', xmax=1.5)
-    doc.stag('img', src=str(filepath))
+    plot_id = str(uuid4())
+    # Empty div to hold the plot
+    with doc.tag('div', id=plot_id):
+        # Embedded javascript code that uses plotly to fill the div
+        with doc.tag('script'):
+            doc.asis(f"var plotlyJson = '{plotly_figure.to_json()}'; var figure = JSON.parse(plotlyJson); var plotDiv = document.getElementById('{plot_id}'); Plotly.newPlot(plotDiv, figure.data, figure.layout, {{responsive: true}});")  # noqa: E501
     return doc.getvalue()
 
 
-def get_levenshtein_similarity_plot_html(orig_sents, sys_sents, ref_sents, plots_dirpath):
-    doc = Doc()
-    pred_values = []
-    ref_values = []
+def get_plotly_histogram(orig_sents, sys_sents, ref_sents, feature_extractor, feature_name):
+    '''feature_extractor(orig_sent, sys_sent) -> scalar'''
+    data = []
     for orig_sent, sys_sent, ref_sent in zip(orig_sents, sys_sents, ref_sents):
-        pred_values.append(get_levenshtein_similarity(orig_sent, sys_sent))
-        ref_values.append(get_levenshtein_similarity(orig_sent, ref_sent))
-    filepath = plots_dirpath / 'levenshtein_similarity.png'
-    title = 'Levenshtein similarity'
-    save_histogram(pred_values, ref_values, filepath=filepath, title=title, xlabel='Levenshtein similarity', xmax=1)
-    doc.stag('img', src=str(filepath))
-    return doc.getvalue()
+        data.append({'Model': 'System output', feature_name: feature_extractor(orig_sent, sys_sent)})
+        data.append({'Model': 'Reference', feature_name: feature_extractor(orig_sent, ref_sent)})
+    figure = px.histogram(
+            pd.DataFrame(data), title=feature_name, x=feature_name, color='Model', nbins=100, histnorm=None,
+            barmode='overlay', opacity=0.7, color_discrete_map={'Reference': '#228B22', 'System output': '#B22222'},
+            category_orders={'Model': ['System output', 'Reference']},
+    )
+    figure.layout['hovermode'] = 'x'  # To compare on hover
+    figure.data[-1]['marker']['opacity'] = 0.5  # So that the reference is transparent in front of the system output
+    return figure
 
 
-def get_plots_html(orig_sents, sys_sents, ref_sents, plots_dirpath):
+def get_plots_html(orig_sents, sys_sents, ref_sents):
     doc = Doc()
-    plots_dirpath = Path(plots_dirpath)
-    plots_dirpath.mkdir(exist_ok=True)
-    doc.asis(get_compression_ratios_plot_html(orig_sents, sys_sents, ref_sents, plots_dirpath))
-    doc.asis(get_levenshtein_similarity_plot_html(orig_sents, sys_sents, ref_sents, plots_dirpath))
+    features = {
+            'Compression ratio': get_compression_ratio,
+            'Levenshtein similarity': get_levenshtein_similarity,
+    }
+    with doc.tag('div', klass='contrainer-fluid'):
+        for feature_name, feature_extractor in features.items():
+            with doc.tag('div', klass='container m-2'):
+                figure = get_plotly_histogram(orig_sents, sys_sents, ref_sents, feature_extractor, feature_name)
+                doc.asis(get_plotly_html(figure))
     return doc.getvalue()
 
 
@@ -264,7 +251,8 @@ def get_scores_by_length_html(
 
 
 def get_head_html():
-    return '''
+    solarized_css = '''body{background-color:#fdf6e3}#markdown-body{box-sizing:border-box;min-width:200px;max-width:980px;margin:0 auto;padding:45px;font-family:'Source Sans Pro',sans-serif;font-size:110%;color:#43555a}h1,h2,h3,h4{color:#3e4d52}@media (max-width:767px){.markdown-body{padding:15px}}h2{padding-top:20px!important}a{color:#268bd2;text-decoration:none}a:hover{color:#78b9e6;text-decoration:none;text-shadow:none;border:none}.emph{font-style:italic}.mono{color:#000;font-family:'Source Code Pro',monospace}code,pre{color:#000;font-family:'Source Code Pro',monospace}pre{background:rgba(255,255,255,.12);box-shadow:0 0 10px rgba(0,0,0,.15);padding:10px;width:fit-content}img{background:rgba(255,255,255,.12);box-shadow:0 0 10px rgba(0,0,0,.15);padding:10px}.full{max-width:100%}.full-expanded{max-width:none}.katex{color:#000}.left{text-align:left}p,ul{text-align:justify}'''  # noqa: E501
+    return f'''
   <head>
     <!-- Required meta tags -->
     <meta charset="utf-8">
@@ -273,8 +261,9 @@ def get_head_html():
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <!-- Solarized CSS -->
-    <link href="https://codepen.io/louismartincs/pen/mZqjLG.css" rel="stylesheet"></link>
-
+    <style type="text/css">{solarized_css}</style>
+    <!-- Plotly js -->
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
   </head>
 ''' # noqa
 
@@ -307,8 +296,7 @@ def get_table_html(header, rows, row_names=None):
 
 
 def get_html_report(orig_sents: List[str], sys_sents: List[str], refs_sents: List[List[str]], test_set_name,
-                    plots_dirpath=None, lowercase: bool = False, tokenizer: str = '13a',
-                    metrics: List[str] = DEFAULT_METRICS):
+                    lowercase: bool = False, tokenizer: str = '13a', metrics: List[str] = DEFAULT_METRICS):
     sns.set_style('darkgrid')
     doc = Doc()
     doc.asis('<!doctype html>')
@@ -353,9 +341,7 @@ def get_html_report(orig_sents: List[str], sys_sents: List[str], refs_sents: Lis
             doc.line('h2', 'Plots')
             doc.stag('hr')
             with doc.tag('div', klass='container-fluid'):
-                if plots_dirpath is None:
-                    plots_dirpath = Path.cwd()
-                doc.asis(get_plots_html(orig_sents, sys_sents, refs_sents[0], plots_dirpath))
+                doc.asis(get_plots_html(orig_sents, sys_sents, refs_sents[0]))
             doc.line('h2', 'Qualitative evaluation')
             doc.stag('hr')
             with doc.tag('div', klass='container-fluid'):
@@ -365,5 +351,4 @@ def get_html_report(orig_sents: List[str], sys_sents: List[str], refs_sents: Lis
 
 def write_html_report(filepath, *args, **kwargs):
     with open(filepath, 'w') as f:
-        plots_dirpath = Path(filepath).parent / 'html_plots'
-        f.write(get_html_report(*args, plots_dirpath=plots_dirpath, **kwargs) + '\n')
+        f.write(get_html_report(*args, **kwargs) + '\n')

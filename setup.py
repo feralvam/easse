@@ -30,7 +30,7 @@ setup(
     ]},
     install_requires=[
         'click', 'matplotlib', 'nltk==3.4.3', 'numpy', 'pandas', 'requests>=2.21.0', 'sacrebleu', 'sacremoses',
-        'seaborn', 'sklearn', 'stanfordnlp', 'tqdm>=4.32.2', 'tupa>=1.3.0', 'yattag',
+        'seaborn', 'sklearn', 'stanfordnlp', 'tqdm>=4.32.2', 'tupa>=1.3.0', 'yattag', 'plotly>=4.0.0',
         'ucca@git+https://github.com/louismartin/ucca.git',
         'tseval@git+https://github.com/facebookresearch/text-simplification-evaluation.git',
         ],
