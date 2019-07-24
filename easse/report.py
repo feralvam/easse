@@ -79,6 +79,11 @@ def make_text_bold_html(text):
     return doc.getvalue()
 
 
+def get_random_html_id():
+    html_id = str(uuid4())
+    return 'a' + html_id[1:]  # HTML id can't start with a number
+
+
 def get_qualitative_html_examples(orig_sents, sys_sents, refs_sents):
     title_key_print = [
         ('Randomly sampled simplifications',
@@ -114,14 +119,17 @@ def get_qualitative_html_examples(orig_sents, sys_sents, refs_sents):
         with doc.tag('div', klass='container-fluid mt-5'):
             doc.line('h3', title)
             doc.stag('hr')
-            n_samples = 10
-            sample_generator = sorted(zip(orig_sents, sys_sents, zip(*refs_sents)), key=lambda args: sort_key(*args))
-            for i, (orig_sent, sys_sent, refs) in enumerate(sample_generator):
-                if i >= n_samples:
-                    break
-                orig_sent_bold, sys_sent_bold = make_differing_words_bold(orig_sent, sys_sent, make_text_bold_html)
-                with doc.tag('div', klass='m-2'):
-                    with doc.tag('p', klass='container-fluid mb-2'):
+            collapse_id = get_random_html_id()
+            with doc.tag('button', ('data-toggle', 'collapse'), ('data-target', f'#{collapse_id}'), klass='btn btn-secondary btn-sm'):
+                doc.text('View examples')
+            with doc.tag('div', klass='collapse', id=collapse_id):
+                n_samples = 10
+                sample_generator = sorted(zip(orig_sents, sys_sents, zip(*refs_sents)), key=lambda args: sort_key(*args))
+                for i, (orig_sent, sys_sent, refs) in enumerate(sample_generator):
+                    if i >= n_samples:
+                        break
+                    orig_sent_bold, sys_sent_bold = make_differing_words_bold(orig_sent, sys_sent, make_text_bold_html)
+                    with doc.tag('div', klass='mb-2 p-1 border-left'):
                         with doc.tag('div', klass='text-muted small'):
                             doc.asis(print_func(sort_key(orig_sent, sys_sent, refs)))
                         with doc.tag('div'):
@@ -163,7 +171,7 @@ def get_test_set_description_html(test_set_name, orig_sents, refs_sents):
 
 def get_plotly_html(plotly_figure):
     doc = Doc()
-    plot_id = str(uuid4())
+    plot_id = get_random_html_id()
     # Empty div to hold the plot
     with doc.tag('div', id=plot_id):
         # Embedded javascript code that uses plotly to fill the div
