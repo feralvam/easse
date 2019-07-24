@@ -324,6 +324,8 @@ def get_html_report(orig_sents: List[str], sys_sents: List[str], refs_sents: Lis
         doc.asis(get_head_html())
         with doc.tag('div', klass='container-fluid m-2'):
             doc.line('h1', 'EASSE report', klass='mt-4')
+            with doc.tag('a', klass='btn btn-link', href='https://forms.gle/J8KVkJsqYe8GvYW46'):
+                doc.text('Any feedback welcome!')
             doc.stag('hr')
             doc.line('h2', 'Test set')
             doc.stag('hr')
