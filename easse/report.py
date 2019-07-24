@@ -79,38 +79,55 @@ def make_text_bold_html(text):
     return doc.getvalue()
 
 
-def get_qualitative_html_examples(orig_sents, sys_sents):
-    title_key = [
+def get_qualitative_html_examples(orig_sents, sys_sents, refs_sents):
+    title_key_print = [
         ('Randomly sampled simplifications',
-         lambda c, s: 0),
+         lambda c, s, refs: 0,
+         lambda value: ''),
+        ('Best simplifications according to SARI',
+         lambda c, s, refs: -corpus_sari([c], [s], [refs]),
+         lambda value: f'SARI={-value:.2f}'),
+        ('Worst simplifications according to SARI',
+         lambda c, s, refs: corpus_sari([c], [s], [refs]),
+         lambda value: f'SARI={value:.2f}'),
         ('Simplifications with only one differing word',
-         lambda c, s: -(count_words(c) == count_words(s) == len(get_lcs(to_words(c), to_words(s))) + 1)),
-        ('Simplifications with the highest compression',
-         lambda c, s: get_compression_ratio(c, s)),
+         lambda c, s, refs: -(count_words(c) == count_words(s) == len(get_lcs(to_words(c), to_words(s))) + 1),
+         lambda value: ''),
+        ('Simplifications with the most compression',
+         lambda c, s, refs: get_compression_ratio(c, s),
+         lambda value: f'compression_ratio={value:.2f}'),
         ('Simplifications that are longer than the source',
-         lambda c, s: -get_compression_ratio(c, s)),
-        ('Simplifications that are most dissimilar to the source',
-         lambda c, s: get_levenshtein_similarity(c, s)),
+         lambda c, s, refs: -get_compression_ratio(c, s),
+         lambda value: f'compression_ratio={-value:.2f}'),
+        ('Simplifications that are paraphrase the source',
+         lambda c, s, refs: get_levenshtein_similarity(c, s) / get_compression_ratio(c, s),
+         lambda value: f'levenshtein_similarity={value:.2f}'),
         ('Simplifications that are the most similar to the source (excluding exact matches)',
-         lambda c, s: -get_levenshtein_similarity(c, s) * int(c != s)),
+         lambda c, s, refs: -get_levenshtein_similarity(c, s) * int(c != s),
+         lambda value: f'levenshtein_similarity={-value:.2f}'),
         ('Simplifications with the most sentence splits (if there are any)',
-         lambda c, s: -count_sentence_splits(c, s)),
+         lambda c, s, refs: -count_sentence_splits(c, s),
+         lambda value: f'nb_sentences_ratio={-value:.2f}'),
     ]
     doc = Doc()
-    for title, sort_key in title_key:
+    for title, sort_key, print_func in title_key_print:
         with doc.tag('div', klass='container-fluid mt-5'):
             doc.line('h3', title)
             doc.stag('hr')
             n_samples = 10
-            pair_generator = sorted(zip(orig_sents, sys_sents), key=lambda args: sort_key(*args))
-            for i, (orig_sent, sys_sent) in enumerate(pair_generator):
+            sample_generator = sorted(zip(orig_sents, sys_sents, zip(*refs_sents)), key=lambda args: sort_key(*args))
+            for i, (orig_sent, sys_sent, refs) in enumerate(sample_generator):
                 if i >= n_samples:
                     break
                 orig_sent_bold, sys_sent_bold = make_differing_words_bold(orig_sent, sys_sent, make_text_bold_html)
-                with doc.tag('p'):
-                    doc.asis(orig_sent_bold)
-                    doc.stag('br')
-                    doc.asis(sys_sent_bold)
+                with doc.tag('div', klass='m-2'):
+                    with doc.tag('p', klass='container-fluid mb-2'):
+                        with doc.tag('div', klass='text-muted small'):
+                            doc.asis(print_func(sort_key(orig_sent, sys_sent, refs)))
+                        with doc.tag('div'):
+                            doc.asis(orig_sent_bold)
+                        with doc.tag('div'):
+                            doc.asis(sys_sent_bold)
     return doc.getvalue()
 
 
@@ -258,8 +275,11 @@ def get_head_html():
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-    <!-- Bootstrap CSS -->
+    <!-- Bootstrap -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
     <!-- Solarized CSS -->
     <style type="text/css">{solarized_css}</style>
     <!-- Plotly js -->
@@ -304,6 +324,8 @@ def get_html_report(orig_sents: List[str], sys_sents: List[str], refs_sents: Lis
         doc.asis(get_head_html())
         with doc.tag('div', klass='container-fluid m-2'):
             doc.line('h1', 'EASSE report', klass='mt-4')
+            with doc.tag('a', klass='btn btn-link', href='https://forms.gle/J8KVkJsqYe8GvYW46'):
+                doc.text('Any feedback welcome!')
             doc.stag('hr')
             doc.line('h2', 'Test set')
             doc.stag('hr')
