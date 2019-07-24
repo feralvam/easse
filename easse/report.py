@@ -114,28 +114,55 @@ def get_qualitative_html_examples(orig_sents, sys_sents, refs_sents):
          lambda c, s, refs: -count_sentence_splits(c, s),
          lambda value: f'nb_sentences_ratio={-value:.2f}'),
     ]
+
+    def get_one_sample_html(orig_sent, sys_sent, ref_sents, sort_key, print_func):
+        doc = Doc()
+        with doc.tag('div', klass='mb-2 p-1'):
+            # Sort key
+            with doc.tag('div', klass='text-muted small'):
+                doc.asis(print_func(sort_key(orig_sent, sys_sent, ref_sents)))
+            with doc.tag('div', klass='ml-2'):
+                orig_sent_bold, sys_sent_bold = make_differing_words_bold(orig_sent, sys_sent, make_text_bold_html)
+                # Source
+                with doc.tag('div'):
+                    doc.asis(orig_sent_bold)
+                # Prediction
+                with doc.tag('div'):
+                    doc.asis(sys_sent_bold)
+                # References
+                collapse_id = get_random_html_id()
+                with doc.tag('div', klass='position-relative'):
+                    with doc.tag('a', ('data-toggle', 'collapse'), ('href', f'#{collapse_id}'),
+                                 klass='stretched-link small'):
+                        doc.text('References')
+                    with doc.tag('div', klass='collapse', id=collapse_id):
+                        for ref_sent in refs:
+                            _, ref_sent_bold = make_differing_words_bold(orig_sent, ref_sent, make_text_bold_html)
+                            with doc.tag('div', klass='text-muted'):
+                                doc.asis(ref_sent_bold)
+        return doc.getvalue()
+
     doc = Doc()
     for title, sort_key, print_func in title_key_print:
-        with doc.tag('div', klass='container-fluid mt-5'):
-            doc.line('h3', title)
-            doc.stag('hr')
+        # stretched-link needs position-relative
+        with doc.tag('div', klass='container-fluid mt-4 p-2 position-relative border'):
+            doc.line('h3', klass='m-2', text_content=title)
+            # Make whole div clickable to collapse / uncollapse examples
             collapse_id = get_random_html_id()
-            with doc.tag('button', ('data-toggle', 'collapse'), ('data-target', f'#{collapse_id}'), klass='btn btn-secondary btn-sm'):
-                doc.text('View examples')
-            with doc.tag('div', klass='collapse', id=collapse_id):
+            with doc.tag('a', ('data-toggle', 'collapse'), ('href', f'#{collapse_id}'), klass='stretched-link'):
+                pass  # doc.stag and doc.line don't seem to work with stretched-link
+            # Now lets print the examples
+            sample_generator = sorted(
+                    zip(orig_sents, sys_sents, zip(*refs_sents)),
+                    key=lambda args: sort_key(*args),
+            )
+            # Samples displayed by default
+            with doc.tag('div', klass='collapse show', id=collapse_id):
                 n_samples = 10
-                sample_generator = sorted(zip(orig_sents, sys_sents, zip(*refs_sents)), key=lambda args: sort_key(*args))
                 for i, (orig_sent, sys_sent, refs) in enumerate(sample_generator):
                     if i >= n_samples:
                         break
-                    orig_sent_bold, sys_sent_bold = make_differing_words_bold(orig_sent, sys_sent, make_text_bold_html)
-                    with doc.tag('div', klass='mb-2 p-1 border-left'):
-                        with doc.tag('div', klass='text-muted small'):
-                            doc.asis(print_func(sort_key(orig_sent, sys_sent, refs)))
-                        with doc.tag('div'):
-                            doc.asis(orig_sent_bold)
-                        with doc.tag('div'):
-                            doc.asis(sys_sent_bold)
+                    doc.asis(get_one_sample_html(orig_sent, sys_sent, refs, sort_key, print_func))
     return doc.getvalue()
 
 
@@ -330,7 +357,7 @@ def get_html_report(orig_sents: List[str], sys_sents: List[str], refs_sents: Lis
     doc.asis('<!doctype html>')
     with doc.tag('html', lang='en'):
         doc.asis(get_head_html())
-        with doc.tag('div', klass='container-fluid m-2'):
+        with doc.tag('body', klass='container-fluid m-2 mb-5'):
             doc.line('h1', 'EASSE report', klass='mt-4')
             with doc.tag('a', klass='btn btn-link', href='https://forms.gle/J8KVkJsqYe8GvYW46'):
                 doc.text('Any feedback welcome!')
