@@ -90,7 +90,7 @@ def get_pwkp_orig_sents(phase):
 
 def get_pwkp_refs_sents(phase):
     assert phase in ['valid', 'test']
-    return read_lines(DATA_DIR / f'test_sets/pwkp/pwkp.{phase}.dst')
+    return [read_lines(DATA_DIR / f'test_sets/pwkp/pwkp.{phase}.dst')]
 
 
 def get_hsplit_orig_sents():
