@@ -11,6 +11,6 @@ UCCA_DIR = TOOLS_DIR / 'ucca-bilstm-1.3.10'
 UCCA_PARSER_PATH = UCCA_DIR / 'models/ucca-bilstm'
 
 # Constants
-VALID_TEST_SETS = ['turk', 'turk_valid', 'pwkp', 'hsplit']
+VALID_TEST_SETS = ['turk', 'turk_valid', 'pwkp', 'pwkp_valid', 'hsplit']
 VALID_METRICS = ['bleu', 'sari', 'samsa', 'fkgl']
 DEFAULT_METRICS = [m for m in VALID_METRICS if m != 'samsa']  # HACK: SAMSA is too long to compute

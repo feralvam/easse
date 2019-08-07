@@ -7,8 +7,9 @@ from easse.utils.helpers import read_lines
 from easse.quality_estimation import corpus_quality_estimation
 from easse.sari import corpus_sari
 from easse.samsa import corpus_samsa
-from easse.utils.resources import (get_turk_orig_sents, get_turk_refs_sents, get_hsplit_orig_sents,
-                                   get_hsplit_refs_sents)
+from easse.utils.resources import (get_turk_orig_sents, get_turk_refs_sents,
+                                   get_pwkp_orig_sents, get_pwkp_refs_sents,
+                                   get_hsplit_orig_sents, get_hsplit_refs_sents)
 from easse.utils.constants import VALID_TEST_SETS, VALID_METRICS, DEFAULT_METRICS
 from easse.report import write_html_report
 
@@ -81,6 +82,14 @@ def evaluate_system_output(
             orig_sents = get_turk_orig_sents(phase=phase)
         if load_refs_sents:
             refs_sents = get_turk_refs_sents(phase=phase)
+
+    if test_set in ['pwkp', 'pwkp_valid']:
+        lowercase = True
+        phase = 'test' if test_set == 'pwkp' else 'valid'
+        if load_orig_sents:
+            orig_sents = get_pwkp_orig_sents(phase=phase)
+        if load_refs_sents:
+            refs_sents = get_pwkp_refs_sents(phase=phase)
 
     if test_set == 'hsplit':
         sys_output = sys_output[:70]

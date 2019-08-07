@@ -83,6 +83,16 @@ def get_turk_refs_sents(phase):
             for i in range(8)]
 
 
+def get_pwkp_orig_sents(phase):
+    assert phase in ['valid', 'test']
+    return read_lines(DATA_DIR / f'test_sets/pwkp/pwkp.{phase}.src')
+
+
+def get_pwkp_refs_sents(phase):
+    assert phase in ['valid', 'test']
+    return read_lines(DATA_DIR / f'test_sets/pwkp/pwkp.{phase}.dst')
+
+
 def get_hsplit_orig_sents():
     return get_turk_orig_sents(phase='test')[:70]
 
