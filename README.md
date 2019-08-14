@@ -88,3 +88,18 @@ Example:
 easse report -t turk < easse/resources/data/system_outputs/turk/lower/DMASS-DCSS.tok.low
 ```
 <img src="https://github.com/feralvam/easse/blob/master/demo/report.gif">
+
+## Citation
+If you use EASSE in your research, please cite [EASSE: Easier Automatic Sentence Simplification Evaluation](https://arxiv.org/abs/1908.04567)
+
+```
+@inproceedings{alvamanchego-etal:2019:easse,
+    title = "{EASSE}: {E}asier {A}utomatic {S}entence {S}implification {E}valuation",
+    author = "Alva-Manchego, Fernando and Martin, Louis and Scarton, Carolina and Specia, Lucia",
+    booktitle = "To Appear in EMNLP-ICJNLP 2019: System Demonstrations",
+    month = nov,
+    year = "2019",
+    address = "Hong Kong, China",
+    url = "https://arxiv.org/abs/1908.04567",
+}
+```
