@@ -140,13 +140,13 @@ def evaluate_system_output(
 
 @cli.command('report')
 @common_options
-@click.option('--report_path', '-p', type=click.Path(), default='report.html',
-              help='Path to the output HTML report.')
-def _report(*args, **kwargs):
-    report(*args, **kwargs)
+@click.option('--report_path', '-p', type=click.Path(), default='report.html', help='Path to the output HTML report.')
+def report(*args, **kwargs):
+    easse_report(*args, **kwargs)
 
 
-def report(test_set, input_path=None, report_path='report.html', tokenizer='13a', metrics=','.join(DEFAULT_METRICS)):
+def easse_report(test_set, input_path=None, report_path='report.html', tokenizer='13a', metrics=','.join(DEFAULT_METRICS)):
+    # TODO: Move to easse.report
     """
     Create a HTML report file with automatic metrics, plots and samples.
     """

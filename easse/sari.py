@@ -1,7 +1,9 @@
 # Re-implementation from
 
 from collections import Counter
-from typing import List
+from functools import lru_cache
+from typing import List, Tuple
+
 import easse.utils.preprocessing as utils_prep
 
 
@@ -67,7 +69,9 @@ def compute_micro_sari(add_hyp_correct, add_hyp_total, add_ref_total,
     return sari_score
 
 
+@lru_cache(maxsize=10**6)
 def extract_ngrams(line, min_order=1, max_order=NGRAM_ORDER) -> List[Counter]:
+
     ngrams_per_order = []
     tokens = line.split()
     for n in range(min_order, max_order + 1):
@@ -88,7 +92,9 @@ def multiply_counter(c, v):
     return c_aux
 
 
-def compute_ngram_stats(orig_sents: List[str], sys_sents: List[str], refs_sents: List[List[str]]):
+@lru_cache()
+def _compute_ngram_stats(orig_sents: Tuple[str], sys_sents: Tuple[str], refs_sents: Tuple[Tuple[str]]):
+    '''Takes tuples as input for being used with lru_cache'''
     add_sys_correct = [0] * NGRAM_ORDER
     add_sys_total = [0] * NGRAM_ORDER
     add_ref_total = [0] * NGRAM_ORDER
@@ -101,8 +107,7 @@ def compute_ngram_stats(orig_sents: List[str], sys_sents: List[str], refs_sents:
     del_sys_total = [0] * NGRAM_ORDER
     del_ref_total = [0] * NGRAM_ORDER
 
-    fhs = [orig_sents] + [sys_sents] + refs_sents
-    for orig_sent, sys_sent, *ref_sents in zip(*fhs):
+    for orig_sent, sys_sent, *ref_sents in zip(orig_sents, sys_sents, *refs_sents):
         orig_ngrams = extract_ngrams(orig_sent)
         sys_ngrams = extract_ngrams(sys_sent)
 
@@ -147,6 +152,12 @@ def compute_ngram_stats(orig_sents: List[str], sys_sents: List[str], refs_sents:
     return add_sys_correct, add_sys_total, add_ref_total, \
            keep_sys_correct, keep_sys_total, keep_ref_total,\
            del_sys_correct, del_sys_total, del_ref_total
+
+
+def compute_ngram_stats(orig_sents: List[str], sys_sents: List[str], refs_sents: List[List[str]]):
+    return _compute_ngram_stats(tuple(orig_sents),
+                                tuple(sys_sents),
+                                tuple([tuple(ref_sents) for ref_sents in refs_sents]))
 
 
 def compute_precision_recall_f1(sys_correct, sys_total, ref_total):

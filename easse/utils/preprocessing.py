@@ -1,7 +1,9 @@
+from functools import lru_cache
 import sacrebleu
 import sacremoses
 
 
+@lru_cache(10**5)
 def normalize(sentence, lowercase: bool = True, tokenizer: str = '13a', return_str: bool = True):
     if lowercase:
         sentence = sentence.lower()
