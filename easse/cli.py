@@ -92,7 +92,7 @@ def evaluate_system_output(
         orig_sents_path=None,
         refs_sents_paths=None,
         tokenizer='13a',
-        metrics=','.join(VALID_METRICS),
+        metrics=','.join(DEFAULT_METRICS),
         analysis=False,
         quality_estimation=False,
         ):
