@@ -104,7 +104,7 @@ def get_qualitative_html_examples(orig_sents, sys_sents, refs_sents):
         ('Simplifications that are longer than the source',
          lambda c, s, refs: -get_compression_ratio(c, s),
          lambda value: f'compression_ratio={-value:.2f}'),
-        ('Simplifications that are paraphrase the source',
+        ('Simplifications that paraphrase the source',
          lambda c, s, refs: get_levenshtein_similarity(c, s) / get_compression_ratio(c, s),
          lambda value: f'levenshtein_similarity={value:.2f}'),
         ('Simplifications that are the most similar to the source (excluding exact matches)',
