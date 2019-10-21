@@ -1,5 +1,5 @@
 # EASSE
-**E**asier **A**utomatic **S**entence **S**implification **E**valuation
+[**EASSE**: **E**asier **A**utomatic **S**entence **S**implification **E**valuation](https://arxiv.org/abs/1908.04567)
 
 ## Installation
 <!--
