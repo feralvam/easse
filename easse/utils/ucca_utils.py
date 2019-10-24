@@ -35,11 +35,16 @@ def ucca_parse_texts(texts: List[str]):
     return parsed_passages
 
 
-def get_scenes(ucca_passage: Passage):
+def get_scenes_ucca(ucca_passage: Passage):
+    scenes_ucca = [x for x in ucca_passage.layer('1').all if x.tag == "FN" and x.is_scene()]
+    return scenes_ucca
+
+
+def get_scenes_text(ucca_passage: Passage):
     """Return all the ucca scenes in the given text"""
-    ucca_scenes = [x for x in ucca_passage.layer('1').all if x.tag == "FN" and x.is_scene()]
-    text_scenes = []
-    for scene in ucca_scenes:
+    scenes_ucca = get_scenes_ucca(ucca_passage)
+    scenes_text = []
+    for scene in scenes_ucca:
         words = []
         previous_word = ''
         for terminal in scene.get_terminals(False, True):
@@ -49,5 +54,5 @@ def get_scenes(ucca_passage: Passage):
                 continue
             words.append(word)
             previous_word = word
-        text_scenes.append(words)
-    return text_scenes
+        scenes_text.append(words)
+    return scenes_text

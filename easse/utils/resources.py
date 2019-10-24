@@ -66,3 +66,37 @@ def download_ucca_model():
     config_json['vocab'] = str(UCCA_DIR / config_json['vocab'])
     with open(json_path, 'w') as f:
             json.dump(config_json, f)
+
+
+def get_turk_orig_sents(phase):
+    assert phase in ['valid', 'test']
+    if phase == 'valid':
+        phase = 'tune'
+    return read_lines(DATA_DIR / f'test_sets/turk/{phase}.8turkers.tok.norm')
+
+
+def get_turk_refs_sents(phase):
+    assert phase in ['valid', 'test']
+    if phase == 'valid':
+        phase = 'tune'
+    return [read_lines(DATA_DIR / f'test_sets/turk/{phase}.8turkers.tok.turk.{i}')
+            for i in range(8)]
+
+
+def get_pwkp_orig_sents(phase):
+    assert phase in ['valid', 'test']
+    return read_lines(DATA_DIR / f'test_sets/pwkp/pwkp.{phase}.src')
+
+
+def get_pwkp_refs_sents(phase):
+    assert phase in ['valid', 'test']
+    return [read_lines(DATA_DIR / f'test_sets/pwkp/pwkp.{phase}.dst')]
+
+
+def get_hsplit_orig_sents():
+    return get_turk_orig_sents(phase='test')
+
+
+def get_hsplit_refs_sents():
+    return [read_lines(DATA_DIR / f'test_sets/hsplit/hsplit.tok.{i+1}')
+            for i in range(4)]

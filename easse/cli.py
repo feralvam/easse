@@ -101,25 +101,55 @@ def evaluate_system_output(
     """
     # get the metrics that need to be computed
     metrics = metrics.split(',')
-    orig_sents, sys_sents, refs_sents = get_sents(test_set, orig_sents_path, sys_sents_path, refs_sents_paths)
-    lowercase = is_test_set_lowercase(test_set)
+
+    load_orig_sents = ('sari' in metrics) or ('samsa' in metrics) or analysis or quality_estimation
+    load_refs_sents = ('sari' in metrics) or ('bleu' in metrics) or analysis
+    # get the references from the test set
+    if test_set in ['turk', 'turk_valid']:
+        lowercase = False
+        phase = 'test' if test_set == 'turk' else 'valid'
+        if load_orig_sents:
+            orig_sents = get_turk_orig_sents(phase=phase)
+        if load_refs_sents:
+            refs_sents = get_turk_refs_sents(phase=phase)
+
+    if test_set in ['pwkp', 'pwkp_valid']:
+        lowercase = True
+        phase = 'test' if test_set == 'pwkp' else 'valid'
+        if load_orig_sents:
+            orig_sents = get_pwkp_orig_sents(phase=phase)
+        if load_refs_sents:
+            refs_sents = get_pwkp_refs_sents(phase=phase)
+
+    if test_set == 'hsplit':
+        sys_output = sys_output[:70]
+        lowercase = True
+        if load_orig_sents:
+            orig_sents = get_hsplit_orig_sents()
+        if load_refs_sents:
+            refs_sents = get_hsplit_refs_sents()
+
+    if load_orig_sents:
+        assert len(sys_output) == len(orig_sents)
+    if load_refs_sents:
+        assert len(sys_output) == len(refs_sents[0])
 
     # compute each metric
     if 'bleu' in metrics:
         bleu_score = sacrebleu.corpus_bleu(sys_sents, refs_sents,
                                            force=True, tokenize=tokenizer, lowercase=lowercase).score
-        click.echo(f'BLEU: {bleu_score:.2f}')
+        click.echo(f'BLEU:\t{bleu_score:.2f}')
 
     if 'sari' in metrics:
-        sari_score = corpus_sari(orig_sents, sys_sents, refs_sents, tokenizer=tokenizer, lowercase=lowercase)
+        sari_score = corpus_sari(orig_sents, sys_output, refs_sents, tokenizer=tokenizer, lowercase=lowercase)
         click.echo(f'SARI: {sari_score:.2f}')
 
     if 'samsa' in metrics:
-        samsa_score = corpus_samsa(orig_sents, sys_sents, tokenizer=tokenizer, verbose=True, lowercase=lowercase)
+        samsa_score = corpus_samsa(orig_sents, sys_output, tokenizer=tokenizer, verbose=True, lowercase=lowercase)
         click.echo(f'SAMSA: {samsa_score:.2f}')
 
     if 'fkgl' in metrics:
-        fkgl_score = corpus_fkgl(sys_sents, tokenizer=tokenizer)
+        fkgl_score = corpus_fkgl(sys_output, tokenizer=tokenizer)
         click.echo(f'FKGL: {fkgl_score:.2f}')
 
     if analysis:

@@ -48,10 +48,13 @@ def test_samsa_score_sentence():
     # samsa_score = samsa.corpus_samsa([orig_sentence], [sys_output])
     # assert samsa_score == pytest.approx(0.2222222222222222)
 
-    orig_sentence = ("for example , king bhumibol was born on monday , "
-                     "so on his birthday throughout thailand will be decorated with yellow color .")
-    sys_output = ("for example , king bhumibol was born on monday , "
-                  "so on his birthday throughout thailand will be decorated with yellow color .")
+    orig_sentence = ("""waugh writes that charles had been " in search of love in those days " when he first met sebastian , 
+    finding " that low door in the wall ... which opened on an enclosed and enchanted garden " , 
+    a metaphor that informs the work on a number of levels .""")
+    sys_output = ("""however writes that charles had been '' in search of love in those days '' when he met sebastian , 
+    finding '' that low door in the wall ... which opened on an enclosed and magical garden '' , 
+    a metaphor that tells the work on a number of levels .
+    """)
     samsa_score = samsa.corpus_samsa([orig_sentence], [sys_output], lowercase=False)
     print(samsa_score)
 
