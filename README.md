@@ -11,16 +11,12 @@
 -->
 ### Installing from source
 
-You can also install EASSE by cloning our git repository:
+Install EASSE by running:
 
 ```bash
 git clone https://github.com/feralvam/easse.git
-```
-
-Create a Python 3.6 virtual environment (make sure you have the latest pip), and install EASSE in `editable` mode by running:
-
-```bash
-pip install --editable .
+cd easse
+pip install .
 ```
 
 This will make `easse` available on your system but it will use the sources from the local clone
