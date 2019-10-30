@@ -57,9 +57,9 @@ Options:
   -q, --quality_estimation        Perform quality estimation.
   -h, --help                      Show this message and exit.
 ```
-Example:
+Example with the [ACCESS](https://github.com/facebookresearch/access) system outputs:
 ```
-easse evaluate -t turk -m 'bleu,sari' -q < easse/resources/data/system_outputs/turk/lower/DMASS-DCSS.tok.low
+easse evaluate -t turk -m 'bleu,sari' -q < easse/resources/data/system_outputs/turk/lower/ACCESS.tok.low
 ```
 
 <img src="https://github.com/feralvam/easse/blob/master/demo/evaluate.gif">
@@ -79,9 +79,9 @@ Options:
   -p, --report_path PATH          Path to the output HTML report.
   -h, --help                      Show this message and exit.
 ```
-Example:
+Example with the [ACCESS](https://github.com/facebookresearch/access) system outputs:
 ```
-easse report -t turk < easse/resources/data/system_outputs/turk/lower/DMASS-DCSS.tok.low
+easse report -t turk < easse/resources/data/system_outputs/turk/lower/ACCESS.tok.low
 ```
 <img src="https://github.com/feralvam/easse/blob/master/demo/report.gif">
 
