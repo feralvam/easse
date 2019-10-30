@@ -9,6 +9,11 @@
    pip install easse
    ```
 -->
+
+### Requirements
+
+Python 3.6 or 3.7 is required.
+
 ### Installing from source
 
 Install EASSE by running:
@@ -39,7 +44,7 @@ Commands:
   report    Create a HTML report file with automatic metrics, plots and samples.
 ```
 
-### evaluate
+### easse evaluate
 ```
 $ easse evaluate -h
 Usage: easse evaluate [OPTIONS]
@@ -64,7 +69,7 @@ easse evaluate -t turk -m 'bleu,sari' -q < easse/resources/data/system_outputs/t
 
 <img src="https://github.com/feralvam/easse/blob/master/demo/evaluate.gif">
 
-### report
+### easse report
 ```
 $ easse report -h
 Usage: easse report [OPTIONS]
@@ -79,7 +84,7 @@ Options:
   -p, --report_path PATH          Path to the output HTML report.
   -h, --help                      Show this message and exit.
 ```
-Example with the [ACCESS](https://github.com/facebookresearch/access) system outputs:
+Example:
 ```
 easse report -t turk < easse/resources/data/system_outputs/turk/lower/ACCESS.tok.low
 ```
