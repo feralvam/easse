@@ -9,18 +9,19 @@
    pip install easse
    ```
 -->
+
+### Requirements
+
+Python 3.6 or 3.7 is required.
+
 ### Installing from source
 
-You can also install EASSE by cloning our git repository:
+Install EASSE by running:
 
 ```bash
 git clone https://github.com/feralvam/easse.git
-```
-
-Create a Python 3.6 virtual environment (make sure you have the latest pip), and install EASSE in `editable` mode by running:
-
-```bash
-pip install --editable .
+cd easse
+pip install .
 ```
 
 This will make `easse` available on your system but it will use the sources from the local clone
@@ -43,7 +44,7 @@ Commands:
   report    Create a HTML report file with automatic metrics, plots and samples.
 ```
 
-### evaluate
+### easse evaluate
 ```
 $ easse evaluate -h
 Usage: easse evaluate [OPTIONS]
@@ -61,14 +62,14 @@ Options:
   -q, --quality_estimation        Perform quality estimation.
   -h, --help                      Show this message and exit.
 ```
-Example:
+Example with the [ACCESS](https://github.com/facebookresearch/access) system outputs:
 ```
-easse evaluate -t turk -m 'bleu,sari' -q < easse/resources/data/system_outputs/turk/lower/DMASS-DCSS.tok.low
+easse evaluate -t turk -m 'bleu,sari' -q < easse/resources/data/system_outputs/turk/lower/ACCESS.tok.low
 ```
 
 <img src="https://github.com/feralvam/easse/blob/master/demo/evaluate.gif">
 
-### report
+### easse report
 ```
 $ easse report -h
 Usage: easse report [OPTIONS]
@@ -85,7 +86,7 @@ Options:
 ```
 Example:
 ```
-easse report -t turk < easse/resources/data/system_outputs/turk/lower/DMASS-DCSS.tok.low
+easse report -t turk < easse/resources/data/system_outputs/turk/lower/ACCESS.tok.low
 ```
 <img src="https://github.com/feralvam/easse/blob/master/demo/report.gif">
 
