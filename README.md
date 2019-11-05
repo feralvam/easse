@@ -1,5 +1,5 @@
 # EASSE
-[EASSE](https://www.aclweb.org/anthology/D19-3009/) (**E**asier **A**utomatic **S**entence **S**implification **E**valuation) is a Python 3 package aiming to facilitate and standardise automatic evaluation and comparison of Sentence Simplification systems. ([*What is Sentence Simplification?*](https://nlpprogress.com/english/simplification.html))
+[**EASSE**](https://www.aclweb.org/anthology/D19-3009/) (**E**asier **A**utomatic **S**entence **S**implification **E**valuation) is a Python 3 package aiming to facilitate and standardise automatic evaluation and comparison of Sentence Simplification systems. ([*What is Sentence Simplification?*](https://nlpprogress.com/english/simplification.html))
 
 ### Features
 
@@ -18,7 +18,7 @@ Python 3.6 or 3.7 is required.
 
 Install EASSE by running:
 
-```bash
+```
 git clone https://github.com/feralvam/easse.git
 cd easse
 pip install .
@@ -32,7 +32,7 @@ you made of the source repository.
 ### CLI
 Once EASSE has been installed, you can run the command-line interface with the `easse` command.
 
-```bash
+```
 $ easse
 Usage: easse [OPTIONS] COMMAND [ARGS]...
 
@@ -46,7 +46,7 @@ Commands:
 ```
 
 #### easse evaluate
-```bash
+```
 $ easse evaluate -h
 Usage: easse evaluate [OPTIONS]
 
@@ -70,14 +70,14 @@ Options:
   -h, --help                      Show this message and exit.
 ```
 Example with the [ACCESS](https://github.com/facebookresearch/access) system outputs:
-```bash
+```
 easse evaluate -t turk -m 'bleu,sari' -q < easse/resources/data/system_outputs/turk/lower/ACCESS.tok.low
 ```
 
 <img src="https://github.com/feralvam/easse/blob/master/demo/evaluate.gif">
 
 #### easse report
-```bash
+```
 $ easse report -h
 Usage: easse report [OPTIONS]
 
@@ -100,7 +100,7 @@ Options:
   -h, --help                      Show this message and exit.
 ```
 Example:
-```bash
+```
 easse report -t turk < easse/resources/data/system_outputs/turk/lower/ACCESS.tok.low
 ```
 <img src="https://github.com/feralvam/easse/blob/master/demo/report.gif">
