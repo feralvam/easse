@@ -53,12 +53,7 @@ def download_stanford_corenlp():
     unzip(temp_filepath, STANFORD_CORENLP_DIR.parent)
 
 
-def download_ucca_model():
-    url = 'https://github.com/huji-nlp/tupa/releases/download/v1.3.10/ucca-bilstm-1.3.10.tar.gz'
-    temp_filepath = get_temp_filepath()
-    download(url, temp_filepath)
-    UCCA_DIR.mkdir(parents=True, exist_ok=True)
-    untar(temp_filepath, UCCA_DIR)
+def update_ucca_path():
     # HACK: Change vocab_path from relative to absolute path
     json_path = str(UCCA_PARSER_PATH) + '.nlp.json'
     with open(json_path, 'r') as f:
@@ -66,6 +61,15 @@ def download_ucca_model():
     config_json['vocab'] = str(UCCA_DIR / config_json['vocab'])
     with open(json_path, 'w') as f:
             json.dump(config_json, f)
+
+
+def download_ucca_model():
+    url = 'https://github.com/huji-nlp/tupa/releases/download/v1.3.10/ucca-bilstm-1.3.10.tar.gz'
+    temp_filepath = get_temp_filepath()
+    download(url, temp_filepath)
+    UCCA_DIR.mkdir(parents=True, exist_ok=True)
+    untar(temp_filepath, UCCA_DIR)
+    update_ucca_path()
 
 
 def get_orig_sents(test_set):
