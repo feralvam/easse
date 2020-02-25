@@ -8,29 +8,30 @@ from easse.quality_estimation import corpus_quality_estimation
 from easse.sari import corpus_sari
 from easse.samsa import corpus_samsa
 from easse.utils.constants import VALID_TEST_SETS, VALID_METRICS, DEFAULT_METRICS, TEST_SETS_PATHS
+from easse.utils.resources import get_orig_sents, get_refs_sents
 from easse.report import write_html_report
 
 
 def get_sents(test_set, orig_sents_path=None, sys_sents_path=None, refs_sents_paths=None):
+    # Get system sentences to be evaluated
     if sys_sents_path is not None:
         sys_sents = read_lines(sys_sents_path)
     else:
         # read the system output
         with click.get_text_stream('stdin', encoding='utf-8') as system_output_file:
             sys_sents = system_output_file.read().splitlines()
-
-    if type(refs_sents_paths) == str:
-        refs_sents_paths = refs_sents_paths.split(',')
-
-    if test_set != 'custom':
+    # Get original and reference sentences
+    if test_set == 'custom':
         assert orig_sents_path is None
         assert refs_sents_paths is None
-        orig_sents_path = TEST_SETS_PATHS[(test_set, 'orig')]
-        refs_sents_paths = TEST_SETS_PATHS[(test_set, 'refs')]
-    assert orig_sents_path is not None
-    assert refs_sents_paths is not None
-    orig_sents = read_lines(orig_sents_path)
-    refs_sents = [read_lines(ref_sents_path) for ref_sents_path in refs_sents_paths]
+        if type(refs_sents_paths) == str:
+            refs_sents_paths = refs_sents_paths.split(',')
+        orig_sents = read_lines(orig_sents_path)
+        refs_sents = [read_lines(ref_sents_path) for ref_sents_path in refs_sents_paths]
+    else:
+        orig_sents = get_orig_sents(test_set)
+        refs_sents = get_refs_sents(test_set)
+    # Final checks
     assert len(sys_sents) == len(orig_sents)
     assert all([len(sys_sents) == len(ref_sents) for ref_sents in refs_sents])
     return orig_sents, sys_sents, refs_sents
