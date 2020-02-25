@@ -4,7 +4,7 @@
 ### Features
 
 - Automatic evaluation metrics (e.g. SARI, BLEU, SAMSA, etc.)
-- Word-level transformation analysis 
+- Word-level transformation analysis
 - Referenceless Quality Estimation features
 - Straightforward access to commonly used evaluation datasets
 - Comprehensive HTML report for quantitative and qualitative evaluation of a simplification output
@@ -63,7 +63,7 @@ Options:
                                   test_set == "custom"
   --sys_sents_path PATH           Path to the system predictions input file
                                   that is to be evaluated.
-  -t, --test_set [turk|turk_valid|pwkp|pwkp_valid|hsplit|custom]
+  -t, --test_set [turkcorpus_test|turkcorpus_valid|pwkp_test|pwkp_valid|hsplit_test|custom]
                                   test set to use.  [required]
   -a, --analysis                  Perform word-level transformation analysis.
   -q, --quality_estimation        Perform quality estimation.
@@ -71,7 +71,7 @@ Options:
 ```
 Example with the [ACCESS](https://github.com/facebookresearch/access) system outputs:
 ```
-easse evaluate -t turk -m 'bleu,sari' -q < easse/resources/data/system_outputs/turk/lower/ACCESS.tok.low
+easse evaluate -t turkcorpus_test -m 'bleu,sari' -q < easse/resources/data/system_outputs/turkcorpus/lower/ACCESS.tok.low
 ```
 
 <img src="https://github.com/feralvam/easse/blob/master/demo/evaluate.gif">
@@ -94,14 +94,14 @@ Options:
                                   test_set == "custom"
   --sys_sents_path PATH           Path to the system predictions input file
                                   that is to be evaluated.
-  -t, --test_set [turk|turk_valid|pwkp|pwkp_valid|hsplit|custom]
+  -t, --test_set [turkcorpus_test|turkcorpus_valid|pwkp_test|pwkp_valid|hsplit_test|custom]
                                   test set to use.  [required]
   -p, --report_path PATH          Path to the output HTML report.
   -h, --help                      Show this message and exit.
 ```
 Example:
 ```
-easse report -t turk < easse/resources/data/system_outputs/turk/lower/ACCESS.tok.low
+easse report -t turkcorpus_test < easse/resources/data/system_outputs/turkcorpus/lower/ACCESS.tok.low
 ```
 <img src="https://github.com/feralvam/easse/blob/master/demo/report.gif">
 
@@ -113,8 +113,8 @@ You can also use the different functions available in EASSE from your Python cod
 >>> from easse.sari import corpus_sari
 >>> orig_sents = ["About 95 species are currently accepted ."]
 >>> sys_sents = ["About 95 you now get in ."]
->>> refs_sents = [["About 95 species are currently known .", 
-...                "About 95 species are now accepted .", 
+>>> refs_sents = [["About 95 species are currently known .",
+...                "About 95 species are now accepted .",
 ...                "95 species are now accepted ."]]
 >>> sari_score = corpus_sari(orig_sents, sys_sents, refs_sents)
 >>> print(sari_score)
