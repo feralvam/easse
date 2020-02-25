@@ -6,7 +6,7 @@ import time
 from urllib.request import urlretrieve
 import zipfile
 
-from easse.utils.constants import DATA_DIR, STANFORD_CORENLP_DIR, UCCA_DIR, UCCA_PARSER_PATH
+from easse.utils.constants import DATA_DIR, STANFORD_CORENLP_DIR, UCCA_DIR, UCCA_PARSER_PATH, TEST_SETS_PATHS, SYSTEM_OUTPUTS_DIRS_MAP
 from easse.utils.helpers import get_temp_filepath, read_lines
 
 
@@ -66,3 +66,15 @@ def download_ucca_model():
     config_json['vocab'] = str(UCCA_DIR / config_json['vocab'])
     with open(json_path, 'w') as f:
             json.dump(config_json, f)
+
+
+def get_orig_sents(test_set):
+    return read_lines(TEST_SETS_PATHS[(test_set, 'orig')])
+
+
+def get_refs_sents(test_set):
+    return [read_lines(ref_sents_path) for ref_sents_path in TEST_SETS_PATHS[(test_set, 'refs')]]
+
+
+def get_system_outputs_dir(test_set):
+    return SYSTEM_OUTPUTS_DIRS_MAP[test_set]
