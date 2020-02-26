@@ -9,21 +9,7 @@ import easse.utils.preprocessing as utils_prep
 from tqdm import tqdm
 
 
-def align_scenes_sentences(scenes, synt_parse_sentences):
-    # parse the scenes
-    synt_parse_scenes = syntactic_parse_texts(scenes)
-    all_scenes_alignments = []
-    for synt_scene in synt_parse_scenes:
-        scene_alignments = []
-        for synt_sent in synt_parse_sentences:
-            # word_alignments = [[word1_scene, word1_sentence], [word2_scene, word3_sentence], ...]
-            word_alignments = align(synt_scene, synt_sent)[1]
-            scene_alignments.append(word_alignments)
-        all_scenes_alignments.append(scene_alignments)
-    return all_scenes_alignments
-
-
-def align_scenes_sentences_new(scenes, synt_parse_sentences, allow_mutiple_matches):
+def align_scenes_sentences(scenes, synt_parse_sentences, allow_mutiple_matches):
     synt_parse_scenes = syntactic_parse_texts(scenes)
 
     scenes_sents_aligns = []
@@ -211,7 +197,7 @@ def compute_samsa(orig_ucca_passage: Passage, sys_synt_parse):
 
         allow_mutiple_matches = orig_num_scenes > sys_num_sents
 
-        orig_scenes_sys_sentences_alignments = align_scenes_sentences_new(orig_scenes, sys_synt_parse,
+        orig_scenes_sys_sentences_alignments = align_scenes_sentences(orig_scenes, sys_synt_parse,
                                                                           allow_mutiple_matches)
         scorem = []
         scorea = []
