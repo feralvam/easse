@@ -33,6 +33,12 @@ TEST_SETS_PATHS = {
         ('googlecomp_valid', 'orig'): DATA_DIR / f'test_sets/googlecomp/googlecomp.valid.orig',
         ('googlecomp_valid', 'refs'): [DATA_DIR / f'test_sets/googlecomp/googlecomp.valid.comp'],
 }
+SYSTEM_OUTPUTS_DIR = DATA_DIR / 'system_outputs'
+SYSTEM_OUTPUTS_DIRS_MAP = {
+        'turkcorpus_test': SYSTEM_OUTPUTS_DIR / 'turkcorpus/test',
+        'turkcorpus_valid': SYSTEM_OUTPUTS_DIR / 'turkcorpus/valid',
+        'pwkp_test': SYSTEM_OUTPUTS_DIR / 'pwkp/test',
+}
 
 # Constants
 VALID_TEST_SETS = ['turkcorpus_test', 'turkcorpus_valid', 'pwkp_test', 'pwkp_valid', 'hsplit_test',
