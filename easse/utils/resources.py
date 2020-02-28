@@ -58,7 +58,7 @@ def update_ucca_path():
     json_path = str(UCCA_PARSER_PATH) + '.nlp.json'
     with open(json_path, 'r') as f:
         config_json = json.load(f)
-    config_json['vocab'] = str(UCCA_DIR / config_json['vocab'])
+    config_json['vocab'] = str(UCCA_DIR / 'vocab/en_core_web_lg.csv')
     with open(json_path, 'w') as f:
             json.dump(config_json, f)
 
