@@ -8,7 +8,7 @@ from ucca.core import Passage
 import ucca.convert
 
 from easse.utils.constants import UCCA_PARSER_PATH
-from easse.utils.resources import download_ucca_model
+from easse.utils.resources import download_ucca_model, update_ucca_path
 
 
 @contextmanager
@@ -23,6 +23,7 @@ def mock_sys_argv(argv):
 def get_parser():
     if not UCCA_PARSER_PATH.parent.exists():
         download_ucca_model()
+    update_ucca_path()
     with mock_sys_argv(['']):
         # Need to mock sysargs otherwise the parser will use try to use them and throw an exception
         return Parser(str(UCCA_PARSER_PATH))

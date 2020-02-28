@@ -146,7 +146,11 @@ def get_minimal_centers_for_participants(P: Passage):
 
     for scp in s:  # find the spans of the participant nodes
         output1 = []
-        for [par] in scp:
+        for par in scp:
+            # TODO: somethimes "par" does not contain anything, which caused the original implementation (without the if) to crash when unpacking
+            if len(par) != 1:
+                continue
+            [par] = par
             output2 = []
             p = []
             d = par.get_terminals(False, True)
@@ -235,7 +239,9 @@ def compute_samsa(orig_ucca_passage: Passage, sys_synt_parse):
 
 def corpus_samsa(orig_sentences: List[str], sys_outputs: List[str], lowercase: bool = False, tokenizer: str = '13a',
                  verbose: bool = False):
-    print('Warning: SAMSA metric takes a long time to compute. Disable it if you need fast evaluation.')
+
+    print('Warning: SAMSA metric is long to compute (120 sentences ~ 1h), disable it if you need fast evaluation.')
+    
     orig_sentences = [utils_prep.normalize(sent, lowercase, tokenizer) for sent in orig_sentences]
     orig_ucca_sents = ucca_parse_texts(orig_sentences)
 

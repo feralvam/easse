@@ -27,8 +27,8 @@ def get_sents(test_set, orig_sents_path=None, sys_sents_path=None, refs_sents_pa
             sys_sents = system_output_file.read().splitlines()
     # Get original and reference sentences
     if test_set == 'custom':
-        assert orig_sents_path is None
-        assert refs_sents_paths is None
+        assert orig_sents_path is not None
+        assert refs_sents_paths is not None
         if type(refs_sents_paths) == str:
             refs_sents_paths = refs_sents_paths.split(',')
         orig_sents = read_lines(orig_sents_path)
