@@ -9,21 +9,7 @@ import easse.utils.preprocessing as utils_prep
 from tqdm import tqdm
 
 
-def align_scenes_sentences(scenes, synt_parse_sentences):
-    # parse the scenes
-    synt_parse_scenes = syntactic_parse_texts(scenes)
-    all_scenes_alignments = []
-    for synt_scene in synt_parse_scenes:
-        scene_alignments = []
-        for synt_sent in synt_parse_sentences:
-            # word_alignments = [[word1_scene, word1_sentence], [word2_scene, word3_sentence], ...]
-            word_alignments = align(synt_scene, synt_sent)[1]
-            scene_alignments.append(word_alignments)
-        all_scenes_alignments.append(scene_alignments)
-    return all_scenes_alignments
-
-
-def align_scenes_sentences_new(scenes, synt_parse_sentences, allow_mutiple_matches):
+def align_scenes_sentences(scenes, synt_parse_sentences, allow_mutiple_matches):
     synt_parse_scenes = syntactic_parse_texts(scenes)
 
     scenes_sents_aligns = []
@@ -162,7 +148,11 @@ def get_participants_minimal_centers(P: Passage):
 
     for scp in s:  # find the spans of the participant nodes
         output1 = []
-        for [par] in scp:
+        for par in scp:
+            # TODO: somethimes "par" does not contain anything, which caused the original implementation (without the if) to crash when unpacking
+            if len(par) != 1:
+                continue
+            [par] = par
             output2 = []
             p = []
             d = par.get_terminals(False,True)
@@ -211,7 +201,7 @@ def compute_samsa(orig_ucca_passage: Passage, sys_synt_parse):
 
         allow_mutiple_matches = orig_num_scenes > sys_num_sents
 
-        orig_scenes_sys_sentences_alignments = align_scenes_sentences_new(orig_scenes, sys_synt_parse,
+        orig_scenes_sys_sentences_alignments = align_scenes_sentences(orig_scenes, sys_synt_parse,
                                                                           allow_mutiple_matches)
         scorem = []
         scorea = []
@@ -251,7 +241,7 @@ def compute_samsa(orig_ucca_passage: Passage, sys_synt_parse):
 
 def corpus_samsa(orig_sentences: List[str], sys_outputs: List[str], lowercase: bool = False, tokenizer: str = '13a',
                  verbose: bool = False):
-    print('Warning: SAMSA metric is long to compute, disable it if if you need fast evaluation.')
+    print('Warning: SAMSA metric is long to compute (120 sentences ~ 1h), disable it if you need fast evaluation.')
     orig_sentences = [utils_prep.normalize(sent, lowercase, tokenizer) for sent in orig_sentences]
     orig_ucca_sents = ucca_parse_texts(orig_sentences)
 
