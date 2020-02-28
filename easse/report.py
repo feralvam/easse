@@ -64,7 +64,7 @@ def make_differing_words_bold(orig_sent, sys_sent, make_bold):
                 formatted_string += ' ' + make_bold(bold_text)
             formatted_string += ' ' + word
         # Add remaining words
-        formatted_string += make_bold(' '.join(words_generator))
+        formatted_string += ' ' + make_bold(' '.join(words_generator))
         return formatted_string.strip()
 
     orig_words = to_words(orig_sent)
