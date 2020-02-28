@@ -187,8 +187,7 @@ def compute_macro_sari(add_sys_correct, add_sys_total, add_ref_total,
 
 
 def corpus_sari(orig_sents: List[str], sys_sents: List[str], refs_sents: List[List[str]],
-                lowercase: bool = False, tokenizer: str = '13a'):
-
+                lowercase: bool = True, tokenizer: str = '13a'):
     orig_sents = [utils_prep.normalize(sent, lowercase, tokenizer) for sent in orig_sents]
     sys_sents = [utils_prep.normalize(sent, lowercase, tokenizer) for sent in sys_sents]
     refs_sents = [[utils_prep.normalize(sent, lowercase, tokenizer) for sent in ref_sents]
