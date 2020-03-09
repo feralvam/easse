@@ -4,7 +4,6 @@ from collections import Counter
 from typing import List
 import easse.utils.preprocessing as utils_prep
 
-
 NGRAM_ORDER = 4
 
 
@@ -30,7 +29,10 @@ def compute_f1(precision, recall):
 def compute_micro_sari(add_hyp_correct, add_hyp_total, add_ref_total,
                        keep_hyp_correct, keep_hyp_total, keep_ref_total,
                        del_hyp_correct, del_hyp_total, del_ref_total,
-                       corpus_level=True):
+                       use_f1_for_deletion=True):
+    """
+    This is the version described in the original paper. Follows the equations.
+    """
     add_precision = [0] * NGRAM_ORDER
     add_recall = [0] * NGRAM_ORDER
     keep_precision = [0] * NGRAM_ORDER
@@ -57,7 +59,7 @@ def compute_micro_sari(add_hyp_correct, add_hyp_total, add_ref_total,
 
     keep_f1 = compute_f1(avg_keep_precision, avg_keep_recall)
 
-    if corpus_level:
+    if use_f1_for_deletion:
         del_score = compute_f1(avg_del_precision, avg_del_recall)
     else:
         del_score = avg_del_precision
@@ -145,7 +147,7 @@ def compute_ngram_stats(orig_sents: List[str], sys_sents: List[str], refs_sents:
             del_sys_correct[n] += sum((orig_and_not_sys & orig_and_not_ref).values())
 
     return add_sys_correct, add_sys_total, add_ref_total, \
-           keep_sys_correct, keep_sys_total, keep_ref_total,\
+           keep_sys_correct, keep_sys_total, keep_ref_total, \
            del_sys_correct, del_sys_total, del_ref_total
 
 
@@ -168,13 +170,16 @@ def compute_precision_recall_f1(sys_correct, sys_total, ref_total):
 def compute_macro_sari(add_sys_correct, add_sys_total, add_ref_total,
                        keep_sys_correct, keep_sys_total, keep_ref_total,
                        del_sys_correct, del_sys_total, del_ref_total,
-                       corpus_level=True):
-
+                       use_f1_for_deletion=True):
+    """
+    This is the version released as a JAVA implementation and which was used in their experiments,
+    as stated by the authors: https://github.com/cocoxu/simplification/issues/8
+    """
     sari_score = 0.0
     for n in range(NGRAM_ORDER):
         _, _, add_f1_ngram = compute_precision_recall_f1(add_sys_correct[n], add_sys_total[n], add_ref_total[n])
         _, _, keep_f1_ngram = compute_precision_recall_f1(keep_sys_correct[n], keep_sys_total[n], keep_ref_total[n])
-        if corpus_level:
+        if use_f1_for_deletion:
             _, _, del_score_ngram = compute_precision_recall_f1(del_sys_correct[n], del_sys_total[n], del_ref_total[n])
         else:
             del_score_ngram, _, _ = compute_precision_recall_f1(del_sys_correct[n], del_sys_total[n], del_ref_total[n])
@@ -187,17 +192,31 @@ def compute_macro_sari(add_sys_correct, add_sys_total, add_ref_total,
 
 
 def corpus_sari(orig_sents: List[str], sys_sents: List[str], refs_sents: List[List[str]],
-                lowercase: bool = True, tokenizer: str = '13a'):
-    orig_sents = [utils_prep.normalize(sent, lowercase, tokenizer) for sent in orig_sents]
+                lowercase: bool = True, tokenizer: str = '13a',
+                legacy=False, use_f1_for_deletion=True, use_paper_version=False):
+    """The `legacy` parameter allows reproducing scores reported in previous work.
+    It replicates a bug in the original JAVA implementation where only the system outputs and the reference sentences
+    are further tokenized. In addition, it assumes that all sentences are already lowercased. """
+    if legacy:
+        lowercase = False
+    else:
+        orig_sents = [utils_prep.normalize(sent, lowercase, tokenizer) for sent in orig_sents]
+
     sys_sents = [utils_prep.normalize(sent, lowercase, tokenizer) for sent in sys_sents]
     refs_sents = [[utils_prep.normalize(sent, lowercase, tokenizer) for sent in ref_sents]
-                      for ref_sents in refs_sents]
+                  for ref_sents in refs_sents]
 
     stats = compute_ngram_stats(orig_sents, sys_sents, refs_sents)
 
-    return compute_macro_sari(*stats, corpus_level=True)
+    if not use_paper_version:
+        return compute_macro_sari(*stats, use_f1_for_deletion=use_f1_for_deletion)
+    else:
+        return compute_micro_sari(*stats, use_f1_for_deletion=use_f1_for_deletion)
 
 
-def sari_sentence(orig_sent: str, hyp_sent: str, ref_sents: List[str]):
-    stats = compute_ngram_stats([orig_sent], [hyp_sent], [ref_sents])
-    return compute_macro_sari(*stats, corpus_level=False)
+def sentence_sari(orig_sent: str, sys_sent: str, ref_sents: List[str],
+                  lowercase: bool = True, tokenizer: str = '13a',
+                  legacy=False, use_f1_for_deletion=False, use_paper_version=False):
+    return corpus_sari([orig_sent], [sys_sent], [[ref] for ref in ref_sents],
+                       lowercase, tokenizer, legacy, use_f1_for_deletion=use_f1_for_deletion,
+                       use_paper_version=use_paper_version)
