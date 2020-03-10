@@ -27,8 +27,8 @@ def get_sents(test_set, orig_sents_path=None, sys_sents_path=None, refs_sents_pa
             sys_sents = system_output_file.read().splitlines()
     # Get original and reference sentences
     if test_set == 'custom':
-        assert orig_sents_path is None
-        assert refs_sents_paths is None
+        assert orig_sents_path is not None
+        assert refs_sents_paths is not None
         if type(refs_sents_paths) == str:
             refs_sents_paths = refs_sents_paths.split(',')
         orig_sents = read_lines(orig_sents_path)
@@ -70,7 +70,7 @@ def common_options(function):
         help='Compute case-insensitive scores for all metrics. ',
     )(function)
     function = click.option(
-            '--tokenizer', '-tok', type=click.Choice(['13a', 'intl', 'moses', 'penn', 'plain']), default='13a',
+            '--tokenizer', '-tok', type=click.Choice(['13a', 'intl', 'moses', 'penn', 'none']), default='13a',
             help='Tokenization method to use.',
     )(function)
     function = click.option(
@@ -118,45 +118,35 @@ def evaluate_system_output(
     # compute each metric
     metrics_scores = {}
     if 'bleu' in metrics:
-        bleu_score = sacrebleu.corpus_bleu(collapsed_sys_sents, collapsed_refs_sents,
-                                           force=True, tokenize=tokenizer, lowercase=lowercase).score
-        metrics_scores["bleu"] = bleu_score
+        metrics_scores["bleu"] = sacrebleu.corpus_bleu(collapsed_sys_sents, collapsed_refs_sents, force=True,
+                                                       tokenize=tokenizer, lowercase=lowercase).score
 
-    if 'sbleu' in metrics:
-        macro_avg_sent_bleu = corpus_macro_avg_sent_bleu(collapsed_sys_sents, collapsed_refs_sents,
-                                                         tokenizer=tokenizer, lowercase=lowercase)
-        metrics_scores["sbleu"] = macro_avg_sent_bleu
+    if 'sent_bleu' in metrics:
+        metrics_scores["sent_bleu"] = corpus_macro_avg_sent_bleu(collapsed_sys_sents, collapsed_refs_sents,
+                                                                 tokenizer=tokenizer, lowercase=lowercase)
 
     if 'length_stats' in metrics:
-        sys_stats = sys_length_statistics(sys_sents)
-        refs_stats = ref_length_statistics(refs_sents)
-        metrics_scores["sys_length_stats"] = sys_stats
-        metrics_scores["refs_length_stats"] = refs_stats
+        metrics_scores["sys_length_stats"] = sys_length_statistics(sys_sents)
+        metrics_scores["refs_length_stats"] = ref_length_statistics(refs_sents)
 
     if 'sari' in metrics:
-        sari_score = corpus_sari(orig_sents, sys_sents, refs_sents, tokenizer=tokenizer, lowercase=lowercase)
-        metrics_scores["sari"] = sari_score
+        metrics_scores["sari"] = corpus_sari(orig_sents, sys_sents, refs_sents, tokenizer=tokenizer, lowercase=lowercase)
 
     if 'samsa' in metrics:
-        samsa_score = corpus_samsa(orig_sents, sys_sents, tokenizer=tokenizer, verbose=True, lowercase=lowercase)
-        metrics_scores["samsa"] = samsa_score
+        metrics_scores["samsa"] = corpus_samsa(orig_sents, sys_sents, tokenizer=tokenizer, verbose=True, lowercase=lowercase)
 
     if 'fkgl' in metrics:
-        fkgl_score = corpus_fkgl(sys_sents, tokenizer=tokenizer)
-        metrics_scores["fkgl"] = fkgl_score
+        metrics_scores["fkgl"] = corpus_fkgl(sys_sents, tokenizer=tokenizer)
 
     if 'f1_token' in metrics:
-        f1_token_score = corpus_macro_avg_f1_token(sys_sents, refs_sents, tokenizer=tokenizer, lowercase=lowercase)
-        metrics_scores["f1_token"] = f1_token_score
+        metrics_scores["f1_token"] = corpus_macro_avg_f1_token(sys_sents, refs_sents, tokenizer=tokenizer, lowercase=lowercase)
 
     if 'comp_ratio' in metrics:
-        comp_ratio = corpus_macro_avg_compression_ratio(orig_sents, sys_sents, tokenizer=tokenizer, lowercase=lowercase)
-        metrics_scores["comp_ratio"] = comp_ratio
+        metrics_scores["comp_ratio"] = corpus_macro_avg_compression_ratio(orig_sents, sys_sents, tokenizer=tokenizer, lowercase=lowercase)
 
     if analysis:
-        word_level_analysis_scores = corpus_analyse_operations(orig_sents, sys_sents, refs_sents,
-                                                               verbose=False, as_str=True)
-        metrics_scores["word_level_analysis"] = word_level_analysis_scores
+        metrics_scores["word_level_analysis"] = corpus_analyse_operations(orig_sents, sys_sents, refs_sents,
+                                                                          verbose=False, as_str=True)
 
     if quality_estimation:
         quality_estimation_scores = corpus_quality_estimation(
@@ -165,8 +155,7 @@ def evaluate_system_output(
                 tokenizer=tokenizer,
                 lowercase=lowercase
                 )
-        quality_estimation_scores = {k: round(v, 2) for k, v in quality_estimation_scores.items()}
-        metrics_scores["quality_estimation"] = quality_estimation_scores
+        metrics_scores["quality_estimation"] = {k: round(v, 2) for k, v in quality_estimation_scores.items()}
 
     return metrics_scores
 
