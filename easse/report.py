@@ -6,9 +6,7 @@ import numpy as np
 import pandas as pd
 import plotly.express as px
 from sacrebleu import corpus_bleu
-import seaborn as sns
-from tseval.feature_extraction import (get_levenshtein_similarity, get_compression_ratio, count_sentence_splits,
-                                       count_sentences)
+from tseval.feature_extraction import get_levenshtein_similarity, get_compression_ratio, count_sentences
 from yattag import Doc, indent
 
 from easse.fkgl import corpus_fkgl
@@ -107,12 +105,12 @@ def get_qualitative_html_examples(orig_sents, sys_sents, refs_sents):
         ('Simplifications that paraphrase the source',
          lambda c, s, refs: get_levenshtein_similarity(c, s) / get_compression_ratio(c, s),
          lambda value: f'levenshtein_similarity={value:.2f}'),
-        ('Simplifications that are the most similar to the source (excluding exact matches)',
+        ('Simplifications that are the most similar to the source (excluding exact copies)',
          lambda c, s, refs: -get_levenshtein_similarity(c, s) * int(c != s),
          lambda value: f'levenshtein_similarity={-value:.2f}'),
         ('Simplifications with the most sentence splits (if there are any)',
-         lambda c, s, refs: -count_sentence_splits(c, s),
-         lambda value: f'nb_sentences_ratio={-value:.2f}'),
+         lambda c, s, refs: -(count_sentences(s) - count_sentences(s)),
+         lambda value: f'#sentence_splits={-value:.2f}'),
     ]
 
     def get_one_sample_html(orig_sent, sys_sent, ref_sents, sort_key, print_func):
@@ -144,21 +142,18 @@ def get_qualitative_html_examples(orig_sents, sys_sents, refs_sents):
 
     doc = Doc()
     for title, sort_key, print_func in title_key_print:
-        # stretched-link needs position-relative
-        with doc.tag('div', klass='container-fluid mt-4 p-2 position-relative border'):
-            doc.line('h3', klass='m-2', text_content=title)
-            # Make whole div clickable to collapse / uncollapse examples
+        with doc.tag('div', klass='container-fluid mt-4 p-2 border'):
             collapse_id = get_random_html_id()
-            with doc.tag('a', ('data-toggle', 'collapse'), ('href', f'#{collapse_id}'), klass='stretched-link'):
-                pass  # doc.stag and doc.line don't seem to work with stretched-link
+            with doc.tag('a', ('data-toggle', 'collapse'), ('href', f'#{collapse_id}')):
+                doc.line('h3', klass='m-2', text_content=title)
             # Now lets print the examples
             sample_generator = sorted(
                     zip(orig_sents, sys_sents, zip(*refs_sents)),
                     key=lambda args: sort_key(*args),
             )
             # Samples displayed by default
-            with doc.tag('div', klass='collapse show', id=collapse_id):
-                n_samples = 10
+            with doc.tag('div', klass='collapse', id=collapse_id):
+                n_samples = 50
                 for i, (orig_sent, sys_sent, refs) in enumerate(sample_generator):
                     if i >= n_samples:
                         break
@@ -166,17 +161,17 @@ def get_qualitative_html_examples(orig_sents, sys_sents, refs_sents):
     return doc.getvalue()
 
 
-def get_test_set_description_html(test_set_name, orig_sents, refs_sents):
+def get_test_set_description_html(test_set, orig_sents, refs_sents):
     doc = Doc()
-    test_set_name = test_set_name.capitalize()
-    doc.line('h4', test_set_name)
+    test_set = test_set.capitalize()
+    doc.line('h4', test_set)
     orig_sents = np.array(orig_sents)
     refs_sents = np.array(refs_sents)
     df = pd.DataFrame()
-    df.loc[test_set_name, '# of samples'] = str(len(orig_sents))
-    df.loc[test_set_name, '# of references'] = str(len(refs_sents))
-    df.loc[test_set_name, 'Words / source'] = np.average(np.vectorize(count_words)(orig_sents))
-    df.loc[test_set_name, 'Words / reference'] = np.average(np.vectorize(count_words)(refs_sents.flatten()))
+    df.loc[test_set, '# of samples'] = str(len(orig_sents))
+    df.loc[test_set, '# of references'] = str(len(refs_sents))
+    df.loc[test_set, 'Words / source'] = np.average(np.vectorize(count_words)(orig_sents))
+    df.loc[test_set, 'Words / reference'] = np.average(np.vectorize(count_words)(refs_sents.flatten()))
 
     def modified_count_sentences(sent):
         return max(count_sentences(sent), 1)
@@ -184,13 +179,13 @@ def get_test_set_description_html(test_set_name, orig_sents, refs_sents):
     expanded_orig_sent_counts = np.expand_dims(orig_sent_counts, 0).repeat(len(refs_sents), axis=0)
     refs_sent_counts = np.vectorize(modified_count_sentences)(refs_sents)
     ratio = np.average((expanded_orig_sent_counts == 1) & (refs_sent_counts == 1))
-    df.loc[test_set_name, '1-to-1 alignments*'] = f'{ratio*100:.1f}%'
+    df.loc[test_set, '1-to-1 alignments*'] = f'{ratio*100:.1f}%'
     ratio = np.average((expanded_orig_sent_counts == 1) & (refs_sent_counts > 1))
-    df.loc[test_set_name, '1-to-N alignments*'] = f'{ratio*100:.1f}%'
+    df.loc[test_set, '1-to-N alignments*'] = f'{ratio*100:.1f}%'
     ratio = np.average((expanded_orig_sent_counts > 1) & (refs_sent_counts > 1))
-    df.loc[test_set_name, 'N-to-N alignments*'] = f'{ratio*100:.1f}%'
+    df.loc[test_set, 'N-to-N alignments*'] = f'{ratio*100:.1f}%'
     ratio = np.average((expanded_orig_sent_counts > 1) & (refs_sent_counts == 1))
-    df.loc[test_set_name, 'N-to-1 alignments*'] = f'{ratio*100:.1f}%'
+    df.loc[test_set, 'N-to-1 alignments*'] = f'{ratio*100:.1f}%'
     doc.asis(get_table_html_from_dataframe(df.round(2)))
     doc.line('p', klass='text-muted', text_content='* Alignment detection is not 100% accurate')
     return doc.getvalue()
@@ -350,9 +345,8 @@ def get_table_html(header, rows, row_names=None):
     return doc.getvalue()
 
 
-def get_html_report(orig_sents: List[str], sys_sents: List[str], refs_sents: List[List[str]], test_set_name,
+def get_html_report(orig_sents: List[str], sys_sents: List[str], refs_sents: List[List[str]], test_set: str,
                     lowercase: bool = False, tokenizer: str = '13a', metrics: List[str] = DEFAULT_METRICS):
-    sns.set_style('darkgrid')
     doc = Doc()
     doc.asis('<!doctype html>')
     with doc.tag('html', lang='en'):
@@ -366,7 +360,7 @@ def get_html_report(orig_sents: List[str], sys_sents: List[str], refs_sents: Lis
             doc.stag('hr')
             with doc.tag('div', klass='container-fluid'):
                 doc.asis(get_test_set_description_html(
-                    test_set_name=test_set_name,
+                    test_set=test_set,
                     orig_sents=orig_sents,
                     refs_sents=refs_sents,
                 ))

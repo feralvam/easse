@@ -141,7 +141,7 @@ def evaluate_system_output(
 
 @cli.command('report')
 @common_options
-@click.option('--report_path', '-p', type=click.Path(), default='report.html',
+@click.option('--report_path', '-p', type=click.Path(), default='easse_report.html',
               help='Path to the output HTML report.')
 def _report(*args, **kwargs):
     report(*args, **kwargs)
@@ -152,7 +152,7 @@ def report(
         sys_sents_path=None,
         orig_sents_path=None,
         refs_sents_paths=None,
-        report_path='report.html',
+        report_path='easse_report.html',
         tokenizer='13a',
         metrics=','.join(DEFAULT_METRICS)
         ):
@@ -162,6 +162,6 @@ def report(
     orig_sents, sys_sents, refs_sents = get_sents(test_set, orig_sents_path, sys_sents_path, refs_sents_paths)
     lowercase = is_test_set_lowercase(test_set)
     write_html_report(
-            report_path, orig_sents, sys_sents, refs_sents, test_set_name=test_set,
+            report_path, orig_sents, sys_sents, refs_sents, test_set=test_set,
             lowercase=lowercase, tokenizer=tokenizer, metrics=metrics,
             )
