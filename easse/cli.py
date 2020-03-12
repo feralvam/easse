@@ -3,11 +3,11 @@ import sacrebleu
 
 from easse.annotation.word_level import corpus_analyse_operations
 from easse.fkgl import corpus_fkgl
-from easse.utils.helpers import read_lines, read_split_lines, collapse_split_sentences
+from easse.utils.helpers import read_lines
 from easse.quality_estimation import corpus_quality_estimation
 from easse.sari import corpus_sari
 from easse.samsa import corpus_samsa
-from easse.splitting import corpus_macro_avg_sent_bleu, sys_length_statistics, ref_length_statistics
+from easse.splitting import corpus_macro_avg_sent_bleu
 from easse.compression import corpus_f1_token, corpus_compression_ratio
 from easse.utils.constants import VALID_TEST_SETS, VALID_METRICS, DEFAULT_METRICS
 from easse.utils.resources import get_orig_sents, get_refs_sents
