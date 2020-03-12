@@ -145,11 +145,16 @@ def evaluate_system_output(
 @cli.command('report')
 @common_options
 @click.option('--sys_sents_path', type=click.Path(), default=None,
-            help='Path to the system predictions input file that is to be evaluated.')
+            help='Path to the system predictions input file that is to be evaluated. You can also input a comma-separated list of files to compare multiple systems.')
 @click.option('--report_path', '-p', type=click.Path(), default='easse_report.html',
               help='Path to the output HTML report.')
 def _report(*args, **kwargs):
-    report(*args, **kwargs)
+    if kwargs['sys_sents_path'] is not None and len(kwargs['sys_sents_path'].split(',')) > 1:
+        # If we got multiple systems as input, split the paths and rename the key
+        kwargs['sys_sents_paths'] = kwargs.pop('sys_sents_path').split(',')
+        multiple_systems_report(*args, **kwargs)
+    else:
+        report(*args, **kwargs)
 
 
 def report(
@@ -173,23 +178,12 @@ def report(
             )
 
 
-@cli.command('multiple_systems_report')
-@common_options
-@click.option('--sys_sents_paths', type=click.Path(), required=True,
-            help='Comma separated list of paths to the systems predictions input files that are to be evaluated.')
-@click.option('--report_path', '-p', type=click.Path(), default='multiple_systems_easse_report.html',
-              help='Path to the output HTML report.')
-def _multiple_systems_report(*args, **kwargs):
-    kwargs['sys_sents_paths'] = kwargs['sys_sents_paths'].split(',')
-    return multiple_systems_report(*args, **kwargs)
-
-
 def multiple_systems_report(
         test_set,
         sys_sents_paths,
         orig_sents_path=None,
         refs_sents_paths=None,
-        report_path='multiple_systems_easse_report.html',
+        report_path='easse_report.html',
         tokenizer='13a',
         metrics=','.join(DEFAULT_METRICS)
         ):
