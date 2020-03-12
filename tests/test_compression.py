@@ -1,18 +1,18 @@
 import pytest
 import numpy as np
 
-from easse.compression import corpus_macro_avg_f1_token
+from easse.compression import corpus_f1_token
 
 
 def test_corpus_macro_avg_f1_token_single_reference():
     ref_sents = ["A mother are accused of committing one local robbery"]
     sys_sent = "A mother and her teenage son are accused of committing one robbery"
 
-    f1_token = corpus_macro_avg_f1_token([sys_sent], [ref_sents])
+    f1_token = corpus_f1_token([sys_sent], [ref_sents])
 
     correct = ['A', 'mother', 'are', 'accused', 'of', 'committing', 'one', 'robbery']
 
-    precision = len(correct)/len(sys_sent.split())
+    precision = len(correct) / len(sys_sent.split())
     recall = len(correct) / len(ref_sents[0].split())
     f1 = 2 * precision * recall / (precision + recall)
     f1 = 100. * f1
@@ -24,7 +24,7 @@ def test_corpus_macro_avg_f1_token_multiple_references():
     ref_sents = ["A mother are accused of committing one local robbery", "A mother accused of committing robbery"]
     sys_sent = "A mother and her teenage son are accused of committing one robbery"
 
-    f1_token = corpus_macro_avg_f1_token([sys_sent], [ref_sents])
+    f1_token = corpus_f1_token([sys_sent], [ref_sents])
 
     correct_ref1 = ['A', 'mother', 'are', 'accused', 'of', 'committing', 'one', 'robbery']
     precision_ref1 = len(correct_ref1) / len(sys_sent.split())
