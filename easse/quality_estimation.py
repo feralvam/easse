@@ -24,7 +24,7 @@ def corpus_quality_estimation(orig_sentences: List[str], sys_sentences: List[str
             'Compression ratio': get_average(get_compression_ratio, orig_sentences, sys_sentences),
             'Sentence splits': get_average(count_sentence_splits, orig_sentences, sys_sentences),
             'Levenshtein similarity': get_average(get_levenshtein_similarity, orig_sentences, sys_sentences),
-            'Exact matches': get_average(is_exact_match, orig_sentences, sys_sentences),
+            'Exact copies': get_average(is_exact_match, orig_sentences, sys_sentences),
             'Additions proportion': get_average(get_additions_proportion, orig_sentences, sys_sentences),
             'Deletions proportion': get_average(get_deletions_proportion, orig_sentences, sys_sentences),
             'Lexical complexity score': get_average(

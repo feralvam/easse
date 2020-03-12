@@ -6,9 +6,7 @@ import numpy as np
 import pandas as pd
 import plotly.express as px
 from sacrebleu import corpus_bleu
-import seaborn as sns
-from tseval.feature_extraction import (get_levenshtein_similarity, get_compression_ratio, count_sentence_splits,
-                                       count_sentences)
+from tseval.feature_extraction import get_levenshtein_similarity, get_compression_ratio, count_sentences
 from yattag import Doc, indent
 
 from easse.fkgl import corpus_fkgl
@@ -84,7 +82,7 @@ def get_random_html_id():
     return 'a' + html_id[1:]  # HTML id can't start with a number
 
 
-def get_qualitative_html_examples(orig_sents, sys_sents, refs_sents):
+def get_qualitative_examples_html(orig_sents, sys_sents, refs_sents):
     title_key_print = [
         ('Randomly sampled simplifications',
          lambda c, s, refs: 0,
@@ -107,12 +105,12 @@ def get_qualitative_html_examples(orig_sents, sys_sents, refs_sents):
         ('Simplifications that paraphrase the source',
          lambda c, s, refs: get_levenshtein_similarity(c, s) / get_compression_ratio(c, s),
          lambda value: f'levenshtein_similarity={value:.2f}'),
-        ('Simplifications that are the most similar to the source (excluding exact matches)',
+        ('Simplifications that are the most similar to the source (excluding exact copies)',
          lambda c, s, refs: -get_levenshtein_similarity(c, s) * int(c != s),
          lambda value: f'levenshtein_similarity={-value:.2f}'),
         ('Simplifications with the most sentence splits (if there are any)',
-         lambda c, s, refs: -count_sentence_splits(c, s),
-         lambda value: f'nb_sentences_ratio={-value:.2f}'),
+         lambda c, s, refs: -(count_sentences(s) - count_sentences(s)),
+         lambda value: f'#sentence_splits={-value:.2f}'),
     ]
 
     def get_one_sample_html(orig_sent, sys_sent, ref_sents, sort_key, print_func):
@@ -144,21 +142,18 @@ def get_qualitative_html_examples(orig_sents, sys_sents, refs_sents):
 
     doc = Doc()
     for title, sort_key, print_func in title_key_print:
-        # stretched-link needs position-relative
-        with doc.tag('div', klass='container-fluid mt-4 p-2 position-relative border'):
-            doc.line('h3', klass='m-2', text_content=title)
-            # Make whole div clickable to collapse / uncollapse examples
+        with doc.tag('div', klass='container-fluid mt-4 p-2 border'):
             collapse_id = get_random_html_id()
-            with doc.tag('a', ('data-toggle', 'collapse'), ('href', f'#{collapse_id}'), klass='stretched-link'):
-                pass  # doc.stag and doc.line don't seem to work with stretched-link
+            with doc.tag('a', ('data-toggle', 'collapse'), ('href', f'#{collapse_id}')):
+                doc.line('h3', klass='m-2', text_content=title)
             # Now lets print the examples
             sample_generator = sorted(
                     zip(orig_sents, sys_sents, zip(*refs_sents)),
                     key=lambda args: sort_key(*args),
             )
             # Samples displayed by default
-            with doc.tag('div', klass='collapse show', id=collapse_id):
-                n_samples = 10
+            with doc.tag('div', klass='collapse', id=collapse_id):
+                n_samples = 50
                 for i, (orig_sent, sys_sent, refs) in enumerate(sample_generator):
                     if i >= n_samples:
                         break
@@ -166,17 +161,17 @@ def get_qualitative_html_examples(orig_sents, sys_sents, refs_sents):
     return doc.getvalue()
 
 
-def get_test_set_description_html(test_set_name, orig_sents, refs_sents):
+def get_test_set_description_html(test_set, orig_sents, refs_sents):
     doc = Doc()
-    test_set_name = test_set_name.capitalize()
-    doc.line('h4', test_set_name)
+    test_set = test_set.capitalize()
+    doc.line('h4', test_set)
     orig_sents = np.array(orig_sents)
     refs_sents = np.array(refs_sents)
     df = pd.DataFrame()
-    df.loc[test_set_name, '# of samples'] = str(len(orig_sents))
-    df.loc[test_set_name, '# of references'] = str(len(refs_sents))
-    df.loc[test_set_name, 'Words / source'] = np.average(np.vectorize(count_words)(orig_sents))
-    df.loc[test_set_name, 'Words / reference'] = np.average(np.vectorize(count_words)(refs_sents.flatten()))
+    df.loc[test_set, '# of samples'] = str(len(orig_sents))
+    df.loc[test_set, '# of references'] = str(len(refs_sents))
+    df.loc[test_set, 'Words / source'] = np.average(np.vectorize(count_words)(orig_sents))
+    df.loc[test_set, 'Words / reference'] = np.average(np.vectorize(count_words)(refs_sents.flatten()))
 
     def modified_count_sentences(sent):
         return max(count_sentences(sent), 1)
@@ -184,13 +179,13 @@ def get_test_set_description_html(test_set_name, orig_sents, refs_sents):
     expanded_orig_sent_counts = np.expand_dims(orig_sent_counts, 0).repeat(len(refs_sents), axis=0)
     refs_sent_counts = np.vectorize(modified_count_sentences)(refs_sents)
     ratio = np.average((expanded_orig_sent_counts == 1) & (refs_sent_counts == 1))
-    df.loc[test_set_name, '1-to-1 alignments*'] = f'{ratio*100:.1f}%'
+    df.loc[test_set, '1-to-1 alignments*'] = f'{ratio*100:.1f}%'
     ratio = np.average((expanded_orig_sent_counts == 1) & (refs_sent_counts > 1))
-    df.loc[test_set_name, '1-to-N alignments*'] = f'{ratio*100:.1f}%'
+    df.loc[test_set, '1-to-N alignments*'] = f'{ratio*100:.1f}%'
     ratio = np.average((expanded_orig_sent_counts > 1) & (refs_sent_counts > 1))
-    df.loc[test_set_name, 'N-to-N alignments*'] = f'{ratio*100:.1f}%'
+    df.loc[test_set, 'N-to-N alignments*'] = f'{ratio*100:.1f}%'
     ratio = np.average((expanded_orig_sent_counts > 1) & (refs_sent_counts == 1))
-    df.loc[test_set_name, 'N-to-1 alignments*'] = f'{ratio*100:.1f}%'
+    df.loc[test_set, 'N-to-1 alignments*'] = f'{ratio*100:.1f}%'
     doc.asis(get_table_html_from_dataframe(df.round(2)))
     doc.line('p', klass='text-muted', text_content='* Alignment detection is not 100% accurate')
     return doc.getvalue()
@@ -350,9 +345,35 @@ def get_table_html(header, rows, row_names=None):
     return doc.getvalue()
 
 
-def get_html_report(orig_sents: List[str], sys_sents: List[str], refs_sents: List[List[str]], test_set_name,
+def get_score_table_html_single_system(orig_sents, sys_sents, refs_sents, lowercase, tokenizer, metrics):
+    return get_score_table_html_multiple_systems(orig_sents, [sys_sents], refs_sents, ['System output'], lowercase, tokenizer, metrics)
+
+
+def get_score_table_html_multiple_systems(orig_sents, sys_sents_list, refs_sents, system_names, lowercase, tokenizer, metrics):
+    doc = Doc()
+    sys_scores_list = [get_all_scores(orig_sents, sys_sents, refs_sents, lowercase=lowercase, tokenizer=tokenizer, metrics=metrics)
+                       for sys_sents in sys_sents_list]
+    # We evaluate the first reference against all the others (the second reference is duplicated to have the same number of reference as for systems).
+    # TODO: Ideally the system and references should be evaluated with exactly the same number of references.
+    ref_scores = get_all_scores(orig_sents, refs_sents[0], [refs_sents[1]] + refs_sents[1:],
+                                lowercase=lowercase, tokenizer=tokenizer, metrics=metrics)
+    assert all([sys_scores.keys() == ref_scores.keys() for sys_scores in sys_scores_list])
+    doc.asis(get_table_html(
+            header=list(ref_scores.keys()),
+            rows=[sys_scores.values() for sys_scores in sys_scores_list] + [ref_scores.values()],
+            row_names=system_names + ['Reference*'],
+            ))
+    doc.line(
+        'p',
+        klass='text-muted',
+        text_content=('* The Reference row represents one of the references (picked randomly) evaluated'
+                      ' against the others.'),
+    )
+    return doc.getvalue()
+
+
+def get_html_report(orig_sents: List[str], sys_sents: List[str], refs_sents: List[List[str]], test_set: str,
                     lowercase: bool = False, tokenizer: str = '13a', metrics: List[str] = DEFAULT_METRICS):
-    sns.set_style('darkgrid')
     doc = Doc()
     doc.asis('<!doctype html>')
     with doc.tag('html', lang='en'):
@@ -366,7 +387,7 @@ def get_html_report(orig_sents: List[str], sys_sents: List[str], refs_sents: Lis
             doc.stag('hr')
             with doc.tag('div', klass='container-fluid'):
                 doc.asis(get_test_set_description_html(
-                    test_set_name=test_set_name,
+                    test_set=test_set,
                     orig_sents=orig_sents,
                     refs_sents=refs_sents,
                 ))
@@ -375,23 +396,7 @@ def get_html_report(orig_sents: List[str], sys_sents: List[str], refs_sents: Lis
             with doc.tag('div', klass='container-fluid'):
                 doc.line('h3', 'System vs. Reference')
                 doc.stag('hr')
-                sys_scores = get_all_scores(orig_sents, sys_sents, refs_sents,
-                                            lowercase=lowercase, tokenizer=tokenizer, metrics=metrics)
-                # TODO: The system and references should be evaluated with the same number of references
-                ref_scores = get_all_scores(orig_sents, refs_sents[0], refs_sents[1:],
-                                            lowercase=lowercase, tokenizer=tokenizer, metrics=metrics)
-                assert sys_scores.keys() == ref_scores.keys()
-                doc.asis(get_table_html(
-                        header=list(sys_scores.keys()),
-                        rows=[sys_scores.values(), ref_scores.values()],
-                        row_names=['System output', 'Reference*'],
-                        ))
-                doc.line(
-                    'p',
-                    klass='text-muted',
-                    text_content=('* The Reference row represents one of the references (picked randomly) evaluated'
-                                  ' against the others.'),
-                )
+                doc.asis(get_score_table_html_single_system(orig_sents, sys_sents, refs_sents, lowercase, tokenizer, metrics))
                 doc.line('h3', 'By sentence length (characters)')
                 doc.stag('hr')
                 doc.asis(get_scores_by_length_html(orig_sents, sys_sents, refs_sents))
@@ -402,10 +407,115 @@ def get_html_report(orig_sents: List[str], sys_sents: List[str], refs_sents: Lis
             doc.line('h2', 'Qualitative evaluation')
             doc.stag('hr')
             with doc.tag('div', klass='container-fluid'):
-                doc.asis(get_qualitative_html_examples(orig_sents, sys_sents, refs_sents))
+                doc.asis(get_qualitative_examples_html(orig_sents, sys_sents, refs_sents))
     return indent(doc.getvalue())
 
 
 def write_html_report(filepath, *args, **kwargs):
     with open(filepath, 'w') as f:
         f.write(get_html_report(*args, **kwargs) + '\n')
+
+
+def get_multiple_systems_qualitative_examples_html(orig_sents, sys_sents_list, refs_sents, system_names):
+    title_key_print = [
+        ('Randomly sampled simplifications',
+         lambda c, s, refs: 0,
+         lambda value: ''),
+    ] + [
+        (f'Best simplifications according to SARI for {system_names[i]}',
+         lambda c, sys_sents, refs: -corpus_sari([c], [sys_sents[i]], [refs]),
+         lambda value: f'SARI={-value:.2f}')
+        for i in range(len(system_names))
+    ]
+
+    def get_one_sample_html(orig_sent, sys_sents, ref_sents, system_names, sort_key, print_func):
+        def get_one_sentence_html(sentence, system_name):
+            doc = Doc()
+            with doc.tag('div', klass='row'):
+                with doc.tag('div', klass='col-1'):
+                    doc.text(system_name)
+                with doc.tag('div', klass='col'):
+                    doc.asis(sentence)
+            return doc.getvalue()
+
+        doc = Doc()
+        with doc.tag('div', klass='mb-2 p-1'):
+            # Sort key
+            with doc.tag('div', klass='text-muted small'):
+                doc.asis(print_func(sort_key(orig_sent, sys_sents, ref_sents)))
+            with doc.tag('div', klass='ml-2'):
+                # Source
+                with doc.tag('div'):
+                    doc.asis(get_one_sentence_html(orig_sent, 'Original'))
+                # Predictions
+                    for sys_sent, system_name in zip(sys_sents, system_names):
+                        _, sys_sent_bold = make_differing_words_bold(orig_sent, sys_sent, make_text_bold_html)
+                        doc.asis(get_one_sentence_html(sys_sent_bold, system_name))
+                # References
+                collapse_id = get_random_html_id()
+                with doc.tag('div', klass='position-relative'):
+                    with doc.tag('a', ('data-toggle', 'collapse'), ('href', f'#{collapse_id}'),
+                                 klass='stretched-link small'):
+                        doc.text('References')
+                    with doc.tag('div', klass='collapse', id=collapse_id):
+                        for ref_sent in refs:
+                            _, ref_sent_bold = make_differing_words_bold(orig_sent, ref_sent, make_text_bold_html)
+                            with doc.tag('div', klass='text-muted'):
+                                doc.asis(ref_sent_bold)
+        return doc.getvalue()
+
+    doc = Doc()
+    for title, sort_key, print_func in title_key_print:
+        with doc.tag('div', klass='container-fluid mt-4 p-2 border'):
+            collapse_id = get_random_html_id()
+            with doc.tag('a', ('data-toggle', 'collapse'), ('href', f'#{collapse_id}')):
+                doc.line('h3', klass='m-2', text_content=title)
+            # Now lets print the examples
+            sample_generator = sorted(
+                    zip(orig_sents, zip(*sys_sents_list), zip(*refs_sents)),
+                    key=lambda args: sort_key(*args),
+            )
+            # Samples displayed by default
+            with doc.tag('div', klass='collapse', id=collapse_id):
+                n_samples = 50
+                for i, (orig_sent, sys_sents, refs) in enumerate(sample_generator):
+                    if i >= n_samples:
+                        break
+                    doc.asis(get_one_sample_html(orig_sent, sys_sents, refs, system_names, sort_key, print_func))
+    return doc.getvalue()
+
+
+def get_multiple_systems_html_report(orig_sents, sys_sents_list, refs_sents, system_names, test_set, lowercase, tokenizer, metrics):
+    doc = Doc()
+    doc.asis('<!doctype html>')
+    with doc.tag('html', lang='en'):
+        doc.asis(get_head_html())
+        with doc.tag('body', klass='container-fluid m-2 mb-5'):
+            doc.line('h1', 'EASSE report', klass='mt-4')
+            with doc.tag('a', klass='btn btn-link', href='https://forms.gle/J8KVkJsqYe8GvYW46'):
+                doc.text('Any feedback welcome!')
+            doc.stag('hr')
+            doc.line('h2', 'Test set')
+            doc.stag('hr')
+            with doc.tag('div', klass='container-fluid'):
+                doc.asis(get_test_set_description_html(
+                    test_set=test_set,
+                    orig_sents=orig_sents,
+                    refs_sents=refs_sents,
+                ))
+            doc.line('h2', 'Scores')
+            doc.stag('hr')
+            with doc.tag('div', klass='container-fluid'):
+                doc.line('h3', 'System vs. Reference')
+                doc.stag('hr')
+                doc.asis(get_score_table_html_multiple_systems(orig_sents, sys_sents_list, refs_sents, system_names, lowercase, tokenizer, metrics))
+            doc.line('h2', 'Qualitative evaluation')
+            doc.stag('hr')
+            with doc.tag('div', klass='container-fluid'):
+                doc.asis(get_multiple_systems_qualitative_examples_html(orig_sents, sys_sents_list, refs_sents, system_names))
+    return indent(doc.getvalue())
+
+
+def write_multiple_systems_html_report(filepath, *args, **kwargs):
+    with open(filepath, 'w') as f:
+        f.write(get_multiple_systems_html_report(*args, **kwargs) + '\n')
