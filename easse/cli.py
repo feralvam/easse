@@ -8,7 +8,7 @@ from easse.quality_estimation import corpus_quality_estimation
 from easse.sari import corpus_sari
 from easse.samsa import corpus_samsa
 from easse.splitting import corpus_macro_avg_sent_bleu, sys_length_statistics, ref_length_statistics
-from easse.compression import corpus_macro_avg_f1_token, corpus_macro_avg_compression_ratio
+from easse.compression import corpus_f1_token, corpus_compression_ratio
 from easse.utils.constants import VALID_TEST_SETS, VALID_METRICS, DEFAULT_METRICS
 from easse.utils.resources import get_orig_sents, get_refs_sents
 from easse.report import write_html_report
@@ -17,10 +17,7 @@ from easse.report import write_html_report
 def get_sents(test_set, orig_sents_path=None, sys_sents_path=None, refs_sents_paths=None):
     # Get system sentences to be evaluated
     if sys_sents_path is not None:
-        if test_set in ['wikisplit', 'wikisplit_valid']:
-            sys_sents = read_split_lines(sys_sents_path)
-        else:
-            sys_sents = read_lines(sys_sents_path)
+        sys_sents = read_lines(sys_sents_path)
     else:
         # read the system output
         with click.get_text_stream('stdin', encoding='utf-8') as system_output_file:
@@ -110,24 +107,15 @@ def evaluate_system_output(
     metrics = metrics.split(',')
     orig_sents, sys_sents, refs_sents = get_sents(test_set, orig_sents_path, sys_sents_path, refs_sents_paths)
 
-    if test_set in ['wikisplit', 'wikisplit_valid']:
-        collapsed_sys_sents, collapsed_refs_sents = collapse_split_sentences(sys_sents, refs_sents)
-    else:
-        collapsed_sys_sents, collapsed_refs_sents = sys_sents, refs_sents
-
     # compute each metric
     metrics_scores = {}
     if 'bleu' in metrics:
-        metrics_scores["bleu"] = sacrebleu.corpus_bleu(collapsed_sys_sents, collapsed_refs_sents, force=True,
+        metrics_scores["bleu"] = sacrebleu.corpus_bleu(sys_sents, refs_sents, force=True,
                                                        tokenize=tokenizer, lowercase=lowercase).score
 
     if 'sent_bleu' in metrics:
-        metrics_scores["sent_bleu"] = corpus_macro_avg_sent_bleu(collapsed_sys_sents, collapsed_refs_sents,
+        metrics_scores["sent_bleu"] = corpus_macro_avg_sent_bleu(sys_sents, refs_sents,
                                                                  tokenizer=tokenizer, lowercase=lowercase)
-
-    if 'length_stats' in metrics:
-        metrics_scores["sys_length_stats"] = sys_length_statistics(sys_sents)
-        metrics_scores["refs_length_stats"] = ref_length_statistics(refs_sents)
 
     if 'sari' in metrics:
         metrics_scores["sari"] = corpus_sari(orig_sents, sys_sents, refs_sents, tokenizer=tokenizer, lowercase=lowercase)
@@ -139,10 +127,10 @@ def evaluate_system_output(
         metrics_scores["fkgl"] = corpus_fkgl(sys_sents, tokenizer=tokenizer)
 
     if 'f1_token' in metrics:
-        metrics_scores["f1_token"] = corpus_macro_avg_f1_token(sys_sents, refs_sents, tokenizer=tokenizer, lowercase=lowercase)
+        metrics_scores["f1_token"] = corpus_f1_token(sys_sents, refs_sents, tokenizer=tokenizer, lowercase=lowercase)
 
     if 'comp_ratio' in metrics:
-        metrics_scores["comp_ratio"] = corpus_macro_avg_compression_ratio(orig_sents, sys_sents, tokenizer=tokenizer, lowercase=lowercase)
+        metrics_scores["comp_ratio"] = corpus_compression_ratio(orig_sents, sys_sents, tokenizer=tokenizer, lowercase=lowercase)
 
     if analysis:
         metrics_scores["word_level_analysis"] = corpus_analyse_operations(orig_sents, sys_sents, refs_sents,
