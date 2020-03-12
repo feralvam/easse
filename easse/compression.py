@@ -21,15 +21,15 @@ def corpus_f1_token(sys_sents: List[str], refs_sents: List[List[str]],
         sys_tokens = sys_sent.split()
         sys_total = len(sys_tokens)
 
-        f1_scores = []
+        candidate_f1_token_scores = []
         for ref_sent in ref_sents:
             ref_tokens = ref_sent.split()
             ref_total = len(ref_tokens)
 
             correct_tokens = len(find_correct_tokens(sys_tokens, ref_tokens))
             _, _, f1 = compute_precision_recall_f1(correct_tokens, sys_total, ref_total)
-            f1_scores.append(f1)
+            candidate_f1_token_scores.append(f1)
 
-        f1_token_scores.append(np.max(f1_scores))
+        f1_token_scores.append(np.max(candidate_f1_token_scores))
 
     return 100. * np.mean(f1_token_scores)
