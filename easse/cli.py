@@ -129,9 +129,6 @@ def evaluate_system_output(
     if 'f1_token' in metrics:
         metrics_scores["f1_token"] = corpus_f1_token(sys_sents, refs_sents, tokenizer=tokenizer, lowercase=lowercase)
 
-    if 'comp_ratio' in metrics:
-        metrics_scores["comp_ratio"] = corpus_compression_ratio(orig_sents, sys_sents, tokenizer=tokenizer, lowercase=lowercase)
-
     if analysis:
         metrics_scores["word_level_analysis"] = corpus_analyse_operations(orig_sents, sys_sents, refs_sents,
                                                                           verbose=False, as_str=True)
