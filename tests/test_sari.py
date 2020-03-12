@@ -2,7 +2,6 @@ import pytest
 
 from easse import sari
 from easse.utils.helpers import read_lines
-from easse.utils.constants import DATA_DIR
 from easse.utils.resources import get_orig_sents, get_refs_sents, get_system_outputs_dir
 
 
