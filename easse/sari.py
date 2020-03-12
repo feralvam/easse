@@ -103,8 +103,7 @@ def compute_ngram_stats(orig_sents: List[str], sys_sents: List[str], refs_sents:
     del_sys_total = [0] * NGRAM_ORDER
     del_ref_total = [0] * NGRAM_ORDER
 
-    fhs = [orig_sents] + [sys_sents] + refs_sents
-    for orig_sent, sys_sent, *ref_sents in zip(*fhs):
+    for orig_sent, sys_sent, *ref_sents in zip(orig_sents, sys_sents, *refs_sents):
         orig_ngrams = extract_ngrams(orig_sent)
         sys_ngrams = extract_ngrams(sys_sent)
 
