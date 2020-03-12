@@ -20,9 +20,7 @@ def corpus_f1_token(sys_sents: List[str], refs_sents: List[List[str]],
                   for ref_sents in refs_sents]
 
     f1_token_scores = []
-
-    fhs = [sys_sents] + refs_sents
-    for sys_sent, *ref_sents in zip(*fhs):
+    for sys_sent, *ref_sents in zip(sys_sents, *refs_sents):
         sys_tokens = sys_sent.split()
         sys_total = len(sys_tokens)
 
