@@ -237,16 +237,16 @@ def compute_samsa(orig_ucca_passage: Passage, sys_synt_parse):
     return score
 
 
-def corpus_samsa(orig_sentences: List[str], sys_outputs: List[str], lowercase: bool = False, tokenizer: str = '13a',
+def corpus_samsa(orig_sents: List[str], sys_sents: List[str], lowercase: bool = False, tokenizer: str = '13a',
                  verbose: bool = False):
 
     print('Warning: SAMSA metric is long to compute (120 sentences ~ 1h), disable it if you need fast evaluation.')
     
-    orig_sentences = [utils_prep.normalize(sent, lowercase, tokenizer) for sent in orig_sentences]
-    orig_ucca_sents = ucca_parse_texts(orig_sentences)
+    orig_sents = [utils_prep.normalize(sent, lowercase, tokenizer) for sent in orig_sents]
+    orig_ucca_sents = ucca_parse_texts(orig_sents)
 
-    sys_outputs = [utils_prep.normalize(output, lowercase, tokenizer) for output in sys_outputs]
-    sys_synt_outputs = syntactic_parse_texts(sys_outputs, tokenize=False, sentence_split=True, verbose=verbose)
+    sys_sents = [utils_prep.normalize(output, lowercase, tokenizer) for output in sys_sents]
+    sys_synt_outputs = syntactic_parse_texts(sys_sents, tokenize=False, sentence_split=True, verbose=verbose)
 
     if verbose:
         print("Computing SAMSA score...")
@@ -255,6 +255,11 @@ def corpus_samsa(orig_sentences: List[str], sys_outputs: List[str], lowercase: b
     for orig_ucca, sys_synt in tqdm(zip(orig_ucca_sents, sys_synt_outputs), disable=(not verbose)):
         samsa_score += compute_samsa(orig_ucca, sys_synt)
 
-    samsa_score /= len(orig_sentences)
+    samsa_score /= len(orig_sents)
 
     return 100. * samsa_score
+
+
+def sentence_samsa(orig_sent: str, sys_sent: str, lowercase: bool = False, tokenizer: str = '13a',
+                   verbose: bool = False):
+    return corpus_samsa([orig_sent], [sys_sent], lowercase, tokenizer, verbose)
