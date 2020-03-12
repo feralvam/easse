@@ -73,7 +73,7 @@ def get_minimal_centers_from_relations(ucca_passage: Passage):
     return output
 
 
-def get_minimal_centers_for_participants(P: Passage):
+def get_minimal_centers_from_participants(P: Passage):
     """
     P is a ucca passage. Return all the minimal participant centers in each scene
     """
@@ -191,7 +191,7 @@ def compute_samsa(orig_ucca_passage: Passage, sys_synt_parse):
         score = 0.0
     else:
         rel_min_centers = get_minimal_centers_from_relations(orig_ucca_passage)
-        part_min_centers = get_minimal_centers_for_participants(orig_ucca_passage)
+        part_min_centers = get_minimal_centers_from_participants(orig_ucca_passage)
 
         allow_mutiple_matches = orig_num_scenes > sys_num_sents
 
