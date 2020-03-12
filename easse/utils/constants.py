@@ -48,6 +48,6 @@ SYSTEM_OUTPUTS_DIRS_MAP = {
 VALID_TEST_SETS = ['turkcorpus_test', 'turkcorpus_valid','turkcorpus_test_legacy', 'turkcorpus_valid_legacy',
                    'pwkp_test', 'pwkp_valid', 'hsplit_test', 'wikisplit_test', 'wikisplit_valid', 'asset_test',
                    'asset_valid', 'googlecomp', 'googlecomp_valid', 'custom']
-VALID_METRICS = ['bleu', 'sari', 'samsa', 'fkgl', 'sbleu', 'length_stats', 'f1_token', 'comp_ratio']
-DEFAULT_METRICS = [m for m in VALID_METRICS if m not in ['samsa', 'sbleu', 'length_stats', 'f1_token', 'comp_ratio']]
+VALID_METRICS = ['bleu', 'sari', 'samsa', 'fkgl', 'sent_bleu', 'f1_token', 'comp_ratio']
+DEFAULT_METRICS = [m for m in VALID_METRICS if m not in ['samsa', 'sent_bleu', 'f1_token', 'comp_ratio']]
 # HACK: Only simplification-specific metrics, but SAMSA which is too long to compute
