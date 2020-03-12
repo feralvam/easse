@@ -36,8 +36,7 @@ def ucca_parse_texts(texts: List[str]):
 
 
 def get_scenes_ucca(ucca_passage: Passage):
-    scenes_ucca = [x for x in ucca_passage.layer('1').all if x.tag == "FN" and x.is_scene()]
-    return scenes_ucca
+    return [x for x in ucca_passage.layer('1').all if x.tag == "FN" and x.is_scene()]
 
 
 def get_scenes_text(ucca_passage: Passage):
