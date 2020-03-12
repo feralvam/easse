@@ -1,16 +1,16 @@
 import pytest
+from easse.utils.ucca_utils import get_scenes_text, ucca_parse_texts
 
 from easse import samsa
 
 
-@pytest.mark.skip(reason='TODO: Test probably broken, need to investigate')
 def test_get_scenes():
     text = 'You are waiting for a train , this train will take you far away .'
     expected_scenes = [
         ['You', 'are', 'waiting', 'for', 'a', 'train'],
         ['this', 'train', 'will', 'take', 'you', 'far', 'away']
     ]
-    scenes = get_scenes(ucca_parse_text(text))
+    scenes = get_scenes_text(ucca_parse_texts([text])[0])
     assert scenes == expected_scenes
 
 
@@ -64,7 +64,7 @@ def test_samsa_score_sentence():
 @pytest.mark.skip(reason='TODO: Test probably broken, need to investigate')
 def test_samsa_score_qats():
     # read the sentence pairs from QATS test set
-    with open("data/qats/test.shared-task.tsv", newline='') as qats_file:
+    with open("resources/qats/test.shared-task.tsv", newline='') as qats_file:
         reader = csv.reader(qats_file, delimiter='\t')
         next(reader, None)  # skip the header
         orig_sentences = []
