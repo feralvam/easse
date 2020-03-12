@@ -2,11 +2,8 @@ from typing import List
 from collections import Counter
 import numpy as np
 
-from tseval.feature_extraction import get_compression_ratio
-
 import easse.utils.preprocessing as utils_prep
 from easse.sari import compute_precision_recall_f1
-from easse.quality_estimation import get_average
 
 
 def corpus_f1_token(sys_sents: List[str], refs_sents: List[List[str]],
@@ -36,10 +33,3 @@ def corpus_f1_token(sys_sents: List[str], refs_sents: List[List[str]],
         f1_token_scores.append(np.max(f1_scores))
 
     return 100. * np.mean(f1_token_scores)
-
-
-def corpus_compression_ratio(orig_sents: List[str], sys_sents: List[str],
-                             lowercase: bool = True, tokenizer: str = '13a'):
-    orig_sents = [utils_prep.normalize(sent, lowercase, tokenizer) for sent in orig_sents]
-    sys_sents = [utils_prep.normalize(sent, lowercase, tokenizer) for sent in sys_sents]
-    return get_average(get_compression_ratio, orig_sents, sys_sents)
