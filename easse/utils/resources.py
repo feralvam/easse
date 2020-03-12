@@ -7,7 +7,7 @@ from urllib.request import urlretrieve
 import zipfile
 
 from easse.utils.constants import STANFORD_CORENLP_DIR, UCCA_DIR, UCCA_PARSER_PATH, TEST_SETS_PATHS, SYSTEM_OUTPUTS_DIRS_MAP
-from easse.utils.helpers import get_temp_filepath, read_lines, read_split_lines
+from easse.utils.helpers import get_temp_filepath, read_lines
 
 
 def reporthook(count, block_size, total_size):
@@ -77,12 +77,7 @@ def get_orig_sents(test_set):
 
 
 def get_refs_sents(test_set):
-    if test_set in ['wikisplit', 'wikisplit_valid']:
-        refs_sents = [read_split_lines(ref_sents_path) for ref_sents_path in TEST_SETS_PATHS[(test_set, 'refs')]]
-    else:
-        refs_sents = [read_lines(ref_sents_path) for ref_sents_path in TEST_SETS_PATHS[(test_set, 'refs')]]
-
-    return refs_sents
+    return [read_lines(ref_sents_path) for ref_sents_path in TEST_SETS_PATHS[(test_set, 'refs')]]
 
 
 def get_system_outputs_dir(test_set):
