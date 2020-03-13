@@ -9,14 +9,34 @@ import easse.utils.preprocessing as utils_prep
 from tqdm import tqdm
 
 
-def align_scenes_sentences(scenes, synt_parse_sentences, allow_mutiple_matches):
-    synt_parse_scenes = syntactic_parse_texts(scenes)
+def syntactic_parse_ucca_scenes(ucca_passages, verbose=False):
+    # Gather all scenes together so as to make one single call to the syntactic parser
+    scenes_per_passage = []
+    all_scenes = []
+    for passage in ucca_passages:
+        scenes = get_scenes_text(passage)
+        scenes_per_passage.append(len(scenes))
+        all_scenes += scenes
 
+    synt_parse_scenes = syntactic_parse_texts(all_scenes, verbose=verbose)
+
+    gruped_scenes_per_passage = []
+    start = 0
+    for num_scenes in scenes_per_passage:
+        gruped_scenes_per_passage.append(synt_parse_scenes[start:start + num_scenes])
+        start += num_scenes
+
+    assert len(gruped_scenes_per_passage) == len(ucca_passages)
+
+    return gruped_scenes_per_passage
+
+
+def align_scenes_sentences(synt_scenes, synt_sents, allow_mutiple_matches):
     scenes_sents_aligns = []
     already_matched = []
-    for synt_scene in synt_parse_scenes:
+    for synt_scene in synt_scenes:
         max_sent_aligns = []
-        for sent_num, synt_sent in enumerate(synt_parse_sentences):
+        for sent_num, synt_sent in enumerate(synt_sents):
             if not allow_mutiple_matches and sent_num in already_matched:
                 continue
             word_alignments = align(synt_scene, synt_sent)[1]
@@ -147,7 +167,7 @@ def get_minimal_centers_from_participants(P: Passage):
     for scp in s:  # find the spans of the participant nodes
         output1 = []
         for par in scp:
-            # TODO: somethimes "par" does not contain anything, which caused the original implementation (without the if) to crash when unpacking
+            # TODO: sometimes "par" does not contain anything, which caused the original implementation (without the if) to crash when unpacking
             if len(par) != 1:
                 continue
             [par] = par
@@ -185,25 +205,22 @@ def get_minimal_centers_from_participants(P: Passage):
     return y
 
 
-def compute_samsa(orig_ucca_passage: Passage, sys_synt_parse):
+def compute_samsa(orig_ucca_passage: Passage, orig_synt_scenes, sys_synt_sents):
     orig_scenes = get_scenes_text(orig_ucca_passage)
 
-    orig_num_scenes = len(orig_scenes)
-    sys_num_sents = len(sys_synt_parse)
+    num_orig_scenes = len(orig_scenes)
+    num_sys_sents = len(sys_synt_sents)
+    allow_mutiple_matches = num_orig_scenes > num_sys_sents
 
-    if orig_num_scenes < sys_num_sents:
-        score = 0.0
-    else:
+    score = 0.0
+    if num_sys_sents <= num_orig_scenes:
         rel_min_centers = get_minimal_centers_from_relations(orig_ucca_passage)
         part_min_centers = get_minimal_centers_from_participants(orig_ucca_passage)
 
-        allow_mutiple_matches = orig_num_scenes > sys_num_sents
-
-        orig_scenes_sys_sentences_alignments = align_scenes_sentences(orig_scenes, sys_synt_parse,
-                                                                      allow_mutiple_matches)
+        orig_scenes_sys_sents_alignments = align_scenes_sentences(orig_synt_scenes, sys_synt_sents, allow_mutiple_matches)
         scorem = []
         scorea = []
-        for scene_index, scene_sent_word_aligns in enumerate(orig_scenes_sys_sentences_alignments):
+        for scene_index, scene_sent_word_aligns in enumerate(orig_scenes_sys_sents_alignments):
             r = [scene_word for scene_word, _ in scene_sent_word_aligns]
             if not rel_min_centers[scene_index]:
                 s = 0.5
@@ -229,32 +246,36 @@ def compute_samsa(orig_ucca_passage: Passage, sys_synt_parse):
                 scorea.append(sa)
 
         scoresc = []
-        for i in range(orig_num_scenes):
+        for i in range(num_orig_scenes):
             d = len(scorea[i])
-            v = 0.5*scorem[i] + 0.5*(1/d)*sum(scorea[i])
+            v = 0.5 * scorem[i] + 0.5 * (1 / d) * sum(scorea[i])
             scoresc.append(v)
-        score = (sys_num_sents/(orig_num_scenes**2))*sum(scoresc)
+        score = (num_sys_sents / (num_orig_scenes ** 2)) * sum(scoresc)
     return score
 
 
-def corpus_samsa(orig_sentences: List[str], sys_outputs: List[str], lowercase: bool = False, tokenizer: str = '13a',
+def corpus_samsa(orig_sents: List[str], sys_sents: List[str], lowercase: bool = False, tokenizer: str = '13a',
                  verbose: bool = False):
 
-    print('Warning: SAMSA metric is long to compute (120 sentences ~ 1h), disable it if you need fast evaluation.')
+    print('Warning: SAMSA metric is long to compute (120 sentences ~ 4min), disable it if you need fast evaluation.')
     
-    orig_sentences = [utils_prep.normalize(sent, lowercase, tokenizer) for sent in orig_sentences]
-    orig_ucca_sents = ucca_parse_texts(orig_sentences)
+    orig_sents = [utils_prep.normalize(sent, lowercase, tokenizer) for sent in orig_sents]
+    orig_ucca_passages = ucca_parse_texts(orig_sents)
+    orig_synt_scenes = syntactic_parse_ucca_scenes(orig_ucca_passages, verbose=verbose)
 
-    sys_outputs = [utils_prep.normalize(output, lowercase, tokenizer) for output in sys_outputs]
-    sys_synt_outputs = syntactic_parse_texts(sys_outputs, tokenize=False, sentence_split=True, verbose=verbose)
-
-    if verbose:
-        print("Computing SAMSA score...")
+    sys_sents = [utils_prep.normalize(output, lowercase, tokenizer) for output in sys_sents]
+    sys_sents_synt = syntactic_parse_texts(sys_sents, tokenize=False, sentence_split=True, verbose=verbose)
 
     samsa_score = 0.0
-    for orig_ucca, sys_synt in tqdm(zip(orig_ucca_sents, sys_synt_outputs), disable=(not verbose)):
-        samsa_score += compute_samsa(orig_ucca, sys_synt)
+    for orig_passage, orig_scenes, sys_synt in tqdm(zip(orig_ucca_passages, orig_synt_scenes, sys_sents_synt),
+                                            disable=(not verbose)):
+        samsa_score += compute_samsa(orig_passage, orig_scenes, sys_synt)
 
-    samsa_score /= len(orig_sentences)
+    samsa_score /= len(orig_sents)
 
     return 100. * samsa_score
+
+
+def sentence_samsa(orig_sent: str, sys_sent: str, lowercase: bool = False, tokenizer: str = '13a',
+                   verbose: bool = False):
+    return corpus_samsa([orig_sent], [sys_sent], lowercase, tokenizer, verbose)
