@@ -8,12 +8,6 @@ from easse.utils.resources import download_stanford_corenlp
 from easse.utils.constants import STANFORD_CORENLP_DIR
 
 
-props = {'annotators': 'tokenize,ssplit,pos,lemma,ner,depparse',
-         'pipelineLanguage': 'en',
-         'depparse.model': "edu/stanford/nlp/models/parser/nndep/english_SD.gz",
-         'outputFormat': 'json'}
-
-
 def _format_token_info(sent_json):
     token_lst = sent_json['tokens']
     tokens = []
@@ -98,9 +92,6 @@ def format_parser_output(sentence_parse):
 
 
 def syntactic_parse_texts(texts: List[str], tokenize=False, sentence_split=False, verbose=False):
-    if verbose:
-        print(f"Parsing {len(texts)} texts...")
-
     corenlp_annotators = ['tokenize', 'ssplit', 'pos', 'lemma', 'ner', 'depparse']
     annotators_properties = {'tokenize.whitespace': not tokenize,
                              'ssplit.eolonly': not sentence_split,
@@ -111,11 +102,12 @@ def syntactic_parse_texts(texts: List[str], tokenize=False, sentence_split=False
     os.environ['CORENLP_HOME'] = str(STANFORD_CORENLP_DIR)
 
     parse_results = []
-    with CoreNLPClient(annotators=corenlp_annotators) as client:
+
+    with CoreNLPClient(annotators=corenlp_annotators, properties=annotators_properties) as client:
         for text in tqdm(texts, disable=(not verbose)):
             if isinstance(text, List):
                 text = ' '.join(text)
-            raw_parse_result = client.annotate(text, properties=annotators_properties)
+            raw_parse_result = client.annotate(text)
             parse_result = format_parser_output(raw_parse_result['sentences'])
 
             if len(parse_result['sentences']) > 1 and not sentence_split:
