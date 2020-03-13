@@ -1,12 +1,12 @@
 from typing import List
+import numpy as np
+from tqdm import tqdm
 from ucca.core import Passage
 
 from easse.utils.ucca_utils import get_scenes_ucca, get_scenes_text, ucca_parse_texts
 from easse.aligner.aligner import align
 from easse.aligner.corenlp_utils import syntactic_parse_texts
 import easse.utils.preprocessing as utils_prep
-
-from tqdm import tqdm
 
 
 def syntactic_parse_ucca_scenes(ucca_passages, verbose=False):
@@ -266,14 +266,14 @@ def corpus_samsa(orig_sents: List[str], sys_sents: List[str], lowercase: bool = 
     sys_sents = [utils_prep.normalize(output, lowercase, tokenizer) for output in sys_sents]
     sys_sents_synt = syntactic_parse_texts(sys_sents, tokenize=False, sentence_split=True, verbose=verbose)
 
-    samsa_score = 0.0
+    sentences_scores = []
     for orig_passage, orig_scenes, sys_synt in tqdm(zip(orig_ucca_passages, orig_synt_scenes, sys_sents_synt),
                                             disable=(not verbose)):
-        samsa_score += compute_samsa(orig_passage, orig_scenes, sys_synt)
+        sentences_scores.append(100. * compute_samsa(orig_passage, orig_scenes, sys_synt))
 
-    samsa_score /= len(orig_sents)
+    corpus_score = np.mean(sentences_scores)
 
-    return 100. * samsa_score
+    return sentences_scores, corpus_score
 
 
 def sentence_samsa(orig_sent: str, sys_sent: str, lowercase: bool = False, tokenizer: str = '13a',
