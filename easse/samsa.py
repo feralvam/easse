@@ -257,7 +257,7 @@ def compute_samsa(orig_ucca_passage: Passage, orig_synt_scenes, sys_synt_sents):
 def corpus_samsa(orig_sents: List[str], sys_sents: List[str], lowercase: bool = False, tokenizer: str = '13a',
                  verbose: bool = False):
 
-    print('Warning: SAMSA metric is long to compute (120 sentences ~ 1h), disable it if you need fast evaluation.')
+    print('Warning: SAMSA metric is long to compute (120 sentences ~ 4min), disable it if you need fast evaluation.')
     
     orig_sents = [utils_prep.normalize(sent, lowercase, tokenizer) for sent in orig_sents]
     orig_ucca_passages = ucca_parse_texts(orig_sents)
