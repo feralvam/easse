@@ -268,32 +268,24 @@ def get_scores_by_length_html(
             sents_by_bin.append(np.array(sents)[sent_indexes])
         return sents_by_bin
 
-    def df_append_row(df, row, row_name=None):
-        if df.empty and len(df.columns) == 0:
-            # This enforces the columns order
-            df = pd.DataFrame(columns=list(row.keys()))
-        if row_name is None:
-            return df.append(pd.Series(row), ignore_index=True)
-        else:
-            return df.append(pd.Series(row, name=row_name))
-
     intervals = get_equally_populated_intervals(orig_sents, n_bins)
     bins = split_sents_by_lengths(orig_sents, intervals)
     # Split files by bins
     orig_sents_by_bins = split_sents_by_bins(orig_sents, bins)
     sys_sents_by_bins = split_sents_by_bins(sys_sents, bins)
     refs_sents_by_bins = [split_sents_by_bins(ref_sents, bins) for ref_sents in refs_sents]
-    df_bins = pd.DataFrame()
     # Get scores for each bin
+    table = []
     for i in range(len(intervals)):
         interval = intervals[i]
         splitted_orig_sents = orig_sents_by_bins[i]
         splitted_sys_sents = sys_sents_by_bins[i]
         splitted_refs_sents = [ref_sents_by_bins[i] for ref_sents_by_bins in refs_sents_by_bins]
-        scores = get_all_scores(splitted_orig_sents, splitted_sys_sents, splitted_refs_sents,
-                                lowercase=lowercase, tokenizer=tokenizer, metrics=metrics)
-        row_name = f'length=[{interval[0]};{interval[1]}]'
-        df_bins = df_append_row(df_bins, scores, row_name)
+        row = get_all_scores(splitted_orig_sents, splitted_sys_sents, splitted_refs_sents,
+                             lowercase=lowercase, tokenizer=tokenizer, metrics=metrics)
+        row['index'] = f'length=[{interval[0]};{interval[1]}]'
+        table.append(row)
+    df_bins = pd.DataFrame.from_records(table, index='index')
     return get_table_html_from_dataframe(df_bins.round(2))
 
 
@@ -417,14 +409,18 @@ def write_html_report(filepath, *args, **kwargs):
 
 
 def get_multiple_systems_qualitative_examples_html(orig_sents, sys_sents_list, refs_sents, system_names):
+    def get_relative_sari(orig_sent, sys_sents, refs_sents, system_idx):
+        saris = [corpus_sari([orig_sent], [sys_sent], refs_sents) for sys_sent in sys_sents]
+        return saris[system_idx] / np.average(saris)
+
     title_key_print = [
         ('Randomly sampled simplifications',
          lambda c, s, refs: 0,
          lambda value: ''),
     ] + [
-        (f'Best simplifications according to SARI for {system_names[i]}',
-         lambda c, sys_sents, refs: -corpus_sari([c], [sys_sents[i]], [refs]),
-         lambda value: f'SARI={-value:.2f}')
+        (f'Worst relative simplifications (SARI) for {system_names[i]}',
+         lambda c, sys_sents, refs_sents: get_relative_sari(c, sys_sents, refs_sents, system_idx=i),
+         lambda value: f'SARI={value:.2f}')
         for i in range(len(system_names))
     ]
 
@@ -432,7 +428,7 @@ def get_multiple_systems_qualitative_examples_html(orig_sents, sys_sents_list, r
         def get_one_sentence_html(sentence, system_name):
             doc = Doc()
             with doc.tag('div', klass='row'):
-                with doc.tag('div', klass='col-1'):
+                with doc.tag('div', klass='col-2'):
                     doc.text(system_name)
                 with doc.tag('div', klass='col'):
                     doc.asis(sentence)

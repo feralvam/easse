@@ -90,6 +90,7 @@ def common_options(function):
 @click.option('--sys_sents_path', type=click.Path(), default=None,
             help='Path to the system predictions input file that is to be evaluated.')
 def _evaluate_system_output(*args, **kwargs):
+    kwargs['metrics'] = kwargs.pop('metrics').split(',')
     metrics_scores = evaluate_system_output(*args, **kwargs)
     print(metrics_scores)
 
@@ -163,6 +164,7 @@ def evaluate_system_output(
 @click.option('--report_path', '-p', type=click.Path(), default='easse_report.html',
               help='Path to the output HTML report.')
 def _report(*args, **kwargs):
+    kwargs['metrics'] = kwargs.pop('metrics').split(',')
     if kwargs['sys_sents_path'] is not None and len(kwargs['sys_sents_path'].split(',')) > 1:
         # If we got multiple systems as input, split the paths and rename the key
         kwargs['sys_sents_paths'] = kwargs.pop('sys_sents_path').split(',')
@@ -179,7 +181,7 @@ def report(
         report_path='easse_report.html',
         tokenizer='13a',
         lowercase=True,
-        metrics=','.join(DEFAULT_METRICS)
+        metrics=DEFAULT_METRICS,
         ):
     """
     Create a HTML report file with automatic metrics, plots and samples.
@@ -200,14 +202,16 @@ def multiple_systems_report(
         report_path='easse_report.html',
         tokenizer='13a',
         lowercase=True,
-        metrics=','.join(DEFAULT_METRICS)
+        metrics=DEFAULT_METRICS,
+        system_names=None,
         ):
     """
     Create a HTML report file comparing multiple systems with automatic metrics, plots and samples.
     """
     sys_sents_list = [read_lines(path) for path in sys_sents_paths]
     orig_sents, refs_sents = get_orig_and_refs_sents(test_set, orig_sents_path, refs_sents_paths)
-    system_names = [Path(path).name for path in sys_sents_paths]
+    if system_names is None:
+        system_names = [Path(path).name for path in sys_sents_paths]
     write_multiple_systems_html_report(
             report_path, orig_sents, sys_sents_list, refs_sents, system_names=system_names, test_set=test_set,
             lowercase=lowercase, tokenizer=tokenizer, metrics=metrics,
