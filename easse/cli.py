@@ -127,6 +127,9 @@ def evaluate_system_output(
     if 'sari' in metrics:
         metrics_scores["sari"] = corpus_sari(orig_sents, sys_sents, refs_sents, tokenizer=tokenizer, lowercase=lowercase)
 
+    if 'sari_legacy' in metrics:
+        metrics_scores["sari_legacy"] = corpus_sari(orig_sents, sys_sents, refs_sents, tokenizer=tokenizer, lowercase=lowercase, legacy=True)
+
     if 'samsa' in metrics:
         metrics_scores["samsa"] = corpus_samsa(orig_sents, sys_sents, tokenizer=tokenizer, verbose=True, lowercase=lowercase)
 
