@@ -7,7 +7,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name='easse',
-    version='0.2',
+    version='0.2.1',
     description='Easier Automatic Sentence Simplification Evaluation',
     long_description=long_description,
     long_description_content_type="text/markdown",
