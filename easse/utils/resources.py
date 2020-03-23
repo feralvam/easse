@@ -4,6 +4,7 @@ import sys
 import tarfile
 import time
 from urllib.request import urlretrieve
+import warnings
 import zipfile
 
 from easse.utils.constants import STANFORD_CORENLP_DIR, UCCA_DIR, UCCA_PARSER_PATH, TEST_SETS_PATHS, SYSTEM_OUTPUTS_DIRS_MAP
@@ -60,7 +61,7 @@ def update_ucca_path():
         config_json = json.load(f)
     config_json['vocab'] = str(UCCA_DIR / 'vocab/en_core_web_lg.csv')
     with open(json_path, 'w') as f:
-            json.dump(config_json, f)
+        json.dump(config_json, f)
 
 
 def download_ucca_model():
@@ -72,11 +73,26 @@ def download_ucca_model():
     update_ucca_path()
 
 
+def maybe_map_deprecated_test_set_to_new_test_set(test_set):
+    '''Map deprecated test sets to new test sets'''
+    deprecated_test_sets_map = {
+            'turk': 'turkcorpus_test',
+            'turk_valid': 'turkcorpus_valid',
+    }
+    if test_set in deprecated_test_sets_map:
+        deprecated_test_set = test_set
+        test_set = deprecated_test_sets_map[deprecated_test_set]
+        warnings.warn(f'"{deprecated_test_set}" test set is deprecated. Please use "{test_set}" instead.')
+    return test_set
+
+
 def get_orig_sents(test_set):
+    test_set = maybe_map_deprecated_test_set_to_new_test_set(test_set)
     return read_lines(TEST_SETS_PATHS[(test_set, 'orig')])
 
 
 def get_refs_sents(test_set):
+    test_set = maybe_map_deprecated_test_set_to_new_test_set(test_set)
     return [read_lines(ref_sents_path) for ref_sents_path in TEST_SETS_PATHS[(test_set, 'refs')]]
 
 
