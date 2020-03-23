@@ -62,5 +62,5 @@ def test_sentence_samsa():
 def test_corpus_samsa():
     orig_sents = get_orig_sents('qats_test')
     refs_sents = get_refs_sents('qats_test')
-    _, samsa_score = corpus_samsa(orig_sents, refs_sents[0], lowercase=True, verbose=True)
+    samsa_score = corpus_samsa(orig_sents, refs_sents[0], lowercase=True, verbose=True)
     assert samsa_score == pytest.approx(38.17035475455614)
