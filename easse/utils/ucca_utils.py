@@ -43,16 +43,18 @@ def get_scenes_ucca(ucca_passage: Passage):
 def get_scenes_text(ucca_passage: Passage):
     """Return all the ucca scenes in the given text"""
     scenes_ucca = get_scenes_ucca(ucca_passage)
-    scenes_text = []
-    for scene in scenes_ucca:
-        words = []
-        previous_word = ''
-        for terminal in scene.get_terminals(False, True):
-            word = terminal.text
-            if word == previous_word:
-                # TODO: Iterating this way on the scene sometimes yields duplicates.
-                continue
-            words.append(word)
-            previous_word = word
-        scenes_text.append(words)
+    scenes_text = [flatten_unit(scene) for scene in scenes_ucca]
     return scenes_text
+
+
+def flatten_unit(unit_node):
+    words = []
+    previous_word = ''
+    for terminal in unit_node.get_terminals(False, True):
+        word = terminal.text
+        if word == previous_word:
+            # TODO: Iterating this way on the scene sometimes yields duplicates.
+            continue
+        words.append(word)
+        previous_word = word
+    return words

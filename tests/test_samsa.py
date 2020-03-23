@@ -1,7 +1,7 @@
 import pytest
 from easse.utils.ucca_utils import get_scenes_text, ucca_parse_texts
 from easse.samsa import sentence_samsa, corpus_samsa
-from easse.utils.helpers import read_lines
+from easse.utils.resources import get_orig_sents, get_refs_sents
 
 
 def test_get_scenes():
@@ -14,7 +14,6 @@ def test_get_scenes():
     assert scenes == expected_scenes
 
 
-@pytest.mark.skip(reason='TODO: Test probably broken, need to investigate')
 def test_sentence_samsa():
     orig_sent = "You are waiting for a train , this train will take you far away ."
     sys_sent = "You are waiting for a train . A train that will take you far away ."
@@ -28,14 +27,14 @@ def test_sentence_samsa():
                   "is a broad marble stair mounting from the water to the covering , arcaded Commerce "
                   "Square ( Praca do Comercio) .")
     samsa_score = sentence_samsa(orig_sent, sys_sent, lowercase=True)
-    assert samsa_score == pytest.approx(25.0)  # 15.972222222222221
+    assert samsa_score == pytest.approx(15.972222222222221)
 
     orig_sent = ("The second largest city of Russia and one of the world's major cities , "
                      "St . Petersburg has played a vital role in Russian history .")
     sys_sent = ("The second largest city of Russia and one of the world's major cities , "
                   "St Petersburg , and has played a vital role in Russian history .")
     samsa_score = sentence_samsa(orig_sent, sys_sent, lowercase=True)
-    assert samsa_score == pytest.approx(83.3333333)  # 100.0
+    assert samsa_score == pytest.approx(100.0)
 
     orig_sent = ("The incident followed the killing in August of five Egyptian security guards by "
                      "Israeli soldiers pursuing militants who had ambushed and killed eight Israelis "
@@ -44,27 +43,24 @@ def test_sentence_samsa():
                   "Israeli soldiers pursued militants. "
                   "Militants had ambushed and killed eight Israelis along the Israeli-Egyptian border.")
     samsa_score = sentence_samsa(orig_sent, sys_sent, lowercase=True)
-    assert samsa_score == pytest.approx(71.875)  # 71.875
+    assert samsa_score == pytest.approx(71.875)
 
     orig_sent = ("The injured man was able to drive his car to Cloverhill Prison where he got help. "
                      "He is being treated at Tallaght  Hospital but his injuries are not thought to be life-threatening.")
     sys_sent = "The injured man drive his car to Cloverhill Prison he got help."
     samsa_score = sentence_samsa(orig_sent, sys_sent, lowercase=True)
-    assert samsa_score == pytest.approx(22.22222222222222)  # 14.0625
+    assert samsa_score == pytest.approx(14.0625)
 
     orig_sent = ("for example , king bhumibol was born on monday , so on his birthday throughout thailand will be "
                  "decorated with yellow color .")
     sys_sent = ("for example , king bhumibol was born on monday , so on his birthday throughout thailand will be "
                 "decorated with yellow color .")
     samsa_score = sentence_samsa(orig_sent, sys_sent, lowercase=True)
-    assert samsa_score == pytest.approx(50.0)  # 50.0
+    assert samsa_score == pytest.approx(50.0)
 
 
-@pytest.mark.skip(reason='TODO: Test probably broken, need to investigate')
 def test_corpus_samsa():
-    # read the sentence pairs from QATS test set
-    qats_sents_dir = "tests/resources"
-    orig_sents = read_lines(f"{qats_sents_dir}/qats.test.orig")
-    sys_sents = read_lines(f"{qats_sents_dir}/qats.test.simp")
-    samsa_score = corpus_samsa(orig_sents, sys_sents, lowercase=True, verbose=True)
-    assert samsa_score == pytest.approx(40.864794606114)  # 38.17035475455614
+    orig_sents = get_orig_sents('qats_test')
+    refs_sents = get_refs_sents('qats_test')
+    samsa_score = corpus_samsa(orig_sents, refs_sents[0], lowercase=True, verbose=True)
+    assert samsa_score == pytest.approx(38.17035475455614)

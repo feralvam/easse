@@ -1,15 +1,15 @@
 from typing import List
+import numpy as np
+from tqdm import tqdm
 from ucca.core import Passage
 
-from easse.utils.ucca_utils import get_scenes_ucca, get_scenes_text, ucca_parse_texts
+from easse.utils.ucca_utils import get_scenes_ucca, get_scenes_text, ucca_parse_texts, flatten_unit
 from easse.aligner.aligner import align
 from easse.aligner.corenlp_utils import syntactic_parse_texts
 import easse.utils.preprocessing as utils_prep
 
-from tqdm import tqdm
 
-
-def syntactic_parse_ucca_scenes(ucca_passages, verbose=False):
+def syntactic_parse_ucca_scenes(ucca_passages, tokenize=False, sentence_split=False, verbose=False):
     # Gather all scenes together so as to make one single call to the syntactic parser
     scenes_per_passage = []
     all_scenes = []
@@ -18,7 +18,8 @@ def syntactic_parse_ucca_scenes(ucca_passages, verbose=False):
         scenes_per_passage.append(len(scenes))
         all_scenes += scenes
 
-    synt_parse_scenes = syntactic_parse_texts(all_scenes, verbose=verbose)
+    synt_parse_scenes = syntactic_parse_texts(all_scenes, tokenize=tokenize, sentence_split=sentence_split,
+                                              verbose=verbose)
 
     gruped_scenes_per_passage = []
     start = 0
@@ -58,10 +59,10 @@ def _get_minimal_centers_from_scene(ucca_scene):
         if relation_centers:
             while relation_centers:
                 for center in relation_centers:
-                    ccenters = [edge.child for edge in center.outgoing if edge.tag == 'C']
-                lcenters = relation_centers
-                relation_centers = ccenters
-            minimal_centers.append(lcenters)
+                    curr_rel_centers = [edge.child for edge in center.outgoing if edge.tag == 'C']
+                last_rel_centers = relation_centers
+                relation_centers = curr_rel_centers
+            minimal_centers.append(last_rel_centers)
         else:  # they are already minimal centers
             minimal_centers.append(main_relations)
     return minimal_centers
@@ -72,13 +73,13 @@ def get_minimal_centers_from_relations(ucca_passage: Passage):
     Return all the most internal centers of main relations in each passage
     """
     scenes = get_scenes_ucca(ucca_passage)
-    minimal_centers = []
+    scenes_minimal_centers = []
     for sc in scenes:
-        minimal_centers += _get_minimal_centers_from_scene(sc)
+        scenes_minimal_centers += _get_minimal_centers_from_scene(sc)
 
     y = ucca_passage.layer("0")
     output = []
-    for scp in minimal_centers:
+    for scp in scenes_minimal_centers:
         for par in scp:
             output2 = []
             positions = [d.position for d in par.get_terminals(False, True)]
@@ -107,12 +108,13 @@ def get_minimal_centers_from_participants(P: Passage):
             if centers:
                 while centers:
                     for c in centers:
-                        ccenters = [e.child for e in c.outgoing if e.tag == 'C' or e.tag == 'P' or e.tag == 'S']   #also addresses center Scenes
+                        ccenters = [e.child for e in c.outgoing if e.tag in ['C', 'P', 'S']]
+                        #also addresses center Scenes
                     lcenters = centers
                     centers = ccenters
                 minimal_centers.append(lcenters)
             elif pa.is_scene():  # address the case of Participant Scenes
-                scene_centers = [e.child for e in pa.outgoing if e.tag == 'P' or e.tag == 'S']
+                scene_centers = [e.child for e in pa.outgoing if e.tag in ['P', 'S']]
                 for scc in scene_centers:
                     centers = [e.child for e in scc.outgoing if e.tag == 'C']
                     if centers:
@@ -128,7 +130,8 @@ def get_minimal_centers_from_participants(P: Passage):
                 hscenes = [e.child for e in pa.outgoing if e.tag == 'H']
                 mh = []
                 for h in hscenes:
-                    hrelations = [e.child for e in h.outgoing if e.tag == 'P' or e.tag == 'S']  # in case of multiple parallel scenes we generate new multiple centers
+                    hrelations = [e.child for e in h.outgoing if e.tag in ['P', 'S']]  # in case of multiple
+                    # parallel scenes we generate new multiple centers
                     for hr in hrelations:
                         centers = [e.child for e in hr.outgoing if e.tag == 'C']
                         if centers:
@@ -159,7 +162,7 @@ def get_minimal_centers_from_participants(P: Passage):
                 par = [par[i:i+1] for i in range(len(par))]
                 for c in par:
                     r.append(c)
-                I.append([u,d])
+                I.append([u, d])
             else:
                 r.append(par)
         s.append(r)
@@ -169,19 +172,11 @@ def get_minimal_centers_from_participants(P: Passage):
         for par in scp:
             # TODO: sometimes "par" does not contain anything, which caused the original implementation (without the if) to crash when unpacking
             if len(par) != 1:
+                # output2 = []
                 continue
-            [par] = par
-            output2 = []
-            p = []
-            d = par.get_terminals(False, True)
-            for i in range(0, len(d)):
-                p.append(d[i].position)
-
-            for k in p:
-                if len(output2) == 0:
-                    output2.append(str(y.by_position(k)))
-                elif str(y.by_position(k)) != output2[-1]:
-                    output2.append(str(y.by_position(k)))
+            else:
+                [par] = par
+                output2 = flatten_unit(par)
             output1.append(output2)
         output.append(output1)
 
@@ -192,7 +187,7 @@ def get_minimal_centers_from_participants(P: Passage):
         for par in scp:
             for v in I:
                 if par == output[v[0]][v[1]]:
-                    for l in range(1,len(n[v[0]][v[1]])):
+                    for l in range(1, len(n[v[0]][v[1]])):
                         par.append((output[v[0]][v[1]+l])[0])
 
                     x.append(par)
@@ -207,24 +202,25 @@ def get_minimal_centers_from_participants(P: Passage):
 
 def compute_samsa(orig_ucca_passage: Passage, orig_synt_scenes, sys_synt_sents):
     orig_scenes = get_scenes_text(orig_ucca_passage)
-
     num_orig_scenes = len(orig_scenes)
     num_sys_sents = len(sys_synt_sents)
-    allow_mutiple_matches = num_orig_scenes > num_sys_sents
 
     score = 0.0
-    if num_sys_sents <= num_orig_scenes:
+    if num_orig_scenes >= num_sys_sents:
+        allow_mutiple_matches = num_orig_scenes > num_sys_sents
+        orig_scenes_sys_sents_alignments = align_scenes_sentences(orig_synt_scenes, sys_synt_sents,
+                                                                  allow_mutiple_matches)
+
         rel_min_centers = get_minimal_centers_from_relations(orig_ucca_passage)
         part_min_centers = get_minimal_centers_from_participants(orig_ucca_passage)
 
-        orig_scenes_sys_sents_alignments = align_scenes_sentences(orig_synt_scenes, sys_synt_sents, allow_mutiple_matches)
         scorem = []
         scorea = []
         for scene_index, scene_sent_word_aligns in enumerate(orig_scenes_sys_sents_alignments):
-            r = [scene_word for scene_word, _ in scene_sent_word_aligns]
+            scene_words = [scene_word for scene_word, _ in scene_sent_word_aligns]
             if not rel_min_centers[scene_index]:
                 s = 0.5
-            elif all(rel_min_centers[scene_index][l] in r for l in range(len(rel_min_centers[scene_index]))):
+            elif all(l in scene_words for l in rel_min_centers[scene_index]):
                 s = 1.0
             else:
                 s = 0.0
@@ -238,10 +234,10 @@ def compute_samsa(orig_ucca_passage: Passage, orig_synt_scenes, sys_synt_sents):
                 for a in part_min_centers[scene_index]:
                     if not a:
                         p = 0.5
-                    elif all(a[l] in r for l in range(len(a))):
-                        p = 1
+                    elif all(l in scene_words for l in a):
+                        p = 1.0
                     else:
-                        p = 0
+                        p = 0.0
                     sa.append(p)
                 scorea.append(sa)
 
@@ -254,28 +250,32 @@ def compute_samsa(orig_ucca_passage: Passage, orig_synt_scenes, sys_synt_sents):
     return score
 
 
-def corpus_samsa(orig_sents: List[str], sys_sents: List[str], lowercase: bool = False, tokenizer: str = '13a',
-                 verbose: bool = False):
-
+def get_samsa_sentence_scores(orig_sents: List[str], sys_sents: List[str], lowercase: bool = False, tokenizer: str = '13a',
+                              verbose: bool = False):
     print('Warning: SAMSA metric is long to compute (120 sentences ~ 4min), disable it if you need fast evaluation.')
-    
+
     orig_sents = [utils_prep.normalize(sent, lowercase, tokenizer) for sent in orig_sents]
     orig_ucca_passages = ucca_parse_texts(orig_sents)
-    orig_synt_scenes = syntactic_parse_ucca_scenes(orig_ucca_passages, verbose=verbose)
+    orig_synt_scenes = syntactic_parse_ucca_scenes(orig_ucca_passages, tokenize=False, sentence_split=False,
+                                                   verbose=verbose)
 
     sys_sents = [utils_prep.normalize(output, lowercase, tokenizer) for output in sys_sents]
     sys_sents_synt = syntactic_parse_texts(sys_sents, tokenize=False, sentence_split=True, verbose=verbose)
 
-    samsa_score = 0.0
+    sentences_scores = []
     for orig_passage, orig_scenes, sys_synt in tqdm(zip(orig_ucca_passages, orig_synt_scenes, sys_sents_synt),
-                                            disable=(not verbose)):
-        samsa_score += compute_samsa(orig_passage, orig_scenes, sys_synt)
+                                                    disable=(not verbose)):
+        sentences_scores.append(100. * compute_samsa(orig_passage, orig_scenes, sys_synt))
 
-    samsa_score /= len(orig_sents)
+    return sentences_scores
 
-    return 100. * samsa_score
+
+def corpus_samsa(orig_sents: List[str], sys_sents: List[str], lowercase: bool = False, tokenizer: str = '13a',
+                 verbose: bool = False):
+
+    return np.mean(get_samsa_sentence_scores(orig_sents, sys_sents, lowercase, tokenizer, verbose))
 
 
 def sentence_samsa(orig_sent: str, sys_sent: str, lowercase: bool = False, tokenizer: str = '13a',
                    verbose: bool = False):
-    return corpus_samsa([orig_sent], [sys_sent], lowercase, tokenizer, verbose)
+    return get_samsa_sentence_scores([orig_sent], [sys_sent], lowercase, tokenizer, verbose)[0]
