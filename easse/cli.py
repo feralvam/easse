@@ -102,15 +102,13 @@ def evaluate_system_output(
         refs_sents_paths=None,
         tokenizer='13a',
         lowercase=True,
-        metrics=','.join(DEFAULT_METRICS),
+        metrics=DEFAULT_METRICS,
         analysis=False,
         quality_estimation=False,
         ):
     """
     Evaluate a system output with automatic metrics.
     """
-    # get the metrics that need to be computed
-    metrics = metrics.split(',')
     sys_sents = get_sys_sents(test_set, sys_sents_path)
     orig_sents, refs_sents = get_orig_and_refs_sents(test_set, orig_sents_path, refs_sents_paths)
 
