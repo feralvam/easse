@@ -1,6 +1,6 @@
 import pytest
 
-from easse.splitting import corpus_macro_avg_sent_bleu
+from easse.bleu import corpus_macro_sentence_bleu
 from easse.utils.helpers import read_split_lines, collapse_split_sentences
 from easse.utils.constants import DATA_DIR
 
@@ -11,5 +11,5 @@ def test_compute_macro_avg_sent_bleu():
 
     collapsed_sys_sents, collapsed_refs_sents = collapse_split_sentences(sys_sents, refs_sents)
 
-    sent_bleu = corpus_macro_avg_sent_bleu(collapsed_sys_sents, collapsed_refs_sents)
+    sent_bleu = corpus_macro_sentence_bleu(collapsed_sys_sents, collapsed_refs_sents)
     assert sent_bleu == pytest.approx(100.0)

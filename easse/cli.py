@@ -1,7 +1,6 @@
 from pathlib import Path
 
 import click
-import sacrebleu
 
 from easse.annotation.word_level import corpus_analyse_operations
 from easse.fkgl import corpus_fkgl
@@ -9,7 +8,7 @@ from easse.utils.helpers import read_lines
 from easse.quality_estimation import corpus_quality_estimation
 from easse.sari import corpus_sari
 from easse.samsa import corpus_samsa
-from easse.splitting import corpus_macro_avg_sent_bleu
+from easse.bleu import corpus_bleu, corpus_macro_sentence_bleu
 from easse.compression import corpus_f1_token
 from easse.utils.constants import VALID_TEST_SETS, VALID_METRICS, DEFAULT_METRICS
 from easse.utils.resources import get_orig_sents, get_refs_sents
@@ -117,18 +116,19 @@ def evaluate_system_output(
     # compute each metric
     metrics_scores = {}
     if 'bleu' in metrics:
-        metrics_scores["bleu"] = sacrebleu.corpus_bleu(sys_sents, refs_sents, force=True,
-                                                       tokenize=tokenizer, lowercase=lowercase).score
+        metrics_scores["bleu"] = corpus_bleu(sys_sents, refs_sents, force=True, tokenizer=tokenizer,
+                                             lowercase=lowercase)
 
     if 'sent_bleu' in metrics:
-        metrics_scores["sent_bleu"] = corpus_macro_avg_sent_bleu(sys_sents, refs_sents,
+        metrics_scores["sent_bleu"] = corpus_macro_sentence_bleu(sys_sents, refs_sents,
                                                                  tokenizer=tokenizer, lowercase=lowercase)
 
     if 'sari' in metrics:
         metrics_scores["sari"] = corpus_sari(orig_sents, sys_sents, refs_sents, tokenizer=tokenizer, lowercase=lowercase)
 
     if 'sari_legacy' in metrics:
-        metrics_scores["sari_legacy"] = corpus_sari(orig_sents, sys_sents, refs_sents, tokenizer=tokenizer, lowercase=lowercase, legacy=True)
+        metrics_scores["sari_legacy"] = corpus_sari(orig_sents, sys_sents, refs_sents, tokenizer=tokenizer,
+                                                    lowercase=lowercase, legacy=True)
 
     if 'samsa' in metrics:
         metrics_scores["samsa"] = corpus_samsa(orig_sents, sys_sents, tokenizer=tokenizer, lowercase=lowercase,
