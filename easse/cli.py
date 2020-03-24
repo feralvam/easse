@@ -8,7 +8,7 @@ from easse.utils.helpers import read_lines
 from easse.quality_estimation import corpus_quality_estimation
 from easse.sari import corpus_sari
 from easse.samsa import corpus_samsa
-from easse.bleu import corpus_bleu, corpus_macro_sentence_bleu
+from easse.bleu import corpus_bleu, corpus_averaged_sentence_bleu
 from easse.compression import corpus_f1_token
 from easse.utils.constants import VALID_TEST_SETS, VALID_METRICS, DEFAULT_METRICS
 from easse.utils.resources import get_orig_sents, get_refs_sents
@@ -120,8 +120,8 @@ def evaluate_system_output(
                                              lowercase=lowercase)
 
     if 'sent_bleu' in metrics:
-        metrics_scores["sent_bleu"] = corpus_macro_sentence_bleu(sys_sents, refs_sents,
-                                                                 tokenizer=tokenizer, lowercase=lowercase)
+        metrics_scores["sent_bleu"] = corpus_averaged_sentence_bleu(sys_sents, refs_sents,
+                                                                    tokenizer=tokenizer, lowercase=lowercase)
 
     if 'sari' in metrics:
         metrics_scores["sari"] = corpus_sari(orig_sents, sys_sents, refs_sents, tokenizer=tokenizer, lowercase=lowercase)
