@@ -88,7 +88,22 @@ def common_options(function):
 def _evaluate_system_output(*args, **kwargs):
     kwargs['metrics'] = kwargs.pop('metrics').split(',')
     metrics_scores = evaluate_system_output(*args, **kwargs)
-    print(metrics_scores)
+
+    def recursive_round(obj):
+        def is_castable_to_float(obj):
+            try:
+                float(obj)
+            except (ValueError, TypeError):
+                return False
+            return True
+
+        if is_castable_to_float(obj):
+            return round(obj, 3)
+        if type(obj) is dict:
+            return {key: recursive_round(value) for key, value in obj.items()}
+        return obj
+
+    print(recursive_round(metrics_scores))
 
 
 def evaluate_system_output(
@@ -140,13 +155,12 @@ def evaluate_system_output(
                                                                           verbose=False, as_str=True)
 
     if quality_estimation:
-        quality_estimation_scores = corpus_quality_estimation(
+        metrics_scores["quality_estimation"] = corpus_quality_estimation(
                 orig_sents,
                 sys_sents,
                 tokenizer=tokenizer,
                 lowercase=lowercase
                 )
-        metrics_scores["quality_estimation"] = {k: round(v, 2) for k, v in quality_estimation_scores.items()}
 
     return metrics_scores
 
