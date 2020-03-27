@@ -93,21 +93,12 @@ def get_qualitative_examples_html(orig_sents, sys_sents, refs_sents):
         ('Worst simplifications according to SARI',
          lambda c, s, refs: corpus_sari([c], [s], [refs]),
          lambda value: f'SARI={value:.2f}'),
-        ('Simplifications with only one differing word',
-         lambda c, s, refs: -(count_words(c) == count_words(s) == len(get_lcs(to_words(c), to_words(s))) + 1),
-         lambda value: ''),
         ('Simplifications with the most compression',
          lambda c, s, refs: get_compression_ratio(c, s),
          lambda value: f'compression_ratio={value:.2f}'),
-        ('Simplifications that are longer than the source',
-         lambda c, s, refs: -get_compression_ratio(c, s),
-         lambda value: f'compression_ratio={-value:.2f}'),
-        ('Simplifications that paraphrase the source',
+        ('Simplifications with a high amount of paraphrasing',
          lambda c, s, refs: get_levenshtein_similarity(c, s) / get_compression_ratio(c, s),
          lambda value: f'levenshtein_similarity={value:.2f}'),
-        ('Simplifications that are the most similar to the source (excluding exact copies)',
-         lambda c, s, refs: -get_levenshtein_similarity(c, s) * int(c != s),
-         lambda value: f'levenshtein_similarity={-value:.2f}'),
         ('Simplifications with the most sentence splits (if there are any)',
          lambda c, s, refs: -(count_sentences(c) - count_sentences(s)),
          lambda value: f'#sentence_splits={-value:.2f}'),
@@ -424,7 +415,7 @@ def get_multiple_systems_qualitative_examples_html(orig_sents, sys_sents_list, r
     ] + [
         (f'Worst relative simplifications (SARI) for {system_names[i]}',
          lambda c, sys_sents, refs_sents: get_relative_sari(c, sys_sents, refs_sents, system_idx=i),
-         lambda value: f'SARI={value:.2f}')
+         lambda value: f'Relative SARI={value:.2f}')
         for i in range(len(system_names))
     ]
 
