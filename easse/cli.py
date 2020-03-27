@@ -54,10 +54,6 @@ def common_options(function):
             help='Test set to use.',
     )(function)
     function = click.option(
-            '--sys_sents_path', type=click.Path(), default=None,
-            help='Path to the system predictions input file that is to be evaluated.',
-    )(function)
-    function = click.option(
             '--orig_sents_path', type=click.Path(), default=None,
             help='Path to the source sentences. Only used when test_set == "custom".',
     )(function)
@@ -87,8 +83,8 @@ def common_options(function):
               help=f'Perform word-level transformation analysis.')
 @click.option('--quality_estimation', '-q', is_flag=True,
               help='Compute quality estimation features.')
-@click.option('--sys_sents_path', type=click.Path(), default=None,
-            help='Path to the system predictions input file that is to be evaluated.')
+@click.option('--sys_sents_path', '-i', type=click.Path(), default=None,
+              help='Path to the system predictions input file that is to be evaluated.')
 def _evaluate_system_output(*args, **kwargs):
     kwargs['metrics'] = kwargs.pop('metrics').split(',')
     metrics_scores = evaluate_system_output(*args, **kwargs)
@@ -157,8 +153,9 @@ def evaluate_system_output(
 
 @cli.command('report')
 @common_options
-@click.option('--sys_sents_path', type=click.Path(), default=None,
-            help='Path to the system predictions input file that is to be evaluated. You can also input a comma-separated list of files to compare multiple systems.')
+@click.option('--sys_sents_path', '-i', type=click.Path(), default=None,
+              help='''Path to the system predictions input file that is to be evaluated.
+              You can also input a comma-separated list of files to compare multiple systems.''')
 @click.option('--report_path', '-p', type=click.Path(), default='easse_report.html',
               help='Path to the output HTML report.')
 def _report(*args, **kwargs):
