@@ -343,9 +343,13 @@ def get_score_table_html_single_system(orig_sents, sys_sents, refs_sents, lowerc
 
 def get_score_table_html_multiple_systems(orig_sents, sys_sents_list, refs_sents, system_names, lowercase, tokenizer, metrics):
     doc = Doc()
+    # Add the identity baseline
+    sys_sents_list.append(orig_sents)
+    system_names.append('Identity baseline')
+    # Evaluate systems
     sys_scores_list = [get_all_scores(orig_sents, sys_sents, refs_sents, lowercase=lowercase, tokenizer=tokenizer, metrics=metrics)
                        for sys_sents in sys_sents_list]
-    # We evaluate the first reference against all the others (the second reference is duplicated to have the same number of reference as for systems).
+    # Evaluate the first reference against all the others (the second reference is duplicated to have the same number of reference as for systems).
     # TODO: Ideally the system and references should be evaluated with exactly the same number of references.
     ref_scores = get_all_scores(orig_sents, refs_sents[0], [refs_sents[1]] + refs_sents[1:],
                                 lowercase=lowercase, tokenizer=tokenizer, metrics=metrics)
