@@ -109,7 +109,7 @@ def get_qualitative_examples_html(orig_sents, sys_sents, refs_sents):
          lambda c, s, refs: -get_levenshtein_similarity(c, s) * int(c != s),
          lambda value: f'levenshtein_similarity={-value:.2f}'),
         ('Simplifications with the most sentence splits (if there are any)',
-         lambda c, s, refs: -(count_sentences(s) - count_sentences(s)),
+         lambda c, s, refs: -(count_sentences(c) - count_sentences(s)),
          lambda value: f'#sentence_splits={-value:.2f}'),
     ]
 
