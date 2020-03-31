@@ -30,7 +30,9 @@ def get_parser():
 
 
 def ucca_parse_texts(texts: List[str]):
-    passages = list(ucca.convert.from_text(texts, one_per_line=True))
+    passages = []
+    for text in texts:
+        passages += list(ucca.convert.from_text(text.split(), tokenized=True))
     parser = get_parser()
     parsed_passages = [passage for (passage, *_) in parser.parse(passages, display=False)]
     return parsed_passages
