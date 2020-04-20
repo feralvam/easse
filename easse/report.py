@@ -99,8 +99,8 @@ def get_qualitative_examples_html(orig_sents, sys_sents, refs_sents):
         ('Simplifications with a high amount of paraphrasing',
          lambda c, s, refs: get_levenshtein_similarity(c, s) / get_compression_ratio(c, s),
          lambda value: f'levenshtein_similarity={value:.2f}'),
-        ('Simplifications with the most sentence splits (if there are any)',
-         lambda c, s, refs: -(count_sentences(c) - count_sentences(s)),
+        ('Simplifications with the most sentence splits (if any)',
+         lambda c, s, refs: -(count_sentences(s) - count_sentences(c)),
          lambda value: f'#sentence_splits={-value:.2f}'),
     ]
 
@@ -333,22 +333,34 @@ def get_score_table_html_single_system(orig_sents, sys_sents, refs_sents, lowerc
 
 
 def get_score_table_html_multiple_systems(orig_sents, sys_sents_list, refs_sents, system_names, lowercase, tokenizer, metrics):
+    def truncate(sentence):
+        # Take first 80% words
+        words = to_words(sentence)
+        return ' '.join(words[:int(len(words) * 0.8)]) + '.'
+
     doc = Doc()
     # Add the identity baseline
     sys_sents_list.append(orig_sents)
     system_names.append('Identity baseline')
+    # Add the truncate baseline
+    sys_sents_list.append([truncate(sentence) for sentence in orig_sents])
+    system_names.append('Truncate baseline')
     # Evaluate systems
     sys_scores_list = [get_all_scores(orig_sents, sys_sents, refs_sents, lowercase=lowercase, tokenizer=tokenizer, metrics=metrics)
                        for sys_sents in sys_sents_list]
-    # Evaluate the first reference against all the others (the second reference is duplicated to have the same number of reference as for systems).
-    # TODO: Ideally the system and references should be evaluated with exactly the same number of references.
-    ref_scores = get_all_scores(orig_sents, refs_sents[0], [refs_sents[1]] + refs_sents[1:],
-                                lowercase=lowercase, tokenizer=tokenizer, metrics=metrics)
-    assert all([sys_scores.keys() == ref_scores.keys() for sys_scores in sys_scores_list])
+    rows = [sys_scores.values() for sys_scores in sys_scores_list]
+    if len(refs_sents) > 1:
+        # Evaluate the first reference against all the others (the second reference is duplicated to have the same number of reference as for systems).
+        # TODO: Ideally the system and references should be evaluated with exactly the same number of references.
+        ref_scores = get_all_scores(orig_sents, refs_sents[0], [refs_sents[1]] + refs_sents[1:],
+                                    lowercase=lowercase, tokenizer=tokenizer, metrics=metrics)
+        assert all([sys_scores.keys() == ref_scores.keys() for sys_scores in sys_scores_list])
+        rows.append(ref_scores.values())
+        system_names.append('Reference*')
     doc.asis(get_table_html(
-            header=list(ref_scores.keys()),
-            rows=[sys_scores.values() for sys_scores in sys_scores_list] + [ref_scores.values()],
-            row_names=system_names + ['Reference*'],
+            header=list(sys_scores_list[0].keys()),
+            rows=rows,
+            row_names=system_names,
             ))
     doc.line(
         'p',
