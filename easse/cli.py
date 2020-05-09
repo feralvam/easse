@@ -2,7 +2,6 @@ from pathlib import Path
 
 import click
 
-from easse.annotation.word_level import corpus_analyse_operations
 from easse.fkgl import corpus_fkgl
 from easse.utils.helpers import read_lines
 from easse.quality_estimation import corpus_quality_estimation
@@ -151,6 +150,7 @@ def evaluate_system_output(
         metrics_scores["f1_token"] = corpus_f1_token(sys_sents, refs_sents, tokenizer=tokenizer, lowercase=lowercase)
 
     if analysis:
+        from easse.annotation.word_level import corpus_analyse_operations  # Lazy inline import for performance
         metrics_scores["word_level_analysis"] = corpus_analyse_operations(orig_sents, sys_sents, refs_sents,
                                                                           verbose=False, as_str=True)
 
