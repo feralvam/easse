@@ -110,15 +110,21 @@ easse report -t turkcorpus_test < easse/resources/data/system_outputs/turkcorpus
 You can also use the different functions available in EASSE from your Python code.
 
 ```python
->>> from easse.sari import corpus_sari
->>> orig_sents = ["About 95 species are currently accepted ."]
->>> sys_sents = ["About 95 you now get in ."]
->>> refs_sents = [["About 95 species are currently known .",
-...                "About 95 species are now accepted .",
-...                "95 species are now accepted ."]]
->>> sari_score = corpus_sari(orig_sents, sys_sents, refs_sents)
->>> print(sari_score)
-27.301587301587304
+from easse.sari import sentence_sari, corpus_sari
+
+sentence_sari(orig_sent="About 95 species are currently accepted.",  
+              sys_sent="About 95 you now get in.", 
+              ref_sents=["About 95 species are currently known.", 
+                        "About 95 species are now accepted.",  
+                        "95 species are now accepted."])
+Out[2]: 26.953601953601954
+
+corpus_sari(orig_sents=["About 95 species are currently accepted.", "The cat perched on the mat."],  
+            sys_sents=["About 95 you now get in.", "Cat on mat."], 
+            refs_sents=[["About 95 species are currently known.", "The cat sat on the mat."],
+                        ["About 95 species are now accepted.", "The cat is on the mat."],  
+                        ["95 species are now accepted.", "The cat sat."]])
+Out[3]: 33.17472563619544
 ```
 
 ## Licence
