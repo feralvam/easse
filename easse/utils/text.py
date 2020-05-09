@@ -1,8 +1,6 @@
 import re
 from functools import lru_cache
 
-import nltk
-
 
 def to_words(text):
     return text.split()
@@ -13,6 +11,7 @@ def count_words(text):
 
 
 def to_sentences(text, language='english'):
+    import nltk  # Lazy inline import because NLTK takes ~1s to load
     try:
         tokenizer = nltk.data.load(f'tokenizers/punkt/{language}.pickle')
     except LookupError:
