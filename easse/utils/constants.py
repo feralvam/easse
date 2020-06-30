@@ -38,7 +38,10 @@ TEST_SETS_PATHS = {
         ('googlecomp_valid', 'refs'): [DATA_DIR / f'test_sets/googlecomp/googlecomp.valid.comp'],
         ('qats_test', 'orig'): DATA_DIR / f'test_sets/qats/qats.test.orig',
         ('qats_test', 'refs'): [DATA_DIR / f'test_sets/qats/qats.test.simp'],
-
+        ('headlines_test', 'orig'): [DATA_DIR / f'test_sets/headlines/headlines.test.complex'],
+        ('headlines_test', 'refs'): [DATA_DIR / f'test_sets/headlines/headlines.test.simple'],
+        ('headlines_valid', 'orig'): [DATA_DIR / f'test_sets/headlines/headlines.valid.complex'],
+        ('headlines_valid', 'refs'): [DATA_DIR / f'test_sets/headlines/headlines.valid.simple'],
 }
 SYSTEM_OUTPUTS_DIR = DATA_DIR / 'system_outputs'
 SYSTEM_OUTPUTS_DIRS_MAP = {
