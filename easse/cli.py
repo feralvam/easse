@@ -150,7 +150,7 @@ def evaluate_system_output(
         metrics_scores["f1_token"] = corpus_f1_token(sys_sents, refs_sents, tokenizer=tokenizer, lowercase=lowercase)
 
     if analysis:
-        from easse.annotation.word_level import corpus_analyse_operations  # Lazy inline import for performance
+        from easse.annotation.word_level import corpus_analyse_operations  # Lazy inline import for faster import time
         metrics_scores["word_level_analysis"] = corpus_analyse_operations(orig_sents, sys_sents, refs_sents,
                                                                           verbose=False, as_str=True)
 

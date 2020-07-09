@@ -6,7 +6,6 @@ import numpy as np
 import pandas as pd
 import plotly.express as px
 from sacrebleu import corpus_bleu
-from tseval.feature_extraction import get_levenshtein_similarity, get_compression_ratio, count_sentences
 from yattag import Doc, indent
 
 from easse.fkgl import corpus_fkgl
@@ -17,6 +16,7 @@ from easse.utils.constants import DEFAULT_METRICS
 from easse.utils.helpers import add_dicts
 from easse.utils.text import to_words, count_words
 from easse.annotation.lcs import get_lcs
+from easse.utils.text import count_sentences
 
 
 def get_all_scores(
@@ -83,6 +83,7 @@ def get_random_html_id():
 
 
 def get_qualitative_examples_html(orig_sents, sys_sents, refs_sents):
+    from tseval.feature_extraction import get_levenshtein_similarity, get_compression_ratio  # Inline lazy import for performance
     title_key_print = [
         ('Randomly sampled simplifications',
          lambda c, s, refs: 0,
@@ -210,6 +211,7 @@ def get_plotly_histogram(orig_sents, sys_sents, ref_sents, feature_extractor, fe
 
 
 def get_plots_html(orig_sents, sys_sents, ref_sents):
+    from tseval.feature_extraction import get_levenshtein_similarity, get_compression_ratio  # Inline lazy import for performance
     doc = Doc()
     features = {
             'Compression ratio': get_compression_ratio,
