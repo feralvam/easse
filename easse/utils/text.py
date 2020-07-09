@@ -11,7 +11,7 @@ def count_words(text):
 
 
 def to_sentences(text, language='english'):
-    import nltk  # Lazy inline import because NLTK takes ~1s to load
+    import nltk  # Lazy inline import for faster import time
     try:
         tokenizer = nltk.data.load(f'tokenizers/punkt/{language}.pickle')
     except LookupError:
