@@ -8,13 +8,11 @@ def normalize(sentence, lowercase: bool = True, tokenizer: str = '13a', return_s
     if lowercase:
         sentence = sentence.lower()
 
-    if tokenizer == "13a":
-        normalized_sent = sacrebleu.tokenize_13a(sentence)
-    elif tokenizer == "intl":
-        normalized_sent = sacrebleu.tokenize_v14_international(sentence)
-    elif tokenizer == "moses":
+    if tokenizer in ['13a', 'intl']:
+        normalized_sent = sacrebleu.TOKENIZERS[tokenizer]()(sentence)
+    elif tokenizer == 'moses':
         normalized_sent = sacremoses.MosesTokenizer().tokenize(sentence, return_str=True, escape=False)
-    elif tokenizer == "penn":
+    elif tokenizer == 'penn':
         normalized_sent = sacremoses.MosesTokenizer().penn_tokenize(sentence, return_str=True)
     else:
         normalized_sent = sentence
