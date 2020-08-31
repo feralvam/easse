@@ -1,0 +1,14 @@
+# System outputs
+
+This folder contains system outputs gathered from the authors of each paper.
+In alphabetical order:
+
+* **ACCESS**: "Controllable Sentence Simplification" [Paper](https://www.aclweb.org/anthology/2020.lrec-1.577/) and [Code](https://github.com/facebookresearch/access). System outputs collected from authors' [repo](https://github.com/facebookresearch/access/tree/master/system_output). 
+* **DMASS-DCSS**: "Integrating Transformer and Paraphrase Rules for Sentence Simplification" [Paper](https://www.aclweb.org/anthology/D18-1355/) and [Code](https://github.com/Sanqiang/text_simplification).
+* **Dress** and **Dress-Ls**:"Sentence Simplification with Deep Reinforcement Learning" [Paper](http://aclweb.org/anthology/D/D17/D17-1062.pdf) and [code](https://github.com/XingxingZhang/dress). System outputs collected from [Dress repo](https://github.com/XingxingZhang/dress/tree/master/all-system-output/) (Wikilarge = TurkCorpus)
+* **EditNTS**: "EditNTS: An Neural Programmer-Interpreter Model for Sentence Simplification through Explicit Editing" [Paper](https://www.aclweb.org/anthology/P19-1331/) and [code](https://github.com/yuedongP/EditNTS). System output collected from authors' [repo](https://github.com/yuedongP/EditNTS).
+* **Hybrid**: "Hybrid Simplification using Deep Semantics and Machine Translation" [Paper](https://www.aclweb.org/anthology/P14-1041.pdf). System outputs collected from [Dress repo](https://github.com/XingxingZhang/dress/tree/master/all-system-output/) (Wikilarge = TurkCorpus).
+* **NTS-SARI**: "Exploring Neural Text Simplification Models" [Paper](https://www.aclweb.org/anthology/P17-2014/) and [code](https://github.com/senisioi/NeuralTextSimplification). System outputs collected from authors' [repo](https://github.com/senisioi/NeuralTextSimplification/tree/master/predictions).
+* **PBMT-R**: "Sentence Simplification by Monolingual Machine Translation" [Paper](https://www.aclweb.org/anthology/P12-1107). System outputs collected from [Dress repo](https://github.com/XingxingZhang/dress/tree/master/all-system-output/) (Wikilarge = TurkCorpus)
+* **SBMT-SARI**: "Optimizing Statistical Machine Translation for Text Simplification" [Paper](https://www.aclweb.org/anthology/Q16-1029/) and [code](https://github.com/cocoxu/simplification/). System outputs collected from [Dress repo](https://github.com/XingxingZhang/dress/tree/master/all-system-output/) (Wikilarge = TurkCorpus)
+* **UNMT**, **UNTS** and **UNTS+10k**: "Unsupervised Neural Text Simplification" [Paper](https://www.aclweb.org/anthology/P19-1198/) and [code](https://github.com/subramanyamdvss/UnsupNTS). System outputs collected from authors' [repo](https://github.com/subramanyamdvss/UnsupNTS/tree/master/predictions), see [issue#5](https://github.com/subramanyamdvss/UnsupNTS/issues/5).
