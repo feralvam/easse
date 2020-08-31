@@ -4,6 +4,9 @@ from setuptools import setup, find_packages
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
+with open('requirements.txt', 'r') as fh:
+    requirements = fh.read().strip().split('\n')
+
 
 setup(
     name='easse',
@@ -28,10 +31,5 @@ setup(
     entry_points={'console_scripts': [
         "easse = easse.cli:cli"
     ]},
-    install_requires=[
-        'click', 'matplotlib', 'nltk==3.4.3', 'numpy', 'pandas', 'requests>=2.21.0', 'sacrebleu==1.4.5', 'sacremoses',
-        'seaborn', 'sklearn', 'stanfordnlp', 'tqdm>=4.32.2', 'tupa>=1.3.0', 'yattag', 'plotly>=4.0.0',
-        'ucca@git+https://github.com/louismartin/ucca.git',
-        'tseval@git+https://github.com/facebookresearch/text-simplification-evaluation.git',
-        ],
+    install_requires=requirements,
 )
