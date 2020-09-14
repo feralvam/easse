@@ -1,6 +1,7 @@
 from collections import OrderedDict
 from typing import List
 from uuid import uuid4
+import html
 
 import numpy as np
 import pandas as pd
@@ -105,6 +106,7 @@ def get_qualitative_examples_html(orig_sents, sys_sents, refs_sents):
     ]
 
     def get_one_sample_html(orig_sent, sys_sent, ref_sents, sort_key, print_func):
+        orig_sent, sys_sent, *ref_sents = [html.escape(sent) for sent in [orig_sent, sys_sent, *ref_sents]]
         doc = Doc()
         with doc.tag('div', klass='mb-2 p-1'):
             # Sort key
