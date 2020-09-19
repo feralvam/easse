@@ -116,46 +116,46 @@ def evaluate_system_output(
         analysis=False,
         quality_estimation=False,
         ):
-    """
+    '''
     Evaluate a system output with automatic metrics.
-    """
+    '''
     sys_sents = get_sys_sents(test_set, sys_sents_path)
     orig_sents, refs_sents = get_orig_and_refs_sents(test_set, orig_sents_path, refs_sents_paths)
 
     # compute each metric
     metrics_scores = {}
     if 'bleu' in metrics:
-        metrics_scores["bleu"] = corpus_bleu(sys_sents, refs_sents, force=True, tokenizer=tokenizer,
+        metrics_scores['bleu'] = corpus_bleu(sys_sents, refs_sents, force=True, tokenizer=tokenizer,
                                              lowercase=lowercase)
 
     if 'sent_bleu' in metrics:
-        metrics_scores["sent_bleu"] = corpus_averaged_sentence_bleu(sys_sents, refs_sents,
+        metrics_scores['sent_bleu'] = corpus_averaged_sentence_bleu(sys_sents, refs_sents,
                                                                     tokenizer=tokenizer, lowercase=lowercase)
 
     if 'sari' in metrics:
-        metrics_scores["sari"] = corpus_sari(orig_sents, sys_sents, refs_sents, tokenizer=tokenizer, lowercase=lowercase)
+        metrics_scores['sari'] = corpus_sari(orig_sents, sys_sents, refs_sents, tokenizer=tokenizer, lowercase=lowercase)
 
     if 'sari_legacy' in metrics:
-        metrics_scores["sari_legacy"] = corpus_sari(orig_sents, sys_sents, refs_sents, tokenizer=tokenizer,
+        metrics_scores['sari_legacy'] = corpus_sari(orig_sents, sys_sents, refs_sents, tokenizer=tokenizer,
                                                     lowercase=lowercase, legacy=True)
 
     if 'samsa' in metrics:
         from easse.samsa import corpus_samsa
-        metrics_scores["samsa"] = corpus_samsa(orig_sents, sys_sents, tokenizer=tokenizer, lowercase=lowercase,
+        metrics_scores['samsa'] = corpus_samsa(orig_sents, sys_sents, tokenizer=tokenizer, lowercase=lowercase,
                                                verbose=True)
 
     if 'fkgl' in metrics:
-        metrics_scores["fkgl"] = corpus_fkgl(sys_sents, tokenizer=tokenizer)
+        metrics_scores['fkgl'] = corpus_fkgl(sys_sents, tokenizer=tokenizer)
 
     if 'f1_token' in metrics:
-        metrics_scores["f1_token"] = corpus_f1_token(sys_sents, refs_sents, tokenizer=tokenizer, lowercase=lowercase)
+        metrics_scores['f1_token'] = corpus_f1_token(sys_sents, refs_sents, tokenizer=tokenizer, lowercase=lowercase)
 
     if analysis:
-        metrics_scores["word_level_analysis"] = corpus_analyse_operations(orig_sents, sys_sents, refs_sents,
+        metrics_scores['word_level_analysis'] = corpus_analyse_operations(orig_sents, sys_sents, refs_sents,
                                                                           verbose=False, as_str=True)
 
     if quality_estimation:
-        metrics_scores["quality_estimation"] = corpus_quality_estimation(
+        metrics_scores['quality_estimation'] = corpus_quality_estimation(
                 orig_sents,
                 sys_sents,
                 tokenizer=tokenizer,
@@ -192,9 +192,9 @@ def report(
         lowercase=True,
         metrics=DEFAULT_METRICS,
         ):
-    """
+    '''
     Create a HTML report file with automatic metrics, plots and samples.
-    """
+    '''
     sys_sents = get_sys_sents(test_set, sys_sents_path)
     orig_sents, refs_sents = get_orig_and_refs_sents(test_set, orig_sents_path, refs_sents_paths)
     write_html_report(
@@ -214,9 +214,9 @@ def multiple_systems_report(
         metrics=DEFAULT_METRICS,
         system_names=None,
         ):
-    """
+    '''
     Create a HTML report file comparing multiple systems with automatic metrics, plots and samples.
-    """
+    '''
     sys_sents_list = [read_lines(path) for path in sys_sents_paths]
     orig_sents, refs_sents = get_orig_and_refs_sents(test_set, orig_sents_path, refs_sents_paths)
     if system_names is None:
