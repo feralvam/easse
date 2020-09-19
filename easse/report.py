@@ -12,7 +12,6 @@ from yattag import Doc, indent
 
 from easse.fkgl import corpus_fkgl
 from easse.quality_estimation import corpus_quality_estimation
-from easse.samsa import corpus_samsa
 from easse.sari import corpus_sari
 from easse.utils.constants import DEFAULT_METRICS
 from easse.utils.helpers import add_dicts
@@ -30,6 +29,7 @@ def get_all_scores(
     if 'sari' in metrics:
         scores['SARI'] = corpus_sari(orig_sents, sys_sents, refs_sents, tokenizer=tokenizer, lowercase=lowercase)
     if 'samsa' in metrics:
+        from easse.samsa import corpus_samsa
         scores['SAMSA'] = corpus_samsa(orig_sents, sys_sents, tokenizer=tokenizer, verbose=True, lowercase=lowercase)
     if 'fkgl' in metrics:
         scores['FKGL'] = corpus_fkgl(sys_sents, tokenizer=tokenizer)

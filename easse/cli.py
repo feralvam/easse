@@ -7,7 +7,6 @@ from easse.fkgl import corpus_fkgl
 from easse.utils.helpers import read_lines
 from easse.quality_estimation import corpus_quality_estimation
 from easse.sari import corpus_sari
-from easse.samsa import corpus_samsa
 from easse.bleu import corpus_bleu, corpus_averaged_sentence_bleu
 from easse.compression import corpus_f1_token
 from easse.utils.constants import VALID_TEST_SETS, VALID_METRICS, DEFAULT_METRICS
@@ -141,6 +140,7 @@ def evaluate_system_output(
                                                     lowercase=lowercase, legacy=True)
 
     if 'samsa' in metrics:
+        from easse.samsa import corpus_samsa
         metrics_scores["samsa"] = corpus_samsa(orig_sents, sys_sents, tokenizer=tokenizer, lowercase=lowercase,
                                                verbose=True)
 
