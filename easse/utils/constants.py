@@ -49,5 +49,5 @@ SYSTEM_OUTPUTS_DIRS_MAP = {
 
 # Constants
 VALID_TEST_SETS = list(set([test_set for test_set, language in TEST_SETS_PATHS.keys()])) + ['custom']
-VALID_METRICS = ['bleu', 'sari', 'samsa', 'fkgl', 'sent_bleu', 'f1_token', 'sari_legacy']
+VALID_METRICS = ['bleu', 'sari', 'samsa', 'fkgl', 'sent_bleu', 'f1_token', 'sari_legacy', 'sari_by_operation']
 DEFAULT_METRICS = ['bleu', 'sari', 'fkgl']

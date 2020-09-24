@@ -6,7 +6,7 @@ from easse.annotation.word_level import corpus_analyse_operations
 from easse.fkgl import corpus_fkgl
 from easse.utils.helpers import read_lines
 from easse.quality_estimation import corpus_quality_estimation
-from easse.sari import corpus_sari
+from easse.sari import corpus_sari, get_corpus_sari_operation_scores
 from easse.bleu import corpus_bleu, corpus_averaged_sentence_bleu
 from easse.compression import corpus_f1_token
 from easse.utils.constants import VALID_TEST_SETS, VALID_METRICS, DEFAULT_METRICS
@@ -138,6 +138,9 @@ def evaluate_system_output(
     if 'sari_legacy' in metrics:
         metrics_scores['sari_legacy'] = corpus_sari(orig_sents, sys_sents, refs_sents, tokenizer=tokenizer,
                                                     lowercase=lowercase, legacy=True)
+
+    if 'sari_by_operation' in metrics:
+        metrics_scores['sari_add'], metrics_scores['sari_keep'], metrics_scores['sari_del'] = get_corpus_sari_operation_scores(orig_sents, sys_sents, refs_sents, tokenizer=tokenizer, lowercase=lowercase)
 
     if 'samsa' in metrics:
         from easse.samsa import corpus_samsa
