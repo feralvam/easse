@@ -119,6 +119,8 @@ def evaluate_system_output(
     '''
     Evaluate a system output with automatic metrics.
     '''
+    for metric in metrics:
+        assert metric in VALID_METRICS, f'"{metric}" not a valid metric. Valid metrics: {VALID_METRICS}'
     sys_sents = get_sys_sents(test_set, sys_sents_path)
     orig_sents, refs_sents = get_orig_and_refs_sents(test_set, orig_sents_path, refs_sents_paths)
 
