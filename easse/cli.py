@@ -60,53 +60,71 @@ def cli():
 
 def common_options(function):
     function = click.option(
-        '--test_set',
-        '-t',
+        "--test_set",
+        "-t",
         type=click.Choice(VALID_TEST_SETS),
         required=True,
-        help='Test set to use.',
+        help="Test set to use.",
     )(function)
     function = click.option(
-        '--orig_sents_path',
+        "--orig_sents_path",
         type=click.Path(),
         default=None,
         help='Path to the source sentences. Only used when test_set == "custom".',
     )(function)
     function = click.option(
-        '--refs_sents_paths',
+        "--refs_sents_paths",
         type=str,
         default=None,
         help='Comma-separated list of path(s) to the references(s). Only used when test_set == "custom".',
     )(function)
     function = click.option(
-        '--lowercase/--no-lowercase',
-        '-lc/--no-lc',
+        "--lowercase/--no-lowercase",
+        "-lc/--no-lc",
         default=True,
-        help='Compute case-insensitive scores for all metrics. ',
+        help="Compute case-insensitive scores for all metrics. ",
     )(function)
     function = click.option(
-        '--tokenizer',
-        '-tok',
-        type=click.Choice(['13a', 'intl', 'moses', 'penn', 'none']),
-        default='13a',
-        help='Tokenization method to use.',
+        "--tokenizer",
+        "-tok",
+        type=click.Choice(["13a", "intl", "moses", "penn", "none"]),
+        default="13a",
+        help="Tokenization method to use.",
     )(function)
     function = click.option(
-        '--metrics',
-        '-m',
+        "--metrics",
+        "-m",
         type=str,
-        default=','.join(DEFAULT_METRICS),
-        help=(f'Comma-separated list of metrics to compute. Valid: {",".join(VALID_METRICS)}'
-              ' (SAMSA is disabled by default for the sake of speed).'),
+        default=",".join(DEFAULT_METRICS),
+        help=(
+            f'Comma-separated list of metrics to compute. Valid: {",".join(VALID_METRICS)}'
+            " (SAMSA is disabled by default for the sake of speed)."
+        ),
     )(function)
     return function
 
 
 @cli.command("evaluate")
 @common_options
-@click.option('--analysis', '-a', is_flag=True, help=f'Perform word-level transformation analysis.')
-@click.option('--quality_estimation', '-q', is_flag=True, help='Compute quality estimation features.')
-@click.option('--sys_sents_path', '-i', type=click.Path(), default=None, help='Path to the system predictions input file that is to be evaluated.')
+@click.option(
+    "--analysis",
+    "-a",
+    is_flag=True,
+    help=f"Perform word-level transformation analysis.",
+)
+@click.option(
+    "--quality_estimation",
+    "-q",
+    is_flag=True,
+    help="Compute quality estimation features.",
+)
+@click.option(
+    "--sys_sents_path",
+    "-i",
+    type=click.Path(),
+    default=None,
+    help="Path to the system predictions input file that is to be evaluated.",
+)
 def _evaluate_system_output(*args, **kwargs):
     kwargs["metrics"] = kwargs.pop("metrics").split(",")
     metrics_scores = evaluate_system_output(*args, **kwargs)
@@ -129,21 +147,23 @@ def _evaluate_system_output(*args, **kwargs):
 
 
 def evaluate_system_output(
-        test_set,
-        sys_sents_path=None,
-        orig_sents_path=None,
-        refs_sents_paths=None,
-        tokenizer='13a',
-        lowercase=True,
-        metrics=DEFAULT_METRICS,
-        analysis=False,
-        quality_estimation=False,
+    test_set,
+    sys_sents_path=None,
+    orig_sents_path=None,
+    refs_sents_paths=None,
+    tokenizer="13a",
+    lowercase=True,
+    metrics=DEFAULT_METRICS,
+    analysis=False,
+    quality_estimation=False,
 ):
-    '''
+    """
     Evaluate a system output with automatic metrics.
-    '''
+    """
     for metric in metrics:
-        assert metric in VALID_METRICS, f'"{metric}" not a valid metric. Valid metrics: {VALID_METRICS}'
+        assert (
+            metric in VALID_METRICS
+        ), f'"{metric}" not a valid metric. Valid metrics: {VALID_METRICS}'
     sys_sents = get_sys_sents(test_set, sys_sents_path)
     orig_sents, refs_sents = get_orig_and_refs_sents(
         test_set, orig_sents_path, refs_sents_paths
@@ -183,15 +203,23 @@ def evaluate_system_output(
             lowercase=lowercase,
             legacy=True,
         )
-    
-    if 'sari_by_operation' in metrics:
-        metrics_scores['sari_add'], metrics_scores['sari_keep'], metrics_scores['sari_del'] = get_corpus_sari_operation_scores(orig_sents,
-                                                                                                                               sys_sents,
-                                                                                                                               refs_sents,
-                                                                                                                               tokenizer=tokenizer,
-                                                                                                                               lowercase=lowercase)
+
+    if "sari_by_operation" in metrics:
+        (
+            metrics_scores["sari_add"],
+            metrics_scores["sari_keep"],
+            metrics_scores["sari_del"],
+        ) = get_corpus_sari_operation_scores(
+            orig_sents,
+            sys_sents,
+            refs_sents,
+            tokenizer=tokenizer,
+            lowercase=lowercase,
+        )
 
     if "samsa" in metrics:
+        from easse.samsa import corpus_samsa
+
         metrics_scores["samsa"] = corpus_samsa(
             orig_sents,
             sys_sents,
@@ -233,13 +261,21 @@ def evaluate_system_output(
 
 @cli.command("report")
 @common_options
-@click.option('--sys_sents_path',
-              '-i',
-              type=click.Path(),
-              default=None,
-              help='''Path to the system predictions input file that is to be evaluated.
-              You can also input a comma-separated list of files to compare multiple systems.''')
-@click.option('--report_path', '-p', type=click.Path(), default='easse_report.html', help='Path to the output HTML report.')
+@click.option(
+    "--sys_sents_path",
+    "-i",
+    type=click.Path(),
+    default=None,
+    help="""Path to the system predictions input file that is to be evaluated.
+              You can also input a comma-separated list of files to compare multiple systems.""",
+)
+@click.option(
+    "--report_path",
+    "-p",
+    type=click.Path(),
+    default="easse_report.html",
+    help="Path to the output HTML report.",
+)
 def _report(*args, **kwargs):
     kwargs["metrics"] = kwargs.pop("metrics").split(",")
     if (
@@ -254,18 +290,18 @@ def _report(*args, **kwargs):
 
 
 def report(
-        test_set,
-        sys_sents_path=None,
-        orig_sents_path=None,
-        refs_sents_paths=None,
-        report_path='easse_report.html',
-        tokenizer='13a',
-        lowercase=True,
-        metrics=DEFAULT_METRICS,
+    test_set,
+    sys_sents_path=None,
+    orig_sents_path=None,
+    refs_sents_paths=None,
+    report_path="easse_report.html",
+    tokenizer="13a",
+    lowercase=True,
+    metrics=DEFAULT_METRICS,
 ):
-    '''
+    """
     Create a HTML report file with automatic metrics, plots and samples.
-    '''
+    """
     sys_sents = get_sys_sents(test_set, sys_sents_path)
     orig_sents, refs_sents = get_orig_and_refs_sents(
         test_set, orig_sents_path, refs_sents_paths
@@ -283,19 +319,19 @@ def report(
 
 
 def multiple_systems_report(
-        test_set,
-        sys_sents_paths,
-        orig_sents_path=None,
-        refs_sents_paths=None,
-        report_path='easse_report.html',
-        tokenizer='13a',
-        lowercase=True,
-        metrics=DEFAULT_METRICS,
-        system_names=None,
+    test_set,
+    sys_sents_paths,
+    orig_sents_path=None,
+    refs_sents_paths=None,
+    report_path="easse_report.html",
+    tokenizer="13a",
+    lowercase=True,
+    metrics=DEFAULT_METRICS,
+    system_names=None,
 ):
-    '''
+    """
     Create a HTML report file comparing multiple systems with automatic metrics, plots and samples.
-    '''
+    """
     sys_sents_list = [read_lines(path) for path in sys_sents_paths]
     orig_sents, refs_sents = get_orig_and_refs_sents(
         test_set, orig_sents_path, refs_sents_paths
