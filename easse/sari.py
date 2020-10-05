@@ -1,5 +1,3 @@
-# Re-implementation from
-
 from collections import Counter
 from typing import List
 import easse.utils.preprocessing as utils_prep
@@ -228,28 +226,16 @@ def compute_macro_sari(
                 del_sys_correct[n], del_sys_total[n], del_ref_total[n]
             )
         else:
-            del_score_ngram, _, _ = compute_precision_recall_f1(
-                del_sys_correct[n], del_sys_total[n], del_ref_total[n]
-            )
-
+            del_score_ngram, _, _ = compute_precision_recall_f1(del_sys_correct[n], del_sys_total[n], del_ref_total[n])
         add_f1 += add_f1_ngram / NGRAM_ORDER
         keep_f1 += keep_f1_ngram / NGRAM_ORDER
         del_f1 += del_score_ngram / NGRAM_ORDER
-
     return add_f1, keep_f1, del_f1
 
 
-def corpus_sari(
-    orig_sents: List[str],
-    sys_sents: List[str],
-    refs_sents: List[List[str]],
-    lowercase: bool = True,
-    tokenizer: str = "13a",
-    legacy=False,
-    use_f1_for_deletion=True,
-    use_paper_version=False,
-    return_operation_scores=False,
-):
+def get_corpus_sari_operation_scores(orig_sents: List[str], sys_sents: List[str], refs_sents: List[List[str]],
+                                     lowercase: bool = True, tokenizer: str = '13a',
+                                     legacy=False, use_f1_for_deletion=True, use_paper_version=False):
     """The `legacy` parameter allows reproducing scores reported in previous work.
     It replicates a bug in the original JAVA implementation where only the system outputs and the reference sentences
     are further tokenized. 
@@ -273,47 +259,12 @@ def corpus_sari(
     stats = compute_ngram_stats(orig_sents, sys_sents, refs_sents)
 
     if not use_paper_version:
-        add_score, keep_score, del_score = compute_macro_sari(
-            *stats, use_f1_for_deletion=use_f1_for_deletion
-        )
+        add_score, keep_score, del_score = compute_macro_sari(*stats, use_f1_for_deletion=use_f1_for_deletion)
     else:
-        add_score, keep_score, del_score = compute_micro_sari(
-            *stats, use_f1_for_deletion=use_f1_for_deletion
-        )
-
-    sari_score = 100.0 * (add_score + keep_score + del_score) / 3
-
-    if return_operation_scores:
-        return (
-            sari_score,
-            100.0 * add_score,
-            100.0 * keep_score,
-            100.0 * del_score,
-        )
-    else:
-        return sari_score
+        add_score, keep_score, del_score = compute_micro_sari(*stats, use_f1_for_deletion=use_f1_for_deletion)
+    return 100. * add_score, 100. * keep_score, 100. * del_score
 
 
-def sentence_sari(
-    orig_sent: str,
-    sys_sent: str,
-    ref_sents: List[str],
-    lowercase: bool = True,
-    tokenizer: str = "13a",
-    legacy=False,
-    use_f1_for_deletion=False,
-    use_paper_version=False,
-    return_operation_scores=False,
-):
-    return corpus_sari(
-        [orig_sent],
-        [sys_sent],
-        [[ref] for ref in ref_sents],
-        lowercase,
-        tokenizer,
-        legacy,
-        use_f1_for_deletion=use_f1_for_deletion,
-        use_paper_version=use_paper_version,
-        return_operation_scores=return_operation_scores,
-    )
-
+def corpus_sari(*args, **kwargs):
+    add_score, keep_score, del_score = get_corpus_sari_operation_scores(*args, **kwargs)
+    return (add_score + keep_score + del_score) / 3

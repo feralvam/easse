@@ -3,11 +3,13 @@
 
 ### Features
 
-- Automatic evaluation metrics (e.g. SARI, BLEU, SAMSA, etc.)
-- Word-level transformation analysis
-- Referenceless Quality Estimation features
-- Straightforward access to commonly used evaluation datasets
-- Comprehensive HTML report for quantitative and qualitative evaluation of a simplification output
+- Automatic evaluation metrics (e.g. SARI, BLEU, SAMSA, etc.).
+- Commonly used [**evaluation sets**](https://github.com/feralvam/easse/tree/master/easse/resources/data/test_sets).
+- Literature [**system outputs**](https://github.com/feralvam/easse/tree/master/easse/resources/data/system_outputs) to compare to.
+- Word-level transformation analysis.
+- Referenceless Quality Estimation features.
+- Straightforward access to commonly used evaluation datasets.
+- Comprehensive HTML report for quantitative and qualitative evaluation of a simplification output.
 
 ## Installation
 ### Requirements
