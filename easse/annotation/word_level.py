@@ -86,7 +86,9 @@ def _improve_replace(src_annots, ref_annots, src_parse, ref_parse):
                 and src_token["label"] == "B-D"
             ]
             if same_index_in_src:  # it is not an empty list
-                src_token = same_index_in_src[0]  # there is always one at the most
+                src_token = same_index_in_src[
+                    0
+                ]  # there is always one at the most
                 # check that both tokens have the same part of speech tag
                 same_postag = _have_same_postag(
                     src_token["index"], ref_token["index"], src_parse, ref_parse
@@ -131,7 +133,9 @@ def _label_group_simop(
             while parent and parent.label() not in group_synt_tags:
                 parent = parent.parent()
 
-            if parent:  # the token is inside one of the specified syntactic groups
+            if (
+                parent
+            ):  # the token is inside one of the specified syntactic groups
                 # get the index of the first token in the group, according to the parse tree
                 begin = parse_tree.treepositions("leaves").index(
                     parent.treeposition() + parent.leaf_treeposition(0)
@@ -228,7 +232,9 @@ def _label_delete_replace(src, ref, aligns):
         else:
             # get the indexes of all the words in the reference to which the current token in source is aligned to
             aligns_list = [
-                ref_index for src_index, ref_index in aligns if src_index == token_index
+                ref_index
+                for src_index, ref_index in aligns
+                if src_index == token_index
             ]
             # check if the token is aligned
             if aligns_list:
@@ -269,12 +275,16 @@ def _label_add_replace(ref, aligns, src_annots):
         else:
             # get the indexes of all the tokens in the source to which the current token in reference is aligned
             aligns_list = [
-                src_index for src_index, ref_index in aligns if ref_index == token_index
+                src_index
+                for src_index, ref_index in aligns
+                if ref_index == token_index
             ]
             # check if the token is aligned
             if aligns_list:
                 # it is the replacement of some word(s) in the source
-                ref_token["label"] = "O"  # the token in the reference has no label
+                ref_token[
+                    "label"
+                ] = "O"  # the token in the reference has no label
                 if len(aligns_list) > 1:
                     # it is the replacement of a phrase in source, so the source token annotations should be changed
                     aligns_list.sort()
@@ -290,7 +300,9 @@ def _label_add_replace(ref, aligns, src_annots):
                         src_token["label"] = "I-R"
                         src_token[
                             "replace"
-                        ] = []  # token with 'B-R' has all the replacement tokens
+                        ] = (
+                            []
+                        )  # token with 'B-R' has all the replacement tokens
             else:
                 # label as 'add'
                 ref_token["label"] = "B-A"
@@ -366,7 +378,9 @@ def annotate_sentence(
     return src_annots, ref_annots
 
 
-def _from_annots_to_labels(sent_annots, labels_to_include=None, default_label="O"):
+def _from_annots_to_labels(
+    sent_annots, labels_to_include=None, default_label="O"
+):
     if labels_to_include is None:
         labels_to_include = SIMOP_LABELS
     labels = []
@@ -422,6 +436,9 @@ class WordOperationAnnotator:
         operations=None,
         as_str: bool = False,
     ):
+        if operations is None:
+            operations = ["D", "R", "M", "C"]
+
         sentence_scores = self.compute_operations_sentence_scores(
             orig_sentences, sys_sentences, refs_sentences, operations
         )
@@ -449,7 +466,9 @@ class WordOperationAnnotator:
         if operations is None:
             operations = ["D", "R", "M", "C"]
 
-        simops_orig_sys, _ = self.identify_operations(orig_sentences, sys_sentences)
+        simops_orig_sys, _ = self.identify_operations(
+            orig_sentences, sys_sentences
+        )
 
         num_refs = len(refs_sentences)
         all_orig_sents = []
@@ -463,7 +482,7 @@ class WordOperationAnnotator:
         )
 
         sentence_scores = []
-        for i, orig_silver_labels in enumerate(simops_orig_sys):
+        for i, orig_silver_labels in tqdm(enumerate(simops_orig_sys)):
             curr_ref_scores = []
             for orig_auto_labels in all_simops_orig_refs[
                 i * num_refs : i * num_refs + num_refs
@@ -480,9 +499,11 @@ class WordOperationAnnotator:
                 )
                 curr_ref_scores.append(f1_per_label)
             sentence_scores.append(np.amax(curr_ref_scores, axis=0))
-        return sentence_scores
+        return np.stack(sentence_scores, axis=0)
 
-    def identify_operations(self, orig_sentences: List[str], simp_sentences: List[str]):
+    def identify_operations(
+        self, orig_sentences: List[str], simp_sentences: List[str]
+    ):
         orig_sentences = [
             utils_prep.normalize(sent, self._lowercase, self._tokenizer)
             for sent in orig_sentences
@@ -532,12 +553,15 @@ class WordOperationAnnotator:
                 orig_sent.split(), sys_sent.split()
             )
             word_aligns = [
-                (a + 1, b + 1) for a, b in word_aligns[list(word_aligns.keys())[0]]
+                (a + 1, b + 1)
+                for a, b in word_aligns[list(word_aligns.keys())[0]]
             ]
         elif isinstance(self._word_aligner, MonolingualWordAligner):
             assert orig_parse is not None
             assert sys_parse is not None
-            word_aligns = self._word_aligner.get_word_aligns(orig_parse, sys_parse)[0]
+            word_aligns = self._word_aligner.get_word_aligns(
+                orig_parse, sys_parse
+            )[0]
         else:
             word_aligns = None
         return word_aligns
