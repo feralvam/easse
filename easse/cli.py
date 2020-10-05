@@ -71,13 +71,19 @@ def common_options(function):
         "--orig_sents_path",
         type=click.Path(),
         default=None,
-        help='Path to the source sentences. Only used when test_set == "custom".',
+        help=(
+            "Path to the source sentences."
+            "Only used when test_set == 'custom'."
+        ),
     )(function)
     function = click.option(
         "--refs_sents_paths",
         type=str,
         default=None,
-        help='Comma-separated list of path(s) to the references(s). Only used when test_set == "custom".',
+        help=(
+            "Comma-separated list of path(s) to the references(s)."
+            "Only used when test_set == 'custom'."
+        ),
     )(function)
     function = click.option(
         "--lowercase/--no-lowercase",
@@ -256,8 +262,10 @@ def evaluate_system_output(
     "-i",
     type=click.Path(),
     default=None,
-    help="""Path to the system predictions input file that is to be evaluated.
-              You can also input a comma-separated list of files to compare multiple systems.""",
+    help=(
+        "Path to the system predictions input file that is to be evaluated."
+        "You can also input a comma-separated list of files to compare multiple systems."
+    ),
 )
 @click.option(
     "--report_path",
