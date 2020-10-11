@@ -25,15 +25,11 @@ def get_sys_sents(test_set, sys_sents_path=None):
         return read_lines(sys_sents_path)
     else:
         # read the system output
-        with click.get_text_stream(
-            "stdin", encoding="utf-8"
-        ) as system_output_file:
+        with click.get_text_stream("stdin", encoding="utf-8") as system_output_file:
             return system_output_file.read().splitlines()
 
 
-def get_orig_and_refs_sents(
-    test_set, orig_sents_path=None, refs_sents_paths=None
-):
+def get_orig_and_refs_sents(test_set, orig_sents_path=None, refs_sents_paths=None):
     # Get original and reference sentences
     if test_set == "custom":
         assert orig_sents_path is not None
@@ -41,9 +37,7 @@ def get_orig_and_refs_sents(
         if type(refs_sents_paths) == str:
             refs_sents_paths = refs_sents_paths.split(",")
         orig_sents = read_lines(orig_sents_path)
-        refs_sents = [
-            read_lines(ref_sents_path) for ref_sents_path in refs_sents_paths
-        ]
+        refs_sents = [read_lines(ref_sents_path) for ref_sents_path in refs_sents_paths]
     else:
         orig_sents = get_orig_sents(test_set)
         refs_sents = get_refs_sents(test_set)
@@ -60,11 +54,7 @@ def cli():
 
 def common_options(function):
     function = click.option(
-        "--test_set",
-        "-t",
-        type=click.Choice(VALID_TEST_SETS),
-        required=True,
-        help="Test set to use.",
+        "--test_set", "-t", type=click.Choice(VALID_TEST_SETS), required=True, help="Test set to use.",
     )(function)
     function = click.option(
         "--orig_sents_path",
@@ -107,16 +97,10 @@ def common_options(function):
 @cli.command("evaluate")
 @common_options
 @click.option(
-    "--analysis",
-    "-a",
-    is_flag=True,
-    help=f"Perform word-level transformation analysis.",
+    "--analysis", "-a", is_flag=True, help=f"Perform word-level transformation analysis.",
 )
 @click.option(
-    "--quality_estimation",
-    "-q",
-    is_flag=True,
-    help="Compute quality estimation features.",
+    "--quality_estimation", "-q", is_flag=True, help="Compute quality estimation features.",
 )
 @click.option(
     "--sys_sents_path",
@@ -161,23 +145,15 @@ def evaluate_system_output(
     Evaluate a system output with automatic metrics.
     """
     for metric in metrics:
-        assert (
-            metric in VALID_METRICS
-        ), f'"{metric}" not a valid metric. Valid metrics: {VALID_METRICS}'
+        assert metric in VALID_METRICS, f'"{metric}" not a valid metric. Valid metrics: {VALID_METRICS}'
     sys_sents = get_sys_sents(test_set, sys_sents_path)
-    orig_sents, refs_sents = get_orig_and_refs_sents(
-        test_set, orig_sents_path, refs_sents_paths
-    )
+    orig_sents, refs_sents = get_orig_and_refs_sents(test_set, orig_sents_path, refs_sents_paths)
 
     # compute each metric
     metrics_scores = {}
     if "bleu" in metrics:
         metrics_scores["bleu"] = corpus_bleu(
-            sys_sents,
-            refs_sents,
-            force=True,
-            tokenizer=tokenizer,
-            lowercase=lowercase,
+            sys_sents, refs_sents, force=True, tokenizer=tokenizer, lowercase=lowercase,
         )
 
     if "sent_bleu" in metrics:
@@ -187,21 +163,12 @@ def evaluate_system_output(
 
     if "sari" in metrics:
         metrics_scores["sari"] = corpus_sari(
-            orig_sents,
-            sys_sents,
-            refs_sents,
-            tokenizer=tokenizer,
-            lowercase=lowercase,
+            orig_sents, sys_sents, refs_sents, tokenizer=tokenizer, lowercase=lowercase,
         )
 
     if "sari_legacy" in metrics:
         metrics_scores["sari_legacy"] = corpus_sari(
-            orig_sents,
-            sys_sents,
-            refs_sents,
-            tokenizer=tokenizer,
-            lowercase=lowercase,
-            legacy=True,
+            orig_sents, sys_sents, refs_sents, tokenizer=tokenizer, lowercase=lowercase, legacy=True,
         )
 
     if "sari_by_operation" in metrics:
@@ -210,44 +177,32 @@ def evaluate_system_output(
             metrics_scores["sari_keep"],
             metrics_scores["sari_del"],
         ) = get_corpus_sari_operation_scores(
-            orig_sents,
-            sys_sents,
-            refs_sents,
-            tokenizer=tokenizer,
-            lowercase=lowercase,
+            orig_sents, sys_sents, refs_sents, tokenizer=tokenizer, lowercase=lowercase,
         )
 
     if "samsa" in metrics:
         from easse.samsa import corpus_samsa
 
         metrics_scores["samsa"] = corpus_samsa(
-            orig_sents,
-            sys_sents,
-            tokenizer=tokenizer,
-            lowercase=lowercase,
-            verbose=True,
+            orig_sents, sys_sents, tokenizer=tokenizer, lowercase=lowercase, verbose=True,
         )
 
     if "fkgl" in metrics:
         metrics_scores["fkgl"] = corpus_fkgl(sys_sents, tokenizer=tokenizer)
 
     if "f1_token" in metrics:
-        metrics_scores["f1_token"] = corpus_f1_token(
-            sys_sents, refs_sents, tokenizer=tokenizer, lowercase=lowercase
-        )
+        metrics_scores["f1_token"] = corpus_f1_token(sys_sents, refs_sents, tokenizer=tokenizer, lowercase=lowercase)
 
     if "bertscore" in metrics:
-        metrics_scores["bertscore"] = corpus_bertscore(
-            sys_sents, refs_sents, tokenizer=tokenizer, lowercase=lowercase
-        )
+        (
+            metrics_scores["bertscore_precision"],
+            metrics_scores["bertscore_recall"],
+            metrics_scores["bertscore_f1"],
+        ) = corpus_bertscore(sys_sents, refs_sents, tokenizer=tokenizer, lowercase=lowercase)
 
     if analysis:
-        word_simop_annot = WordOperationAnnotator(
-            tokenizer=tokenizer, lowercase=lowercase, verbose=True
-        )
-        metrics_scores[
-            "word_level_analysis"
-        ] = word_simop_annot.analyse_operations(
+        word_operation_annotator = WordOperationAnnotator(tokenizer=tokenizer, lowercase=lowercase, verbose=True)
+        metrics_scores["word_level_analysis"] = word_operation_annotator.analyse_operations(
             orig_sents, sys_sents, refs_sents, as_str=True
         )
 
@@ -270,18 +225,11 @@ def evaluate_system_output(
               You can also input a comma-separated list of files to compare multiple systems.""",
 )
 @click.option(
-    "--report_path",
-    "-p",
-    type=click.Path(),
-    default="easse_report.html",
-    help="Path to the output HTML report.",
+    "--report_path", "-p", type=click.Path(), default="easse_report.html", help="Path to the output HTML report.",
 )
 def _report(*args, **kwargs):
     kwargs["metrics"] = kwargs.pop("metrics").split(",")
-    if (
-        kwargs["sys_sents_path"] is not None
-        and len(kwargs["sys_sents_path"].split(",")) > 1
-    ):
+    if kwargs["sys_sents_path"] is not None and len(kwargs["sys_sents_path"].split(",")) > 1:
         # If we got multiple systems as input, split the paths and rename the key
         kwargs["sys_sents_paths"] = kwargs.pop("sys_sents_path").split(",")
         multiple_systems_report(*args, **kwargs)
@@ -303,9 +251,7 @@ def report(
     Create a HTML report file with automatic metrics, plots and samples.
     """
     sys_sents = get_sys_sents(test_set, sys_sents_path)
-    orig_sents, refs_sents = get_orig_and_refs_sents(
-        test_set, orig_sents_path, refs_sents_paths
-    )
+    orig_sents, refs_sents = get_orig_and_refs_sents(test_set, orig_sents_path, refs_sents_paths)
     write_html_report(
         report_path,
         orig_sents,
@@ -333,9 +279,7 @@ def multiple_systems_report(
     Create a HTML report file comparing multiple systems with automatic metrics, plots and samples.
     """
     sys_sents_list = [read_lines(path) for path in sys_sents_paths]
-    orig_sents, refs_sents = get_orig_and_refs_sents(
-        test_set, orig_sents_path, refs_sents_paths
-    )
+    orig_sents, refs_sents = get_orig_and_refs_sents(test_set, orig_sents_path, refs_sents_paths)
     if system_names is None:
         system_names = [Path(path).name for path in sys_sents_paths]
     write_multiple_systems_html_report(
