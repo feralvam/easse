@@ -3,12 +3,12 @@ from pathlib import Path
 
 # Paths
 PACKAGE_DIR = Path(__file__).resolve().parent.parent
-RESOURCES_DIR = PACKAGE_DIR / 'resources'
-TOOLS_DIR = RESOURCES_DIR / 'tools'
-DATA_DIR = RESOURCES_DIR / 'data'
-STANFORD_CORENLP_DIR = TOOLS_DIR / 'stanford-corenlp-full-2018-10-05'
-UCCA_DIR = TOOLS_DIR / 'ucca-bilstm-1.3.10'
-UCCA_PARSER_PATH = UCCA_DIR / 'models/ucca-bilstm'
+RESOURCES_DIR = PACKAGE_DIR / "resources"
+TOOLS_DIR = RESOURCES_DIR / "tools"
+DATA_DIR = RESOURCES_DIR / "data"
+STANFORD_CORENLP_DIR = TOOLS_DIR / "stanford-corenlp-full-2018-10-05"
+UCCA_DIR = TOOLS_DIR / "ucca-bilstm-1.3.10"
+UCCA_PARSER_PATH = UCCA_DIR / "models/ucca-bilstm"
 TEST_SETS_PATHS = {
         ('asset_test', 'orig'): DATA_DIR / f'test_sets/asset/asset.test.orig',
         ('asset_test', 'refs'): [DATA_DIR / f'test_sets/asset/asset.test.simp.{i}' for i in range(10)],
@@ -38,16 +38,15 @@ TEST_SETS_PATHS = {
         ('googlecomp_valid', 'refs'): [DATA_DIR / f'test_sets/googlecomp/googlecomp.valid.comp'],
         ('qats_test', 'orig'): DATA_DIR / f'test_sets/qats/qats.test.orig',
         ('qats_test', 'refs'): [DATA_DIR / f'test_sets/qats/qats.test.simp'],
-
 }
-SYSTEM_OUTPUTS_DIR = DATA_DIR / 'system_outputs'
+SYSTEM_OUTPUTS_DIR = DATA_DIR / "system_outputs"
 SYSTEM_OUTPUTS_DIRS_MAP = {
-        'turkcorpus_test': SYSTEM_OUTPUTS_DIR / 'turkcorpus/test',
-        'turkcorpus_valid': SYSTEM_OUTPUTS_DIR / 'turkcorpus/valid',
-        'pwkp_test': SYSTEM_OUTPUTS_DIR / 'pwkp/test',
+    "turkcorpus_test": SYSTEM_OUTPUTS_DIR / "turkcorpus/test",
+    "turkcorpus_valid": SYSTEM_OUTPUTS_DIR / "turkcorpus/valid",
+    "pwkp_test": SYSTEM_OUTPUTS_DIR / "pwkp/test",
 }
 
 # Constants
 VALID_TEST_SETS = list(set([test_set for test_set, language in TEST_SETS_PATHS.keys()])) + ['custom']
-VALID_METRICS = ['bleu', 'sari', 'samsa', 'fkgl', 'sent_bleu', 'f1_token', 'sari_legacy', 'sari_by_operation']
+VALID_METRICS = ['bleu', 'sari', 'samsa', 'fkgl', 'sent_bleu', 'f1_token', 'sari_legacy', 'sari_by_operation', 'bertscore']
 DEFAULT_METRICS = ['bleu', 'sari', 'fkgl']
