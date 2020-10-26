@@ -10,7 +10,7 @@ with open("requirements.txt", "r") as f:
 
 setup(
     name="easse",
-    version="0.2.3",
+    version="0.2.4",
     description="Easier Automatic Sentence Simplification Evaluation",
     long_description=long_description,
     long_description_content_type="text/markdown",
