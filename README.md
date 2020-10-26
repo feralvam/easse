@@ -73,7 +73,7 @@ Options:
 ```
 Example with the [ACCESS](https://github.com/facebookresearch/access) system outputs:
 ```
-easse evaluate -t turkcorpus_test -m 'bleu,sari' -q < easse/resources/data/system_outputs/turkcorpus/test/lower/ACCESS.tok.low
+easse evaluate -t turkcorpus_test -m 'bleu,sari,fkgl' -q < easse/resources/data/system_outputs/turkcorpus/test/ACCESS
 ```
 
 <img src="https://github.com/feralvam/easse/blob/master/demo/evaluate.gif">
@@ -103,7 +103,7 @@ Options:
 ```
 Example:
 ```
-easse report -t turkcorpus_test < easse/resources/data/system_outputs/turkcorpus/test/lower/ACCESS.tok.low
+easse report -t turkcorpus_test < easse/resources/data/system_outputs/turkcorpus/test/ACCESS
 ```
 <img src="https://github.com/feralvam/easse/blob/master/demo/report.gif">
 
