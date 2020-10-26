@@ -2,13 +2,11 @@ from pathlib import Path
 
 import click
 
-from easse.annotation.word_level import WordOperationAnnotator
 from easse.fkgl import corpus_fkgl
 from easse.utils.helpers import read_lines
 from easse.quality_estimation import corpus_quality_estimation
 from easse.sari import corpus_sari, get_corpus_sari_operation_scores
 from easse.bleu import corpus_bleu, corpus_averaged_sentence_bleu
-from easse.bertscore import corpus_bertscore
 from easse.compression import corpus_f1_token
 from easse.utils.constants import (
     VALID_TEST_SETS,
@@ -194,6 +192,7 @@ def evaluate_system_output(
         metrics_scores["f1_token"] = corpus_f1_token(sys_sents, refs_sents, tokenizer=tokenizer, lowercase=lowercase)
 
     if "bertscore" in metrics:
+        from easse.bertscore import corpus_bertscore  # Inline import to use EASSE without installing all dependencies
         (
             metrics_scores["bertscore_precision"],
             metrics_scores["bertscore_recall"],
@@ -201,6 +200,7 @@ def evaluate_system_output(
         ) = corpus_bertscore(sys_sents, refs_sents, tokenizer=tokenizer, lowercase=lowercase)
 
     if analysis:
+        from easse.annotation.word_level import WordOperationAnnotator  # Inline import to use EASSE without installing all dependencies
         word_operation_annotator = WordOperationAnnotator(tokenizer=tokenizer, lowercase=lowercase, verbose=True)
         metrics_scores["word_level_analysis"] = word_operation_annotator.analyse_operations(
             orig_sents, sys_sents, refs_sents, as_str=True
