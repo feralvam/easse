@@ -127,7 +127,7 @@ Out[1]: 33.17472563619544
 
 The version of SARI fixes inconsistencies and bugs that were present in the original implementation. The main differences are:
 1) The original SARI implementation applies normalisation (NIST style tokenization and rejoin ‘s, ‘re ...) only on the prediction and references but not on the source sentence (see STAR.java file). This results in incorrect ngram additions or deletions. EASSE applies the same normalization to source, prediction and references.
-2) The original SARI implementation takes tokenized text as input that are then tokenized a second time. This also causes discrepancies between the tokenization of the training set and the evaluation set. EASSE uses untokenized text, that is then tokenized uniformly at runtime, during evaluation. This allows for training models on raw text without worrying about matching the evaluation tokenizer.
+2) The original SARI implementation takes tokenized text as input that are then tokenized a second time. This also causes discrepancies between the tokenization of the training set and the evaluation set. EASSE uses untokenized text that is then tokenized uniformly at runtime, during evaluation. This allows for training models on raw text without worrying about matching the evaluation tokenizer.
 3) The original JAVA implementation had a silent overflow bug where ngram statistics would go beyond the maximum limit for integers and silently start over from the minimum value. This caused incorrect SARIs when rating too many sentences but did not raise an error.
 
 ## Licence
