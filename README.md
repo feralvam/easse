@@ -3,13 +3,15 @@
 
 ### Features
 
-- Automatic evaluation metrics (e.g. SARI, BLEU, SAMSA, etc.).
+- Automatic evaluation metrics (e.g. SARI<sup>1</sup>, BLEU, SAMSA, etc.).
 - Commonly used [**evaluation sets**](https://github.com/feralvam/easse/tree/master/easse/resources/data/test_sets).
 - Literature [**system outputs**](https://github.com/feralvam/easse/tree/master/easse/resources/data/system_outputs) to compare to.
 - Word-level transformation analysis.
 - Referenceless Quality Estimation features.
 - Straightforward access to commonly used evaluation datasets.
 - Comprehensive HTML report for quantitative and qualitative evaluation of a simplification output.
+
+[1]: The SARI version in EASSE fixes inconsistencies and bugs in the original version. See the dedicated section for more details.
 
 ## Installation
 ### Requirements
@@ -112,22 +114,21 @@ easse report -t turkcorpus_test < easse/resources/data/system_outputs/turkcorpus
 You can also use the different functions available in EASSE from your Python code.
 
 ```python
-from easse.sari import sentence_sari, corpus_sari
-
-sentence_sari(orig_sent="About 95 species are currently accepted.",  
-              sys_sent="About 95 you now get in.", 
-              ref_sents=["About 95 species are currently known.", 
-                        "About 95 species are now accepted.",  
-                        "95 species are now accepted."])
-Out[2]: 26.953601953601954
+from easse.sari import corpus_sari
 
 corpus_sari(orig_sents=["About 95 species are currently accepted.", "The cat perched on the mat."],  
             sys_sents=["About 95 you now get in.", "Cat on mat."], 
             refs_sents=[["About 95 species are currently known.", "The cat sat on the mat."],
                         ["About 95 species are now accepted.", "The cat is on the mat."],  
                         ["95 species are now accepted.", "The cat sat."]])
-Out[3]: 33.17472563619544
+Out[1]: 33.17472563619544
 ```
+## Differences with original SARI implementation
+
+The version of SARI fixes inconsistencies and bugs that were present in the original implementation. The main differences are:
+1) The original SARI implementation applies normalisation (NIST style tokenization and rejoin ‘s, ‘re ...) only on the prediction and references but not on the source sentence (see STAR.java file). This results in incorrect ngram additions or deletions. EASSE applies the same normalization to source, prediction and references.
+2) The original SARI implementation takes tokenized text as input that are then tokenized a second time. This also causes discrepancies between the tokenization of the training set and the evaluation set. EASSE uses untokenized text, that is then tokenized uniformly at runtime, during evaluation. This allows for training models on raw text without worrying about matching the evaluation tokenizer.
+3) The original JAVA implementation had a silent overflow bug where ngram statistics would go beyond the maximum limit for integers and silently start over from the minimum value. This caused incorrect SARIs when rating too many sentences but did not raise an error.
 
 ## Licence
 EASSE is licenced under the GNU General Public License v3.0.
