@@ -341,6 +341,9 @@ def get_score_table_html_multiple_systems(orig_sents, sys_sents_list, refs_sents
         return ' '.join(words[:int(len(words) * 0.8)]) + '.'
 
     doc = Doc()
+    # We don't want changes to propagate out of this scope
+    sys_sents_list = sys_sents_list.copy()
+    system_names = system_names.copy()
     # Add the identity baseline
     sys_sents_list.append(orig_sents)
     system_names.append('Identity baseline')
