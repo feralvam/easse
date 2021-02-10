@@ -425,17 +425,6 @@ def get_multiple_systems_qualitative_examples_html(orig_sents, sys_sents_list, r
         saris = [corpus_sari([orig_sent], [sys_sent], refs_sents) for sys_sent in sys_sents]
         return saris[system_idx] / np.average(saris)
 
-    title_key_print = [
-        ('Randomly sampled simplifications',
-         lambda c, s, refs: 0,
-         lambda value: ''),
-    ] + [
-        (f'Worst relative simplifications (SARI) for {system_names[i]}',
-         lambda c, sys_sents, refs_sents: get_relative_sari(c, sys_sents, refs_sents, system_idx=i),
-         lambda value: f'Relative SARI={value:.2f}')
-        for i in range(len(system_names))
-    ]
-
     def get_one_sample_html(orig_sent, sys_sents, ref_sents, system_names, sort_key, print_func):
         def get_one_sentence_html(sentence, system_name):
             doc = Doc()
@@ -472,6 +461,16 @@ def get_multiple_systems_qualitative_examples_html(orig_sents, sys_sents_list, r
                                 doc.asis(ref_sent_bold)
         return doc.getvalue()
 
+    title_key_print = [
+        ('Randomly sampled simplifications',
+         lambda c, s, refs: 0,
+         lambda value: ''),
+    ] + [
+        (f'Worst relative simplifications (SARI) for {system_names[i]}',
+         lambda c, sys_sents, refs_sents: get_relative_sari(c, sys_sents, refs_sents, system_idx=i),
+         lambda value: f'Relative SARI={value:.2f}')
+         for i in range(len(system_names))
+    ]
     doc = Doc()
     for title, sort_key, print_func in title_key_print:
         with doc.tag('div', klass='container-fluid mt-4 p-2 border'):
