@@ -40,7 +40,7 @@ def get_orig_and_refs_sents(test_set, orig_sents_path=None, refs_sents_paths=Non
         orig_sents = get_orig_sents(test_set)
         refs_sents = get_refs_sents(test_set)
     # Final checks
-    assert all([len(orig_sents) == len(ref_sents) for ref_sents in refs_sents])
+    assert all([len(orig_sents) == len(ref_sents) for ref_sents in refs_sents]), f'Not same number of lines for test_set={test_set}, orig_sents_path={orig_sents_path}, refs_sents_paths={refs_sents_paths}'  # noqa: E501
     return orig_sents, refs_sents
 
 
@@ -143,7 +143,7 @@ def evaluate_system_output(
     Evaluate a system output with automatic metrics.
     """
     for metric in metrics:
-        assert metric in VALID_METRICS, f'"{metric}" not a valid metric. Valid metrics: {VALID_METRICS}'
+        assert metric in VALID_METRICS, f'"{metric}" is not a valid metric. Choose among: {VALID_METRICS}'
     sys_sents = get_sys_sents(test_set, sys_sents_path)
     orig_sents, refs_sents = get_orig_and_refs_sents(test_set, orig_sents_path, refs_sents_paths)
 

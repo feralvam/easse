@@ -100,6 +100,14 @@ def multiply_counter(c, v):
 def compute_ngram_stats(
     orig_sents: List[str], sys_sents: List[str], refs_sents: List[List[str]]
 ):
+    """
+    Input:
+    orig_sents: list of original sentences (len = n_samples)
+    sys_sents: list of system sentences (len = n_samples)
+    refs_sents: list of list of reference sentences (shape = (n_references, n_samples))
+    """
+    assert len(orig_sents) == len(sys_sents), "Original sentences and system sentences don't have the same number of samples"
+    assert all(len(ref_sents) == len(orig_sents) for ref_sents in refs_sents), "Reference sentences don't have the shape (n_references, n_samples)"
     add_sys_correct = [0] * NGRAM_ORDER
     add_sys_total = [0] * NGRAM_ORDER
     add_ref_total = [0] * NGRAM_ORDER
@@ -236,10 +244,16 @@ def compute_macro_sari(
 def get_corpus_sari_operation_scores(orig_sents: List[str], sys_sents: List[str], refs_sents: List[List[str]],
                                      lowercase: bool = True, tokenizer: str = '13a',
                                      legacy=False, use_f1_for_deletion=True, use_paper_version=False):
-    """The `legacy` parameter allows reproducing scores reported in previous work.
+    """
+    Inputs:
+    orig_sents: list of original sentences (len = n_samples)
+    sys_sents: list of system sentences (len = n_samples)
+    refs_sents: list of list of reference sentences (shape = (n_references, n_samples))
+    legacy: Allows reproducing scores reported in previous work.
     It replicates a bug in the original JAVA implementation where only the system outputs and the reference sentences
-    are further tokenized. 
-    In addition, it assumes that all sentences are already lowercased. """
+    are further tokenized.
+    In addition, it assumes that all sentences are already lowercased.
+    """
     if legacy:
         lowercase = False
     else:
