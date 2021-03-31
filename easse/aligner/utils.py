@@ -40,15 +40,15 @@ def findAllCommonContiguousSublists(A, B, turnToLowerCases=True):
 
     maxSize = len(a)
     for size in range(maxSize, 0, -1):
-        startingIndicesForA = [item for item in range(0, len(a)-size+1)]
-        startingIndicesForB = [item for item in range(0, len(b)-size+1)]
+        startingIndicesForA = [item for item in range(0, len(a) - size + 1)]
+        startingIndicesForB = [item for item in range(0, len(b) - size + 1)]
         for i in startingIndicesForA:
             for j in startingIndicesForB:
-                if a[i:i+size] == b[j:j+size]:
+                if a[i : i + size] == b[j : j + size]:
                     # check if a contiguous superset has already been inserted; don't insert this one in that case
                     alreadyInserted = False
-                    currentAIndices = [item for item in range(i, i+size)]
-                    currentBIndices = [item for item in range(j, j+size)]
+                    currentAIndices = [item for item in range(i, i + size)]
+                    currentBIndices = [item for item in range(j, j + size)]
                     for item in commonContiguousSublists:
                         if isSublist(currentAIndices, item[0]) and isSublist(currentBIndices, item[1]):
                             alreadyInserted = True
@@ -73,12 +73,12 @@ def findTextualNeighborhood(sentenceDetails, wordIndex, leftSpan, rightSpan):
 
     sentenceLength = len(sentenceDetails)
 
-    startWordIndex = max(1, wordIndex-leftSpan)
-    endWordIndex = min(sentenceLength, wordIndex+rightSpan)
+    startWordIndex = max(1, wordIndex - leftSpan)
+    endWordIndex = min(sentenceLength, wordIndex + rightSpan)
 
     lemmas = []
     wordIndices = []
-    for item in sentenceDetails[startWordIndex-1:wordIndex-1]:
+    for item in sentenceDetails[startWordIndex - 1 : wordIndex - 1]:
         if item[3] not in stopwords + punctuations:
             lemmas.append(item[3])
             wordIndices.append(item[1])
@@ -86,7 +86,7 @@ def findTextualNeighborhood(sentenceDetails, wordIndex, leftSpan, rightSpan):
         if item[3] not in stopwords + punctuations:
             lemmas.append(item[3])
             wordIndices.append(item[1])
-    return [wordIndices, lemmas, wordIndex-startWordIndex, endWordIndex-wordIndex]
+    return [wordIndices, lemmas, wordIndex - startWordIndex, endWordIndex - wordIndex]
 
 
 def isAcronym(word, namedEntity):
@@ -95,7 +95,7 @@ def isAcronym(word, namedEntity):
     if not canonicalWord.isupper() or len(canonicalWord) != len(namedEntity) or canonicalWord.lower() in ['a', 'i']:
         return False
 
-    acronym = True    
+    acronym = True
     for i in range(len(canonicalWord)):
         if canonicalWord[i] != namedEntity[i][0]:
             acronym = False

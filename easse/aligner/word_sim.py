@@ -48,14 +48,18 @@ def wordRelatedness(word1, pos1, word2, pos2):
     if canonical_word1.isdigit() and canonical_word2.isdigit() and canonical_word1 != canonical_word2:
         return 0
 
-    if (pos1.lower() == 'cd' and pos2.lower() == 'cd'
-            and (not canonical_word1.isdigit() and not canonical_word2.isdigit())
-            and canonical_word1 != canonical_word2):
+    if (
+        pos1.lower() == 'cd'
+        and pos2.lower() == 'cd'
+        and (not canonical_word1.isdigit() and not canonical_word2.isdigit())
+        and canonical_word1 != canonical_word2
+    ):
         return 0
 
     # stopwords can be similar to only stopwords
-    if ((word1.lower() in stopwords and word2.lower() not in stopwords)
-            or (word1.lower() not in stopwords and word2.lower() in stopwords)):
+    if (word1.lower() in stopwords and word2.lower() not in stopwords) or (
+        word1.lower() not in stopwords and word2.lower() in stopwords
+    ):
         return 0
 
     # punctuations can only be either identical or totally dissimilar

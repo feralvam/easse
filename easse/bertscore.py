@@ -5,7 +5,10 @@ import easse.utils.preprocessing as utils_prep
 
 
 def get_bertscore_sentence_scores(
-    sys_sents: List[str], refs_sents: List[List[str]], lowercase: bool = False, tokenizer: str = "13a",
+    sys_sents: List[str],
+    refs_sents: List[List[str]],
+    lowercase: bool = False,
+    tokenizer: str = "13a",
 ):
     scorer = BERTScorer(lang="en", rescale_with_baseline=True)
 
@@ -17,7 +20,10 @@ def get_bertscore_sentence_scores(
 
 
 def corpus_bertscore(
-    sys_sents: List[str], refs_sents: List[List[str]], lowercase: bool = False, tokenizer: str = "13a",
+    sys_sents: List[str],
+    refs_sents: List[List[str]],
+    lowercase: bool = False,
+    tokenizer: str = "13a",
 ):
     all_scores = get_bertscore_sentence_scores(sys_sents, refs_sents, lowercase, tokenizer)
     avg_scores = [s.mean(dim=0) for s in all_scores]

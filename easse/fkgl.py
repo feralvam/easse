@@ -28,9 +28,7 @@ class FKGLScorer:
             return 0
         return max(
             0,
-            0.39 * (self.nb_words / self.nb_sentences)
-            + 11.8 * (self.nb_syllables / self.nb_words)
-            - 15.59,
+            0.39 * (self.nb_words / self.nb_sentences) + 11.8 * (self.nb_syllables / self.nb_words) - 15.59,
         )
 
 

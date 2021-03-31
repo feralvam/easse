@@ -40,7 +40,9 @@ def get_orig_and_refs_sents(test_set, orig_sents_path=None, refs_sents_paths=Non
         orig_sents = get_orig_sents(test_set)
         refs_sents = get_refs_sents(test_set)
     # Final checks
-    assert all([len(orig_sents) == len(ref_sents) for ref_sents in refs_sents]), f'Not same number of lines for test_set={test_set}, orig_sents_path={orig_sents_path}, refs_sents_paths={refs_sents_paths}'  # noqa: E501
+    assert all(
+        [len(orig_sents) == len(ref_sents) for ref_sents in refs_sents]
+    ), f'Not same number of lines for test_set={test_set}, orig_sents_path={orig_sents_path}, refs_sents_paths={refs_sents_paths}'  # noqa: E501
     return orig_sents, refs_sents
 
 
@@ -52,7 +54,11 @@ def cli():
 
 def common_options(function):
     function = click.option(
-        "--test_set", "-t", type=click.Choice(VALID_TEST_SETS), required=True, help="Test set to use.",
+        "--test_set",
+        "-t",
+        type=click.Choice(VALID_TEST_SETS),
+        required=True,
+        help="Test set to use.",
     )(function)
     function = click.option(
         "--orig_sents_path",
@@ -95,10 +101,16 @@ def common_options(function):
 @cli.command("evaluate")
 @common_options
 @click.option(
-    "--analysis", "-a", is_flag=True, help=f"Perform word-level transformation analysis.",
+    "--analysis",
+    "-a",
+    is_flag=True,
+    help=f"Perform word-level transformation analysis.",
 )
 @click.option(
-    "--quality_estimation", "-q", is_flag=True, help="Compute quality estimation features.",
+    "--quality_estimation",
+    "-q",
+    is_flag=True,
+    help="Compute quality estimation features.",
 )
 @click.option(
     "--sys_sents_path",
@@ -151,7 +163,11 @@ def evaluate_system_output(
     metrics_scores = {}
     if "bleu" in metrics:
         metrics_scores["bleu"] = corpus_bleu(
-            sys_sents, refs_sents, force=True, tokenizer=tokenizer, lowercase=lowercase,
+            sys_sents,
+            refs_sents,
+            force=True,
+            tokenizer=tokenizer,
+            lowercase=lowercase,
         )
 
     if "sent_bleu" in metrics:
@@ -161,12 +177,21 @@ def evaluate_system_output(
 
     if "sari" in metrics:
         metrics_scores["sari"] = corpus_sari(
-            orig_sents, sys_sents, refs_sents, tokenizer=tokenizer, lowercase=lowercase,
+            orig_sents,
+            sys_sents,
+            refs_sents,
+            tokenizer=tokenizer,
+            lowercase=lowercase,
         )
 
     if "sari_legacy" in metrics:
         metrics_scores["sari_legacy"] = corpus_sari(
-            orig_sents, sys_sents, refs_sents, tokenizer=tokenizer, lowercase=lowercase, legacy=True,
+            orig_sents,
+            sys_sents,
+            refs_sents,
+            tokenizer=tokenizer,
+            lowercase=lowercase,
+            legacy=True,
         )
 
     if "sari_by_operation" in metrics:
@@ -175,14 +200,22 @@ def evaluate_system_output(
             metrics_scores["sari_keep"],
             metrics_scores["sari_del"],
         ) = get_corpus_sari_operation_scores(
-            orig_sents, sys_sents, refs_sents, tokenizer=tokenizer, lowercase=lowercase,
+            orig_sents,
+            sys_sents,
+            refs_sents,
+            tokenizer=tokenizer,
+            lowercase=lowercase,
         )
 
     if "samsa" in metrics:
         from easse.samsa import corpus_samsa
 
         metrics_scores["samsa"] = corpus_samsa(
-            orig_sents, sys_sents, tokenizer=tokenizer, lowercase=lowercase, verbose=True,
+            orig_sents,
+            sys_sents,
+            tokenizer=tokenizer,
+            lowercase=lowercase,
+            verbose=True,
         )
 
     if "fkgl" in metrics:
@@ -193,6 +226,7 @@ def evaluate_system_output(
 
     if "bertscore" in metrics:
         from easse.bertscore import corpus_bertscore  # Inline import to use EASSE without installing all dependencies
+
         (
             metrics_scores["bertscore_precision"],
             metrics_scores["bertscore_recall"],
@@ -200,7 +234,10 @@ def evaluate_system_output(
         ) = corpus_bertscore(sys_sents, refs_sents, tokenizer=tokenizer, lowercase=lowercase)
 
     if analysis:
-        from easse.annotation.word_level import WordOperationAnnotator  # Inline import to use EASSE without installing all dependencies
+        from easse.annotation.word_level import (
+            WordOperationAnnotator,
+        )  # Inline import to use EASSE without installing all dependencies
+
         word_operation_annotator = WordOperationAnnotator(tokenizer=tokenizer, lowercase=lowercase, verbose=True)
         metrics_scores["word_level_analysis"] = word_operation_annotator.analyse_operations(
             orig_sents, sys_sents, refs_sents, as_str=True
@@ -225,7 +262,11 @@ def evaluate_system_output(
               You can also input a comma-separated list of files to compare multiple systems.""",
 )
 @click.option(
-    "--report_path", "-p", type=click.Path(), default="easse_report.html", help="Path to the output HTML report.",
+    "--report_path",
+    "-p",
+    type=click.Path(),
+    default="easse_report.html",
+    help="Path to the output HTML report.",
 )
 def _report(*args, **kwargs):
     kwargs["metrics"] = kwargs.pop("metrics").split(",")

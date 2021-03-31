@@ -97,17 +97,19 @@ def multiply_counter(c, v):
     return c_aux
 
 
-def compute_ngram_stats(
-    orig_sents: List[str], sys_sents: List[str], refs_sents: List[List[str]]
-):
+def compute_ngram_stats(orig_sents: List[str], sys_sents: List[str], refs_sents: List[List[str]]):
     """
     Input:
     orig_sents: list of original sentences (len = n_samples)
     sys_sents: list of system sentences (len = n_samples)
     refs_sents: list of list of reference sentences (shape = (n_references, n_samples))
     """
-    assert len(orig_sents) == len(sys_sents), "Original sentences and system sentences don't have the same number of samples"
-    assert all(len(ref_sents) == len(orig_sents) for ref_sents in refs_sents), "Reference sentences don't have the shape (n_references, n_samples)"
+    assert len(orig_sents) == len(
+        sys_sents
+    ), "Original sentences and system sentences don't have the same number of samples"
+    assert all(
+        len(ref_sents) == len(orig_sents) for ref_sents in refs_sents
+    ), "Reference sentences don't have the shape (n_references, n_samples)"
     add_sys_correct = [0] * NGRAM_ORDER
     add_sys_total = [0] * NGRAM_ORDER
     add_ref_total = [0] * NGRAM_ORDER
@@ -120,9 +122,7 @@ def compute_ngram_stats(
     del_sys_total = [0] * NGRAM_ORDER
     del_ref_total = [0] * NGRAM_ORDER
 
-    for orig_sent, sys_sent, *ref_sents in zip(
-        orig_sents, sys_sents, *refs_sents
-    ):
+    for orig_sent, sys_sent, *ref_sents in zip(orig_sents, sys_sents, *refs_sents):
         orig_ngrams = extract_ngrams(orig_sent)
         sys_ngrams = extract_ngrams(sys_sent)
 
@@ -146,33 +146,23 @@ def compute_ngram_stats(
 
             # KEEP
             # kept by the hypothesis (weighted)
-            orig_and_sys = multiply_counter(
-                orig_ngrams[n], num_refs
-            ) & multiply_counter(sys_ngrams[n], num_refs)
+            orig_and_sys = multiply_counter(orig_ngrams[n], num_refs) & multiply_counter(sys_ngrams[n], num_refs)
             keep_sys_total[n] += sum(orig_and_sys.values())
             # kept by the references (weighted)
-            orig_and_ref = (
-                multiply_counter(orig_ngrams[n], num_refs) & refs_ngrams[n]
-            )
+            orig_and_ref = multiply_counter(orig_ngrams[n], num_refs) & refs_ngrams[n]
             keep_ref_total[n] += sum(orig_and_ref.values())
             # kept correctly?
             keep_sys_correct[n] += sum((orig_and_sys & orig_and_ref).values())
 
             # DELETE
             # deleted by the hypothesis (weighted)
-            orig_and_not_sys = multiply_counter(
-                orig_ngrams[n], num_refs
-            ) - multiply_counter(sys_ngrams[n], num_refs)
+            orig_and_not_sys = multiply_counter(orig_ngrams[n], num_refs) - multiply_counter(sys_ngrams[n], num_refs)
             del_sys_total[n] += sum(orig_and_not_sys.values())
             # deleted by the references (weighted)
-            orig_and_not_ref = (
-                multiply_counter(orig_ngrams[n], num_refs) - refs_ngrams[n]
-            )
+            orig_and_not_ref = multiply_counter(orig_ngrams[n], num_refs) - refs_ngrams[n]
             del_ref_total[n] += sum(orig_and_not_ref.values())
             # deleted correctly
-            del_sys_correct[n] += sum(
-                (orig_and_not_sys & orig_and_not_ref).values()
-            )
+            del_sys_correct[n] += sum((orig_and_not_sys & orig_and_not_ref).values())
 
     return (
         add_sys_correct,
@@ -223,16 +213,10 @@ def compute_macro_sari(
     keep_f1 = 0.0
     del_f1 = 0.0
     for n in range(NGRAM_ORDER):
-        _, _, add_f1_ngram = compute_precision_recall_f1(
-            add_sys_correct[n], add_sys_total[n], add_ref_total[n]
-        )
-        _, _, keep_f1_ngram = compute_precision_recall_f1(
-            keep_sys_correct[n], keep_sys_total[n], keep_ref_total[n]
-        )
+        _, _, add_f1_ngram = compute_precision_recall_f1(add_sys_correct[n], add_sys_total[n], add_ref_total[n])
+        _, _, keep_f1_ngram = compute_precision_recall_f1(keep_sys_correct[n], keep_sys_total[n], keep_ref_total[n])
         if use_f1_for_deletion:
-            _, _, del_score_ngram = compute_precision_recall_f1(
-                del_sys_correct[n], del_sys_total[n], del_ref_total[n]
-            )
+            _, _, del_score_ngram = compute_precision_recall_f1(del_sys_correct[n], del_sys_total[n], del_ref_total[n])
         else:
             del_score_ngram, _, _ = compute_precision_recall_f1(del_sys_correct[n], del_sys_total[n], del_ref_total[n])
         add_f1 += add_f1_ngram / NGRAM_ORDER
@@ -241,9 +225,16 @@ def compute_macro_sari(
     return add_f1, keep_f1, del_f1
 
 
-def get_corpus_sari_operation_scores(orig_sents: List[str], sys_sents: List[str], refs_sents: List[List[str]],
-                                     lowercase: bool = True, tokenizer: str = '13a',
-                                     legacy=False, use_f1_for_deletion=True, use_paper_version=False):
+def get_corpus_sari_operation_scores(
+    orig_sents: List[str],
+    sys_sents: List[str],
+    refs_sents: List[List[str]],
+    lowercase: bool = True,
+    tokenizer: str = '13a',
+    legacy=False,
+    use_f1_for_deletion=True,
+    use_paper_version=False,
+):
     """
     Inputs:
     orig_sents: list of original sentences (len = n_samples)
@@ -257,18 +248,10 @@ def get_corpus_sari_operation_scores(orig_sents: List[str], sys_sents: List[str]
     if legacy:
         lowercase = False
     else:
-        orig_sents = [
-            utils_prep.normalize(sent, lowercase, tokenizer)
-            for sent in orig_sents
-        ]
+        orig_sents = [utils_prep.normalize(sent, lowercase, tokenizer) for sent in orig_sents]
 
-    sys_sents = [
-        utils_prep.normalize(sent, lowercase, tokenizer) for sent in sys_sents
-    ]
-    refs_sents = [
-        [utils_prep.normalize(sent, lowercase, tokenizer) for sent in ref_sents]
-        for ref_sents in refs_sents
-    ]
+    sys_sents = [utils_prep.normalize(sent, lowercase, tokenizer) for sent in sys_sents]
+    refs_sents = [[utils_prep.normalize(sent, lowercase, tokenizer) for sent in ref_sents] for ref_sents in refs_sents]
 
     stats = compute_ngram_stats(orig_sents, sys_sents, refs_sents)
 
@@ -276,7 +259,7 @@ def get_corpus_sari_operation_scores(orig_sents: List[str], sys_sents: List[str]
         add_score, keep_score, del_score = compute_macro_sari(*stats, use_f1_for_deletion=use_f1_for_deletion)
     else:
         add_score, keep_score, del_score = compute_micro_sari(*stats, use_f1_for_deletion=use_f1_for_deletion)
-    return 100. * add_score, 100. * keep_score, 100. * del_score
+    return 100.0 * add_score, 100.0 * keep_score, 100.0 * del_score
 
 
 def corpus_sari(*args, **kwargs):

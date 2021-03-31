@@ -34,10 +34,7 @@ def _get_depnode_index(node_id, dep_parse):
 def _get_depnode_index_by_label(node_deplabel, dep_parse, node_ids):
     index = 0
     for dep_node in dep_parse:
-        if (
-            dep_node["dep"] == node_deplabel
-            and dep_node["governor"] in node_ids
-        ):
+        if dep_node["dep"] == node_deplabel and dep_node["governor"] in node_ids:
             return index
         index += 1
 
@@ -50,9 +47,7 @@ def _collapse_dependencies(dependency_parse):
         dependent = dep_node["dependent"]
 
         if dep_rel == "prep":
-            aux_dep_node_index = _get_depnode_index(
-                dep_node["dependent"], dependency_parse
-            )
+            aux_dep_node_index = _get_depnode_index(dep_node["dependent"], dependency_parse)
             if aux_dep_node_index:
                 dep_rel += f"_{dep_node['dependentGloss']}"
                 aux_dep_node = dependency_parse[aux_dep_node_index]
@@ -99,12 +94,8 @@ def format_parser_output(sentence_parse):
             }
             sent_formatted["words"].append((word, attributes))
 
-        sent_formatted["text"] = " ".join(
-            [word for word, _ in sent_formatted["words"]]
-        )
-        sent_formatted["dependencies"] = _collapse_dependencies(
-            sent_json["basicDependencies"]
-        )
+        sent_formatted["text"] = " ".join([word for word, _ in sent_formatted["words"]])
+        sent_formatted["dependencies"] = _collapse_dependencies(sent_json["basicDependencies"])
         if "parse" in sent_json:
             sent_formatted["parse"] = sent_json["parse"]
 
@@ -179,9 +170,7 @@ def join_parse_result(parseResult):
             for j in range(len(parseResult["sentences"][i]["dependencies"])):
 
                 for k in range(1, 3):
-                    tokens = parseResult["sentences"][i]["dependencies"][j][
-                        k
-                    ].split("-")
+                    tokens = parseResult["sentences"][i]["dependencies"][j][k].split("-")
                     if tokens[0] == "ROOT":
                         newWordIndex = 0
                     else:
@@ -191,26 +180,20 @@ def join_parse_result(parseResult):
                             continue
                         newWordIndex = int(tokens[len(tokens) - 1]) + wordOffset
                     if len(tokens) == 2:
-                        parseResult["sentences"][i]["dependencies"][j][k] = (
-                            tokens[0] + "-" + str(newWordIndex)
-                        )
+                        parseResult["sentences"][i]["dependencies"][j][k] = tokens[0] + "-" + str(newWordIndex)
                     else:
                         w = ""
                         for l in range(len(tokens) - 1):
                             w += tokens[l]
                             if l < len(tokens) - 2:
                                 w += "-"
-                        parseResult["sentences"][i]["dependencies"][j][k] = (
-                            w + "-" + str(newWordIndex)
-                        )
+                        parseResult["sentences"][i]["dependencies"][j][k] = w + "-" + str(newWordIndex)
 
         wordOffset += len(parseResult["sentences"][i]["words"])
 
     # merge information of all sentences into one
     for i in range(1, len(parseResult["sentences"])):
-        parseResult["sentences"][0]["text"] += (
-            " " + parseResult["sentences"][i]["text"]
-        )
+        parseResult["sentences"][0]["text"] += " " + parseResult["sentences"][i]["text"]
         for jtem in parseResult["sentences"][i]["dependencies"]:
             parseResult["sentences"][0]["dependencies"].append(jtem)
         for jtem in parseResult["sentences"][i]["words"]:
@@ -229,12 +212,8 @@ def nerWordAnnotator(parseResult):
     for i in range(len(parseResult["sentences"][0]["words"])):
         tag = [
             [
-                parseResult["sentences"][0]["words"][i][1][
-                    "CharacterOffsetBegin"
-                ],
-                parseResult["sentences"][0]["words"][i][1][
-                    "CharacterOffsetEnd"
-                ],
+                parseResult["sentences"][0]["words"][i][1]["CharacterOffsetBegin"],
+                parseResult["sentences"][0]["words"][i][1]["CharacterOffsetEnd"],
             ],
             wordIndex,
             parseResult["sentences"][0]["words"][i][0],
@@ -326,12 +305,8 @@ def posTag(parseResult):
     for i in range(len(parseResult["sentences"][0]["words"])):
         tag = [
             [
-                parseResult["sentences"][0]["words"][i][1][
-                    "CharacterOffsetBegin"
-                ],
-                parseResult["sentences"][0]["words"][i][1][
-                    "CharacterOffsetEnd"
-                ],
+                parseResult["sentences"][0]["words"][i][1]["CharacterOffsetBegin"],
+                parseResult["sentences"][0]["words"][i][1]["CharacterOffsetEnd"],
             ],
             wordIndex,
             parseResult["sentences"][0]["words"][i][0],
@@ -350,12 +325,8 @@ def lemmatize(parseResult):
     for i in range(len(parseResult["sentences"][0]["words"])):
         tag = [
             [
-                parseResult["sentences"][0]["words"][i][1][
-                    "CharacterOffsetBegin"
-                ],
-                parseResult["sentences"][0]["words"][i][1][
-                    "CharacterOffsetEnd"
-                ],
+                parseResult["sentences"][0]["words"][i][1]["CharacterOffsetBegin"],
+                parseResult["sentences"][0]["words"][i][1]["CharacterOffsetEnd"],
             ],
             wordIndex,
             parseResult["sentences"][0]["words"][i][0],
@@ -445,9 +416,7 @@ def findParents(dependencyParse, wordIndex, word):
 
     if wordIndexPresentInTheList:
         for item in dependencyParse:
-            currentIndex = int(
-                item[2].split("{")[1].split("}")[0].split(" ")[2]
-            )
+            currentIndex = int(item[2].split("{")[1].split("}")[0].split(" ")[2])
             if currentIndex == wordIndex:
                 parentsWithRelation.append(
                     [
@@ -466,26 +435,13 @@ def findParents(dependencyParse, wordIndex, word):
         if nextIndex == 0:
             return []  # ?
         for i in range(len(dependencyParse)):
-            if (
-                int(
-                    dependencyParse[i][2]
-                    .split("{")[1]
-                    .split("}")[0]
-                    .split(" ")[2]
-                )
-                == nextIndex
-            ):
+            if int(dependencyParse[i][2].split("{")[1].split("}")[0].split(" ")[2]) == nextIndex:
                 pos = i
                 break
         for i in range(pos, len(dependencyParse)):
             if "_" in dependencyParse[i][0] and word in dependencyParse[i][0]:
                 parent = [
-                    int(
-                        dependencyParse[i][1]
-                        .split("{")[1]
-                        .split("}")[0]
-                        .split(" ")[2]
-                    ),
+                    int(dependencyParse[i][1].split("{")[1].split("}")[0].split(" ")[2]),
                     dependencyParse[i][1].split("{")[0],
                     dependencyParse[i][0],
                 ]
@@ -519,9 +475,7 @@ def findChildren(dependencyParse, wordIndex, word):
 
     if wordIndexPresentInTheList:
         for item in dependencyParse:
-            currentIndex = int(
-                item[1].split("{")[1].split("}")[0].split(" ")[2]
-            )
+            currentIndex = int(item[1].split("{")[1].split("}")[0].split(" ")[2])
             if currentIndex == wordIndex:
                 childrenWithRelation.append(
                     [
@@ -541,26 +495,13 @@ def findChildren(dependencyParse, wordIndex, word):
         if nextIndex == 0:
             return []
         for i in range(len(dependencyParse)):
-            if (
-                int(
-                    dependencyParse[i][2]
-                    .split("{")[1]
-                    .split("}")[0]
-                    .split(" ")[2]
-                )
-                == nextIndex
-            ):
+            if int(dependencyParse[i][2].split("{")[1].split("}")[0].split(" ")[2]) == nextIndex:
                 pos = i
                 break
         for i in range(pos, len(dependencyParse)):
             if "_" in dependencyParse[i][0] and word in dependencyParse[i][0]:
                 child = [
-                    int(
-                        dependencyParse[i][2]
-                        .split("{")[1]
-                        .split("}")[0]
-                        .split(" ")[2]
-                    ),
+                    int(dependencyParse[i][2].split("{")[1].split("}")[0].split(" ")[2]),
                     dependencyParse[i][2].split("{")[0],
                     dependencyParse[i][0],
                 ]

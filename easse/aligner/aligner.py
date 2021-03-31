@@ -3,9 +3,7 @@ from easse.aligner.utils import *
 from easse.aligner.corenlp_utils import *
 
 
-def alignNouns(
-    source, target, sourceParseResult, targetParseResult, existingAlignments
-):
+def alignNouns(source, target, sourceParseResult, targetParseResult, existingAlignments):
     # source and target:: each is a list of elements of the form:
     # [[character begin offset, character end offset], word index, word, lemma, pos tag]
 
@@ -17,12 +15,8 @@ def alignNouns(
     sourceWordIndices = [i + 1 for i in range(len(source))]
     targetWordIndices = [i + 1 for i in range(len(target))]
 
-    sourceWordIndicesAlreadyAligned = sorted(
-        list(set([item[0] for item in existingAlignments]))
-    )
-    targetWordIndicesAlreadyAligned = sorted(
-        list(set([item[1] for item in existingAlignments]))
-    )
+    sourceWordIndicesAlreadyAligned = sorted(list(set([item[0] for item in existingAlignments])))
+    targetWordIndicesAlreadyAligned = sorted(list(set([item[1] for item in existingAlignments])))
 
     sourceWords = [item[2] for item in source]
     targetWords = [item[2] for item in target]
@@ -45,8 +39,7 @@ def alignNouns(
     # construct the two matrices in the following loop
     for i in sourceWordIndices:
         if i in sourceWordIndicesAlreadyAligned or (
-            sourcePosTags[i - 1][0].lower() != "n"
-            and sourcePosTags[i - 1].lower() != "prp"
+            sourcePosTags[i - 1][0].lower() != "n" and sourcePosTags[i - 1].lower() != "prp"
         ):
             continue
 
@@ -54,8 +47,7 @@ def alignNouns(
 
         for j in targetWordIndices:
             if j in targetWordIndicesAlreadyAligned or (
-                targetPosTags[j - 1][0].lower() != "n"
-                and targetPosTags[j - 1].lower() != "prp"
+                targetPosTags[j - 1][0].lower() != "n" and targetPosTags[j - 1].lower() != "prp"
             ):
                 continue
 
@@ -94,13 +86,9 @@ def alignNouns(
             )
 
             sourceWordParents = findParents(sourceDParse, i, sourceWords[i - 1])
-            sourceWordChildren = findChildren(
-                sourceDParse, i, sourceWords[i - 1]
-            )
+            sourceWordChildren = findChildren(sourceDParse, i, sourceWords[i - 1])
             targetWordParents = findParents(targetDParse, j, targetWords[j - 1])
-            targetWordChildren = findChildren(
-                targetDParse, j, targetWords[j - 1]
-            )
+            targetWordChildren = findChildren(targetDParse, j, targetWords[j - 1])
 
             # search for utils or equivalent parents
             groupOfSimilarRelationsForNounParent = [
@@ -129,8 +117,7 @@ def alignNouns(
             for ktem in sourceWordParents:
                 for ltem in targetWordParents:
                     if (
-                        (ktem[0], ltem[0])
-                        in existingAlignments + nounAlignments
+                        (ktem[0], ltem[0]) in existingAlignments + nounAlignments
                         or max(
                             wordRelatedness(
                                 ktem[1],
@@ -202,14 +189,10 @@ def alignNouns(
                             )
 
                         if (i, j) in relativeAlignmentsMatrix:
-                            relativeAlignmentsMatrix[(i, j)].append(
-                                [ktem[0], ltem[0]]
-                            )
+                            relativeAlignmentsMatrix[(i, j)].append([ktem[0], ltem[0]])
                         else:
                             relativeAlignmentsMatrix[(i, j)] = []
-                            relativeAlignmentsMatrix[(i, j)].append(
-                                [ktem[0], ltem[0]]
-                            )
+                            relativeAlignmentsMatrix[(i, j)].append([ktem[0], ltem[0]])
 
             # search for utils or equivalent children
             groupOfSimilarRelationsForNounChild = [
@@ -225,8 +208,7 @@ def alignNouns(
             for ktem in sourceWordChildren:
                 for ltem in targetWordChildren:
                     if (
-                        (ktem[0], ltem[0])
-                        in existingAlignments + nounAlignments
+                        (ktem[0], ltem[0]) in existingAlignments + nounAlignments
                         or max(
                             wordRelatedness(
                                 ktem[1],
@@ -254,8 +236,7 @@ def alignNouns(
                         )
                         or (
                             ktem[2] in groupOfSimilarRelationsForAdjectiveChild
-                            and ltem[2]
-                            in groupOfSimilarRelationsForAdjectiveChild
+                            and ltem[2] in groupOfSimilarRelationsForAdjectiveChild
                         )
                     ):
 
@@ -291,14 +272,10 @@ def alignNouns(
                             )
 
                         if (i, j) in relativeAlignmentsMatrix:
-                            relativeAlignmentsMatrix[(i, j)].append(
-                                [ktem[0], ltem[0]]
-                            )
+                            relativeAlignmentsMatrix[(i, j)].append([ktem[0], ltem[0]])
                         else:
                             relativeAlignmentsMatrix[(i, j)] = []
-                            relativeAlignmentsMatrix[(i, j)].append(
-                                [ktem[0], ltem[0]]
-                            )
+                            relativeAlignmentsMatrix[(i, j)].append([ktem[0], ltem[0]])
 
             # search for equivalent parent-child relations
             groupOfSimilarRelationsInOppositeDirectionForAdjectiveParentAndChild = [
@@ -325,8 +302,7 @@ def alignNouns(
             for ktem in sourceWordParents:
                 for ltem in targetWordChildren:
                     if (
-                        (ktem[0], ltem[0])
-                        in existingAlignments + nounAlignments
+                        (ktem[0], ltem[0]) in existingAlignments + nounAlignments
                         or max(
                             wordRelatedness(
                                 ktem[1],
@@ -345,54 +321,24 @@ def alignNouns(
                     ) and (
                         (ktem[2] == ltem[2])
                         or (
-                            ktem[2]
-                            in groupOfSimilarRelationsInOppositeDirectionForAdjectiveParentAndChild[
-                                0
-                            ]
-                            and ltem[2]
-                            in groupOfSimilarRelationsInOppositeDirectionForAdjectiveParentAndChild[
-                                1
-                            ]
+                            ktem[2] in groupOfSimilarRelationsInOppositeDirectionForAdjectiveParentAndChild[0]
+                            and ltem[2] in groupOfSimilarRelationsInOppositeDirectionForAdjectiveParentAndChild[1]
                         )
                         or (
-                            ktem[2]
-                            in groupOfSimilarRelationsInOppositeDirectionForVerbParentAndChild[
-                                0
-                            ]
-                            and ltem[2]
-                            in groupOfSimilarRelationsInOppositeDirectionForVerbParentAndChild[
-                                1
-                            ]
+                            ktem[2] in groupOfSimilarRelationsInOppositeDirectionForVerbParentAndChild[0]
+                            and ltem[2] in groupOfSimilarRelationsInOppositeDirectionForVerbParentAndChild[1]
                         )
                         or (
-                            ktem[2]
-                            in group1OfSimilarRelationsInOppositeDirectionForNounParentAndChild[
-                                0
-                            ]
-                            and ltem[2]
-                            in group1OfSimilarRelationsInOppositeDirectionForNounParentAndChild[
-                                1
-                            ]
+                            ktem[2] in group1OfSimilarRelationsInOppositeDirectionForNounParentAndChild[0]
+                            and ltem[2] in group1OfSimilarRelationsInOppositeDirectionForNounParentAndChild[1]
                         )
                         or (
-                            ktem[2]
-                            in group2OfSimilarRelationsInOppositeDirectionForNounParentAndChild[
-                                0
-                            ]
-                            and ltem[2]
-                            in group2OfSimilarRelationsInOppositeDirectionForNounParentAndChild[
-                                1
-                            ]
+                            ktem[2] in group2OfSimilarRelationsInOppositeDirectionForNounParentAndChild[0]
+                            and ltem[2] in group2OfSimilarRelationsInOppositeDirectionForNounParentAndChild[1]
                         )
                         or (
-                            ktem[2]
-                            in group3OfSimilarRelationsInOppositeDirectionForNounParentAndChild[
-                                0
-                            ]
-                            and ltem[2]
-                            in group3OfSimilarRelationsInOppositeDirectionForNounParentAndChild[
-                                1
-                            ]
+                            ktem[2] in group3OfSimilarRelationsInOppositeDirectionForNounParentAndChild[0]
+                            and ltem[2] in group3OfSimilarRelationsInOppositeDirectionForNounParentAndChild[1]
                         )
                     ):
 
@@ -428,21 +374,16 @@ def alignNouns(
                             )
 
                         if (i, j) in relativeAlignmentsMatrix:
-                            relativeAlignmentsMatrix[(i, j)].append(
-                                [ktem[0], ltem[0]]
-                            )
+                            relativeAlignmentsMatrix[(i, j)].append([ktem[0], ltem[0]])
                         else:
                             relativeAlignmentsMatrix[(i, j)] = []
-                            relativeAlignmentsMatrix[(i, j)].append(
-                                [ktem[0], ltem[0]]
-                            )
+                            relativeAlignmentsMatrix[(i, j)].append([ktem[0], ltem[0]])
 
             # search for equivalent child-parent relations
             for ktem in sourceWordChildren:
                 for ltem in targetWordParents:
                     if (
-                        (ktem[0], ltem[0])
-                        in existingAlignments + nounAlignments
+                        (ktem[0], ltem[0]) in existingAlignments + nounAlignments
                         or max(
                             wordRelatedness(
                                 ktem[1],
@@ -461,54 +402,24 @@ def alignNouns(
                     ) and (
                         (ktem[2] == ltem[2])
                         or (
-                            ktem[2]
-                            in groupOfSimilarRelationsInOppositeDirectionForAdjectiveParentAndChild[
-                                1
-                            ]
-                            and ltem[2]
-                            in groupOfSimilarRelationsInOppositeDirectionForAdjectiveParentAndChild[
-                                0
-                            ]
+                            ktem[2] in groupOfSimilarRelationsInOppositeDirectionForAdjectiveParentAndChild[1]
+                            and ltem[2] in groupOfSimilarRelationsInOppositeDirectionForAdjectiveParentAndChild[0]
                         )
                         or (
-                            ktem[2]
-                            in groupOfSimilarRelationsInOppositeDirectionForVerbParentAndChild[
-                                1
-                            ]
-                            and ltem[2]
-                            in groupOfSimilarRelationsInOppositeDirectionForVerbParentAndChild[
-                                0
-                            ]
+                            ktem[2] in groupOfSimilarRelationsInOppositeDirectionForVerbParentAndChild[1]
+                            and ltem[2] in groupOfSimilarRelationsInOppositeDirectionForVerbParentAndChild[0]
                         )
                         or (
-                            ktem[2]
-                            in group1OfSimilarRelationsInOppositeDirectionForNounParentAndChild[
-                                1
-                            ]
-                            and ltem[2]
-                            in group1OfSimilarRelationsInOppositeDirectionForNounParentAndChild[
-                                0
-                            ]
+                            ktem[2] in group1OfSimilarRelationsInOppositeDirectionForNounParentAndChild[1]
+                            and ltem[2] in group1OfSimilarRelationsInOppositeDirectionForNounParentAndChild[0]
                         )
                         or (
-                            ktem[2]
-                            in group2OfSimilarRelationsInOppositeDirectionForNounParentAndChild[
-                                1
-                            ]
-                            and ltem[2]
-                            in group2OfSimilarRelationsInOppositeDirectionForNounParentAndChild[
-                                0
-                            ]
+                            ktem[2] in group2OfSimilarRelationsInOppositeDirectionForNounParentAndChild[1]
+                            and ltem[2] in group2OfSimilarRelationsInOppositeDirectionForNounParentAndChild[0]
                         )
                         or (
-                            ktem[2]
-                            in group3OfSimilarRelationsInOppositeDirectionForNounParentAndChild[
-                                1
-                            ]
-                            and ltem[2]
-                            in group3OfSimilarRelationsInOppositeDirectionForNounParentAndChild[
-                                0
-                            ]
+                            ktem[2] in group3OfSimilarRelationsInOppositeDirectionForNounParentAndChild[1]
+                            and ltem[2] in group3OfSimilarRelationsInOppositeDirectionForNounParentAndChild[0]
                         )
                     ):
 
@@ -544,14 +455,10 @@ def alignNouns(
                             )
 
                         if (i, j) in relativeAlignmentsMatrix:
-                            relativeAlignmentsMatrix[(i, j)].append(
-                                [ktem[0], ltem[0]]
-                            )
+                            relativeAlignmentsMatrix[(i, j)].append([ktem[0], ltem[0]])
                         else:
                             relativeAlignmentsMatrix[(i, j)] = []
-                            relativeAlignmentsMatrix[(i, j)].append(
-                                [ktem[0], ltem[0]]
-                            )
+                            relativeAlignmentsMatrix[(i, j)].append([ktem[0], ltem[0]])
 
     # now use the collected stats to align
     for n in range(numberOfNounsInSource):
@@ -576,29 +483,19 @@ def alignNouns(
                 ):
                     continue
 
-                if (
-                    (i, j) in evidenceCountsMatrix
-                    and theta1 * wordSimilarities[(i, j)]
-                    + (1 - theta1) * evidenceCountsMatrix[(i, j)]
-                    > maxOverallValueForCurrentPass
-                ):
+                if (i, j) in evidenceCountsMatrix and theta1 * wordSimilarities[(i, j)] + (
+                    1 - theta1
+                ) * evidenceCountsMatrix[(i, j)] > maxOverallValueForCurrentPass:
                     maxOverallValueForCurrentPass = (
-                        theta1 * wordSimilarities[(i, j)]
-                        + (1 - theta1) * evidenceCountsMatrix[(i, j)]
+                        theta1 * wordSimilarities[(i, j)] + (1 - theta1) * evidenceCountsMatrix[(i, j)]
                     )
-                    maxEvidenceCountForCurrentPass = evidenceCountsMatrix[
-                        (i, j)
-                    ]
+                    maxEvidenceCountForCurrentPass = evidenceCountsMatrix[(i, j)]
                     indexPairWithStrongestTieForCurrentPass = [i, j]
 
         if maxEvidenceCountForCurrentPass > 0:
             nounAlignments.append(indexPairWithStrongestTieForCurrentPass)
-            sourceWordIndicesAlreadyAligned.append(
-                indexPairWithStrongestTieForCurrentPass[0]
-            )
-            targetWordIndicesAlreadyAligned.append(
-                indexPairWithStrongestTieForCurrentPass[1]
-            )
+            sourceWordIndicesAlreadyAligned.append(indexPairWithStrongestTieForCurrentPass[0])
+            targetWordIndicesAlreadyAligned.append(indexPairWithStrongestTieForCurrentPass[1])
             for item in relativeAlignmentsMatrix[
                 (
                     indexPairWithStrongestTieForCurrentPass[0],
@@ -620,9 +517,7 @@ def alignNouns(
     return nounAlignments
 
 
-def alignMainVerbs(
-    source, target, sourceParseResult, targetParseResult, existingAlignments
-):
+def alignMainVerbs(source, target, sourceParseResult, targetParseResult, existingAlignments):
     # source and target:: each is a list of elements of the form:
     # [[character begin offset, character end offset], word index, word, lemma, pos tag]
 
@@ -634,12 +529,8 @@ def alignMainVerbs(
     sourceWordIndices = [i + 1 for i in range(len(source))]
     targetWordIndices = [i + 1 for i in range(len(target))]
 
-    sourceWordIndicesAlreadyAligned = sorted(
-        list(set([item[0] for item in existingAlignments]))
-    )
-    targetWordIndicesAlreadyAligned = sorted(
-        list(set([item[1] for item in existingAlignments]))
-    )
+    sourceWordIndicesAlreadyAligned = sorted(list(set([item[0] for item in existingAlignments])))
+    targetWordIndicesAlreadyAligned = sorted(list(set([item[1] for item in existingAlignments])))
 
     sourceWords = [item[2] for item in source]
     targetWords = [item[2] for item in target]
@@ -713,13 +604,9 @@ def alignMainVerbs(
             )
 
             sourceWordParents = findParents(sourceDParse, i, sourceWords[i - 1])
-            sourceWordChildren = findChildren(
-                sourceDParse, i, sourceWords[i - 1]
-            )
+            sourceWordChildren = findChildren(sourceDParse, i, sourceWords[i - 1])
             targetWordParents = findParents(targetDParse, j, targetWords[j - 1])
-            targetWordChildren = findChildren(
-                targetDParse, j, targetWords[j - 1]
-            )
+            targetWordChildren = findChildren(targetDParse, j, targetWords[j - 1])
 
             # search for utils or equivalent children
             group1OfSimilarRelationsForNounChild = ["agent", "nsubj" "xsubj"]
@@ -741,8 +628,7 @@ def alignMainVerbs(
             for ktem in sourceWordChildren:
                 for ltem in targetWordChildren:
                     if (
-                        (ktem[0], ltem[0])
-                        in existingAlignments + mainVerbAlignments
+                        (ktem[0], ltem[0]) in existingAlignments + mainVerbAlignments
                         or max(
                             wordRelatedness(
                                 ktem[1],
@@ -814,14 +700,10 @@ def alignMainVerbs(
                             )
 
                         if (i, j) in relativeAlignmentsMatrix:
-                            relativeAlignmentsMatrix[(i, j)].append(
-                                [ktem[0], ltem[0]]
-                            )
+                            relativeAlignmentsMatrix[(i, j)].append([ktem[0], ltem[0]])
                         else:
                             relativeAlignmentsMatrix[(i, j)] = []
-                            relativeAlignmentsMatrix[(i, j)].append(
-                                [ktem[0], ltem[0]]
-                            )
+                            relativeAlignmentsMatrix[(i, j)].append([ktem[0], ltem[0]])
 
             # search for utils or equivalent parents
             groupOfSimilarRelationsForNounParent = [
@@ -834,8 +716,7 @@ def alignMainVerbs(
             for ktem in sourceWordParents:
                 for ltem in targetWordParents:
                     if (
-                        (ktem[0], ltem[0])
-                        in existingAlignments + mainVerbAlignments
+                        (ktem[0], ltem[0]) in existingAlignments + mainVerbAlignments
                         or max(
                             wordRelatedness(
                                 ktem[1],
@@ -895,14 +776,10 @@ def alignMainVerbs(
                             )
 
                         if (i, j) in relativeAlignmentsMatrix:
-                            relativeAlignmentsMatrix[(i, j)].append(
-                                [ktem[0], ltem[0]]
-                            )
+                            relativeAlignmentsMatrix[(i, j)].append([ktem[0], ltem[0]])
                         else:
                             relativeAlignmentsMatrix[(i, j)] = []
-                            relativeAlignmentsMatrix[(i, j)].append(
-                                [ktem[0], ltem[0]]
-                            )
+                            relativeAlignmentsMatrix[(i, j)].append([ktem[0], ltem[0]])
 
             # search for equivalent parent-child pairs
             groupOfSimilarRelationsInOppositeDirectionForAdjectiveParentAndChild = [
@@ -929,8 +806,7 @@ def alignMainVerbs(
             for ktem in sourceWordParents:
                 for ltem in targetWordChildren:
                     if (
-                        (ktem[0], ltem[0])
-                        in existingAlignments + mainVerbAlignments
+                        (ktem[0], ltem[0]) in existingAlignments + mainVerbAlignments
                         or max(
                             wordRelatedness(
                                 ktem[1],
@@ -949,54 +825,24 @@ def alignMainVerbs(
                     ) and (
                         (ktem[2] == ltem[2])
                         or (
-                            ktem[2]
-                            in groupOfSimilarRelationsInOppositeDirectionForAdjectiveParentAndChild[
-                                0
-                            ]
-                            and ltem[2]
-                            in groupOfSimilarRelationsInOppositeDirectionForAdjectiveParentAndChild[
-                                1
-                            ]
+                            ktem[2] in groupOfSimilarRelationsInOppositeDirectionForAdjectiveParentAndChild[0]
+                            and ltem[2] in groupOfSimilarRelationsInOppositeDirectionForAdjectiveParentAndChild[1]
                         )
                         or (
-                            ktem[2]
-                            in group1OfSimilarRelationsInOppositeDirectionForVerbParentAndChild[
-                                0
-                            ]
-                            and ltem[2]
-                            in group1OfSimilarRelationsInOppositeDirectionForVerbParentAndChild[
-                                1
-                            ]
+                            ktem[2] in group1OfSimilarRelationsInOppositeDirectionForVerbParentAndChild[0]
+                            and ltem[2] in group1OfSimilarRelationsInOppositeDirectionForVerbParentAndChild[1]
                         )
                         or (
-                            ktem[2]
-                            in group2OfSimilarRelationsInOppositeDirectionForVerbParentAndChild[
-                                0
-                            ]
-                            and ltem[2]
-                            in group2OfSimilarRelationsInOppositeDirectionForVerbParentAndChild[
-                                1
-                            ]
+                            ktem[2] in group2OfSimilarRelationsInOppositeDirectionForVerbParentAndChild[0]
+                            and ltem[2] in group2OfSimilarRelationsInOppositeDirectionForVerbParentAndChild[1]
                         )
                         or (
-                            ktem[2]
-                            in group3OfSimilarRelationsInOppositeDirectionForVerbParentAndChild[
-                                0
-                            ]
-                            and ltem[2]
-                            in group3OfSimilarRelationsInOppositeDirectionForVerbParentAndChild[
-                                1
-                            ]
+                            ktem[2] in group3OfSimilarRelationsInOppositeDirectionForVerbParentAndChild[0]
+                            and ltem[2] in group3OfSimilarRelationsInOppositeDirectionForVerbParentAndChild[1]
                         )
                         or (
-                            ktem[2]
-                            in group4OfSimilarRelationsInOppositeDirectionForVerbParentAndChild[
-                                0
-                            ]
-                            and ltem[2]
-                            in group4OfSimilarRelationsInOppositeDirectionForVerbParentAndChild[
-                                1
-                            ]
+                            ktem[2] in group4OfSimilarRelationsInOppositeDirectionForVerbParentAndChild[0]
+                            and ltem[2] in group4OfSimilarRelationsInOppositeDirectionForVerbParentAndChild[1]
                         )
                     ):
 
@@ -1032,21 +878,16 @@ def alignMainVerbs(
                             )
 
                         if (i, j) in relativeAlignmentsMatrix:
-                            relativeAlignmentsMatrix[(i, j)].append(
-                                [ktem[0], ltem[0]]
-                            )
+                            relativeAlignmentsMatrix[(i, j)].append([ktem[0], ltem[0]])
                         else:
                             relativeAlignmentsMatrix[(i, j)] = []
-                            relativeAlignmentsMatrix[(i, j)].append(
-                                [ktem[0], ltem[0]]
-                            )
+                            relativeAlignmentsMatrix[(i, j)].append([ktem[0], ltem[0]])
 
             # search for equivalent child-parent pairs
             for ktem in sourceWordChildren:
                 for ltem in targetWordParents:
                     if (
-                        (ktem[0], ltem[0])
-                        in existingAlignments + mainVerbAlignments
+                        (ktem[0], ltem[0]) in existingAlignments + mainVerbAlignments
                         or max(
                             wordRelatedness(
                                 ktem[1],
@@ -1065,54 +906,24 @@ def alignMainVerbs(
                     ) and (
                         (ktem[2] == ltem[2])
                         or (
-                            ktem[2]
-                            in groupOfSimilarRelationsInOppositeDirectionForAdjectiveParentAndChild[
-                                1
-                            ]
-                            and ltem[2]
-                            in groupOfSimilarRelationsInOppositeDirectionForAdjectiveParentAndChild[
-                                0
-                            ]
+                            ktem[2] in groupOfSimilarRelationsInOppositeDirectionForAdjectiveParentAndChild[1]
+                            and ltem[2] in groupOfSimilarRelationsInOppositeDirectionForAdjectiveParentAndChild[0]
                         )
                         or (
-                            ktem[2]
-                            in group1OfSimilarRelationsInOppositeDirectionForVerbParentAndChild[
-                                1
-                            ]
-                            and ltem[2]
-                            in group1OfSimilarRelationsInOppositeDirectionForVerbParentAndChild[
-                                0
-                            ]
+                            ktem[2] in group1OfSimilarRelationsInOppositeDirectionForVerbParentAndChild[1]
+                            and ltem[2] in group1OfSimilarRelationsInOppositeDirectionForVerbParentAndChild[0]
                         )
                         or (
-                            ktem[2]
-                            in group2OfSimilarRelationsInOppositeDirectionForVerbParentAndChild[
-                                1
-                            ]
-                            and ltem[2]
-                            in group2OfSimilarRelationsInOppositeDirectionForVerbParentAndChild[
-                                0
-                            ]
+                            ktem[2] in group2OfSimilarRelationsInOppositeDirectionForVerbParentAndChild[1]
+                            and ltem[2] in group2OfSimilarRelationsInOppositeDirectionForVerbParentAndChild[0]
                         )
                         or (
-                            ktem[2]
-                            in group3OfSimilarRelationsInOppositeDirectionForVerbParentAndChild[
-                                1
-                            ]
-                            and ltem[2]
-                            in group3OfSimilarRelationsInOppositeDirectionForVerbParentAndChild[
-                                0
-                            ]
+                            ktem[2] in group3OfSimilarRelationsInOppositeDirectionForVerbParentAndChild[1]
+                            and ltem[2] in group3OfSimilarRelationsInOppositeDirectionForVerbParentAndChild[0]
                         )
                         or (
-                            ktem[2]
-                            in group4OfSimilarRelationsInOppositeDirectionForVerbParentAndChild[
-                                1
-                            ]
-                            and ltem[2]
-                            in group4OfSimilarRelationsInOppositeDirectionForVerbParentAndChild[
-                                0
-                            ]
+                            ktem[2] in group4OfSimilarRelationsInOppositeDirectionForVerbParentAndChild[1]
+                            and ltem[2] in group4OfSimilarRelationsInOppositeDirectionForVerbParentAndChild[0]
                         )
                     ):
 
@@ -1148,14 +959,10 @@ def alignMainVerbs(
                             )
 
                         if (i, j) in relativeAlignmentsMatrix:
-                            relativeAlignmentsMatrix[(i, j)].append(
-                                [ktem[0], ltem[0]]
-                            )
+                            relativeAlignmentsMatrix[(i, j)].append([ktem[0], ltem[0]])
                         else:
                             relativeAlignmentsMatrix[(i, j)] = []
-                            relativeAlignmentsMatrix[(i, j)].append(
-                                [ktem[0], ltem[0]]
-                            )
+                            relativeAlignmentsMatrix[(i, j)].append([ktem[0], ltem[0]])
 
     # now use the collected stats to align
     for n in range(numberOfMainVerbsInSource):
@@ -1180,29 +987,19 @@ def alignMainVerbs(
                 ):
                     continue
 
-                if (
-                    (i, j) in evidenceCountsMatrix
-                    and theta1 * wordSimilarities[(i, j)]
-                    + (1 - theta1) * evidenceCountsMatrix[(i, j)]
-                    > maxOverallValueForCurrentPass
-                ):
+                if (i, j) in evidenceCountsMatrix and theta1 * wordSimilarities[(i, j)] + (
+                    1 - theta1
+                ) * evidenceCountsMatrix[(i, j)] > maxOverallValueForCurrentPass:
                     maxOverallValueForCurrentPass = (
-                        theta1 * wordSimilarities[(i, j)]
-                        + (1 - theta1) * evidenceCountsMatrix[(i, j)]
+                        theta1 * wordSimilarities[(i, j)] + (1 - theta1) * evidenceCountsMatrix[(i, j)]
                     )
-                    maxEvidenceCountForCurrentPass = evidenceCountsMatrix[
-                        (i, j)
-                    ]
+                    maxEvidenceCountForCurrentPass = evidenceCountsMatrix[(i, j)]
                     indexPairWithStrongestTieForCurrentPass = [i, j]
 
         if maxEvidenceCountForCurrentPass > 0:
             mainVerbAlignments.append(indexPairWithStrongestTieForCurrentPass)
-            sourceWordIndicesAlreadyAligned.append(
-                indexPairWithStrongestTieForCurrentPass[0]
-            )
-            targetWordIndicesAlreadyAligned.append(
-                indexPairWithStrongestTieForCurrentPass[1]
-            )
+            sourceWordIndicesAlreadyAligned.append(indexPairWithStrongestTieForCurrentPass[0])
+            targetWordIndicesAlreadyAligned.append(indexPairWithStrongestTieForCurrentPass[1])
             for item in relativeAlignmentsMatrix[
                 (
                     indexPairWithStrongestTieForCurrentPass[0],
@@ -1224,9 +1021,7 @@ def alignMainVerbs(
     return mainVerbAlignments
 
 
-def alignAdjectives(
-    source, target, sourceParseResult, targetParseResult, existingAlignments
-):
+def alignAdjectives(source, target, sourceParseResult, targetParseResult, existingAlignments):
     # source and target:: each is a list of elements of the form:
     # [[character begin offset, character end offset], word index, word, lemma, pos tag]
 
@@ -1238,12 +1033,8 @@ def alignAdjectives(
     sourceWordIndices = [i + 1 for i in range(len(source))]
     targetWordIndices = [i + 1 for i in range(len(target))]
 
-    sourceWordIndicesAlreadyAligned = sorted(
-        list(set([item[0] for item in existingAlignments]))
-    )
-    targetWordIndicesAlreadyAligned = sorted(
-        list(set([item[1] for item in existingAlignments]))
-    )
+    sourceWordIndicesAlreadyAligned = sorted(list(set([item[0] for item in existingAlignments])))
+    targetWordIndicesAlreadyAligned = sorted(list(set([item[1] for item in existingAlignments])))
 
     sourceWords = [item[2] for item in source]
     targetWords = [item[2] for item in target]
@@ -1265,19 +1056,13 @@ def alignAdjectives(
 
     # construct the two matrices in the following loop
     for i in sourceWordIndices:
-        if (
-            i in sourceWordIndicesAlreadyAligned
-            or sourcePosTags[i - 1][0].lower() != "j"
-        ):
+        if i in sourceWordIndicesAlreadyAligned or sourcePosTags[i - 1][0].lower() != "j":
             continue
 
         numberOfAdjectivesInSource += 1
 
         for j in targetWordIndices:
-            if (
-                j in targetWordIndicesAlreadyAligned
-                or targetPosTags[j - 1][0].lower() != "j"
-            ):
+            if j in targetWordIndicesAlreadyAligned or targetPosTags[j - 1][0].lower() != "j":
                 continue
 
             if (
@@ -1315,13 +1100,9 @@ def alignAdjectives(
             )
 
             sourceWordParents = findParents(sourceDParse, i, sourceWords[i - 1])
-            sourceWordChildren = findChildren(
-                sourceDParse, i, sourceWords[i - 1]
-            )
+            sourceWordChildren = findChildren(sourceDParse, i, sourceWords[i - 1])
             targetWordParents = findParents(targetDParse, j, targetWords[j - 1])
-            targetWordChildren = findChildren(
-                targetDParse, j, targetWords[j - 1]
-            )
+            targetWordChildren = findChildren(targetDParse, j, targetWords[j - 1])
 
             # search for utils or equivalent parents
             groupOfSimilarRelationsForNounParent = ["amod", "rcmod"]
@@ -1329,8 +1110,7 @@ def alignAdjectives(
             for ktem in sourceWordParents:
                 for ltem in targetWordParents:
                     if (
-                        (ktem[0], ltem[0])
-                        in existingAlignments + adjectiveAlignments
+                        (ktem[0], ltem[0]) in existingAlignments + adjectiveAlignments
                         or max(
                             wordRelatedness(
                                 ktem[1],
@@ -1386,21 +1166,16 @@ def alignAdjectives(
                             )
 
                         if (i, j) in relativeAlignmentsMatrix:
-                            relativeAlignmentsMatrix[(i, j)].append(
-                                [ktem[0], ltem[0]]
-                            )
+                            relativeAlignmentsMatrix[(i, j)].append([ktem[0], ltem[0]])
                         else:
                             relativeAlignmentsMatrix[(i, j)] = []
-                            relativeAlignmentsMatrix[(i, j)].append(
-                                [ktem[0], ltem[0]]
-                            )
+                            relativeAlignmentsMatrix[(i, j)].append([ktem[0], ltem[0]])
 
             # search for utils children
             for ktem in sourceWordChildren:
                 for ltem in targetWordChildren:
                     if (
-                        (ktem[0], ltem[0])
-                        in existingAlignments + adjectiveAlignments
+                        (ktem[0], ltem[0]) in existingAlignments + adjectiveAlignments
                         or max(
                             wordRelatedness(
                                 ktem[1],
@@ -1449,14 +1224,10 @@ def alignAdjectives(
                             )
 
                         if (i, j) in relativeAlignmentsMatrix:
-                            relativeAlignmentsMatrix[(i, j)].append(
-                                [ktem[0], ltem[0]]
-                            )
+                            relativeAlignmentsMatrix[(i, j)].append([ktem[0], ltem[0]])
                         else:
                             relativeAlignmentsMatrix[(i, j)] = []
-                            relativeAlignmentsMatrix[(i, j)].append(
-                                [ktem[0], ltem[0]]
-                            )
+                            relativeAlignmentsMatrix[(i, j)].append([ktem[0], ltem[0]])
 
             # search for equivalent parent-child pair
             groupOfSimilarRelationsInOppositeDirectionForNounParentAndChild = [
@@ -1483,8 +1254,7 @@ def alignAdjectives(
             for ktem in sourceWordParents:
                 for ltem in targetWordChildren:
                     if (
-                        (ktem[0], ltem[0])
-                        in existingAlignments + adjectiveAlignments
+                        (ktem[0], ltem[0]) in existingAlignments + adjectiveAlignments
                         or max(
                             wordRelatedness(
                                 ktem[1],
@@ -1503,54 +1273,24 @@ def alignAdjectives(
                     ) and (
                         (ktem[2] == ltem[2])
                         or (
-                            ktem[2]
-                            in groupOfSimilarRelationsInOppositeDirectionForNounParentAndChild[
-                                0
-                            ]
-                            and ltem[2]
-                            in groupOfSimilarRelationsInOppositeDirectionForNounParentAndChild[
-                                1
-                            ]
+                            ktem[2] in groupOfSimilarRelationsInOppositeDirectionForNounParentAndChild[0]
+                            and ltem[2] in groupOfSimilarRelationsInOppositeDirectionForNounParentAndChild[1]
                         )
                         or (
-                            ktem[2]
-                            in groupOfSimilarRelationsInOppositeDirectionForVerbParentAndChild[
-                                0
-                            ]
-                            and ltem[2]
-                            in groupOfSimilarRelationsInOppositeDirectionForVerbParentAndChild[
-                                1
-                            ]
+                            ktem[2] in groupOfSimilarRelationsInOppositeDirectionForVerbParentAndChild[0]
+                            and ltem[2] in groupOfSimilarRelationsInOppositeDirectionForVerbParentAndChild[1]
                         )
                         or (
-                            ktem[2]
-                            in group1OfSimilarRelationsInOppositeDirectionForAdjectiveParentAndChild[
-                                0
-                            ]
-                            and ltem[2]
-                            in group1OfSimilarRelationsInOppositeDirectionForAdjectiveParentAndChild[
-                                1
-                            ]
+                            ktem[2] in group1OfSimilarRelationsInOppositeDirectionForAdjectiveParentAndChild[0]
+                            and ltem[2] in group1OfSimilarRelationsInOppositeDirectionForAdjectiveParentAndChild[1]
                         )
                         or (
-                            ktem[2]
-                            in group2OfSimilarRelationsInOppositeDirectionForAdjectiveParentAndChild[
-                                0
-                            ]
-                            and ltem[2]
-                            in group2OfSimilarRelationsInOppositeDirectionForAdjectiveParentAndChild[
-                                1
-                            ]
+                            ktem[2] in group2OfSimilarRelationsInOppositeDirectionForAdjectiveParentAndChild[0]
+                            and ltem[2] in group2OfSimilarRelationsInOppositeDirectionForAdjectiveParentAndChild[1]
                         )
                         or (
-                            ktem[2]
-                            in group3OfSimilarRelationsInOppositeDirectionForAdjectiveParentAndChild[
-                                0
-                            ]
-                            and ltem[2]
-                            in group3OfSimilarRelationsInOppositeDirectionForAdjectiveParentAndChild[
-                                1
-                            ]
+                            ktem[2] in group3OfSimilarRelationsInOppositeDirectionForAdjectiveParentAndChild[0]
+                            and ltem[2] in group3OfSimilarRelationsInOppositeDirectionForAdjectiveParentAndChild[1]
                         )
                     ):
 
@@ -1586,21 +1326,16 @@ def alignAdjectives(
                             )
 
                         if (i, j) in relativeAlignmentsMatrix:
-                            relativeAlignmentsMatrix[(i, j)].append(
-                                [ktem[0], ltem[0]]
-                            )
+                            relativeAlignmentsMatrix[(i, j)].append([ktem[0], ltem[0]])
                         else:
                             relativeAlignmentsMatrix[(i, j)] = []
-                            relativeAlignmentsMatrix[(i, j)].append(
-                                [ktem[0], ltem[0]]
-                            )
+                            relativeAlignmentsMatrix[(i, j)].append([ktem[0], ltem[0]])
 
             # search for equivalent child-parent pair
             for ktem in sourceWordChildren:
                 for ltem in targetWordParents:
                     if (
-                        (ktem[0], ltem[0])
-                        in existingAlignments + adjectiveAlignments
+                        (ktem[0], ltem[0]) in existingAlignments + adjectiveAlignments
                         or max(
                             wordRelatedness(
                                 ktem[1],
@@ -1619,54 +1354,24 @@ def alignAdjectives(
                     ) and (
                         (ktem[2] == ltem[2])
                         or (
-                            ktem[2]
-                            in groupOfSimilarRelationsInOppositeDirectionForNounParentAndChild[
-                                1
-                            ]
-                            and ltem[2]
-                            in groupOfSimilarRelationsInOppositeDirectionForNounParentAndChild[
-                                0
-                            ]
+                            ktem[2] in groupOfSimilarRelationsInOppositeDirectionForNounParentAndChild[1]
+                            and ltem[2] in groupOfSimilarRelationsInOppositeDirectionForNounParentAndChild[0]
                         )
                         or (
-                            ktem[2]
-                            in groupOfSimilarRelationsInOppositeDirectionForVerbParentAndChild[
-                                1
-                            ]
-                            and ltem[2]
-                            in groupOfSimilarRelationsInOppositeDirectionForVerbParentAndChild[
-                                0
-                            ]
+                            ktem[2] in groupOfSimilarRelationsInOppositeDirectionForVerbParentAndChild[1]
+                            and ltem[2] in groupOfSimilarRelationsInOppositeDirectionForVerbParentAndChild[0]
                         )
                         or (
-                            ktem[2]
-                            in group1OfSimilarRelationsInOppositeDirectionForAdjectiveParentAndChild[
-                                1
-                            ]
-                            and ltem[2]
-                            in group1OfSimilarRelationsInOppositeDirectionForAdjectiveParentAndChild[
-                                0
-                            ]
+                            ktem[2] in group1OfSimilarRelationsInOppositeDirectionForAdjectiveParentAndChild[1]
+                            and ltem[2] in group1OfSimilarRelationsInOppositeDirectionForAdjectiveParentAndChild[0]
                         )
                         or (
-                            ktem[2]
-                            in group2OfSimilarRelationsInOppositeDirectionForAdjectiveParentAndChild[
-                                1
-                            ]
-                            and ltem[2]
-                            in group2OfSimilarRelationsInOppositeDirectionForAdjectiveParentAndChild[
-                                0
-                            ]
+                            ktem[2] in group2OfSimilarRelationsInOppositeDirectionForAdjectiveParentAndChild[1]
+                            and ltem[2] in group2OfSimilarRelationsInOppositeDirectionForAdjectiveParentAndChild[0]
                         )
                         or (
-                            ktem[2]
-                            in group3OfSimilarRelationsInOppositeDirectionForAdjectiveParentAndChild[
-                                1
-                            ]
-                            and ltem[2]
-                            in group3OfSimilarRelationsInOppositeDirectionForAdjectiveParentAndChild[
-                                0
-                            ]
+                            ktem[2] in group3OfSimilarRelationsInOppositeDirectionForAdjectiveParentAndChild[1]
+                            and ltem[2] in group3OfSimilarRelationsInOppositeDirectionForAdjectiveParentAndChild[0]
                         )
                     ):
 
@@ -1702,14 +1407,10 @@ def alignAdjectives(
                             )
 
                         if (i, j) in relativeAlignmentsMatrix:
-                            relativeAlignmentsMatrix[(i, j)].append(
-                                [ktem[0], ltem[0]]
-                            )
+                            relativeAlignmentsMatrix[(i, j)].append([ktem[0], ltem[0]])
                         else:
                             relativeAlignmentsMatrix[(i, j)] = []
-                            relativeAlignmentsMatrix[(i, j)].append(
-                                [ktem[0], ltem[0]]
-                            )
+                            relativeAlignmentsMatrix[(i, j)].append([ktem[0], ltem[0]])
 
     # now use the collected stats to align
     for n in range(numberOfAdjectivesInSource):
@@ -1734,29 +1435,19 @@ def alignAdjectives(
                 ):
                     continue
 
-                if (
-                    (i, j) in evidenceCountsMatrix
-                    and theta1 * wordSimilarities[(i, j)]
-                    + (1 - theta1) * evidenceCountsMatrix[(i, j)]
-                    > maxOverallValueForCurrentPass
-                ):
+                if (i, j) in evidenceCountsMatrix and theta1 * wordSimilarities[(i, j)] + (
+                    1 - theta1
+                ) * evidenceCountsMatrix[(i, j)] > maxOverallValueForCurrentPass:
                     maxOverallValueForCurrentPass = (
-                        theta1 * wordSimilarities[(i, j)]
-                        + (1 - theta1) * evidenceCountsMatrix[(i, j)]
+                        theta1 * wordSimilarities[(i, j)] + (1 - theta1) * evidenceCountsMatrix[(i, j)]
                     )
-                    maxEvidenceCountForCurrentPass = evidenceCountsMatrix[
-                        (i, j)
-                    ]
+                    maxEvidenceCountForCurrentPass = evidenceCountsMatrix[(i, j)]
                     indexPairWithStrongestTieForCurrentPass = [i, j]
 
         if maxEvidenceCountForCurrentPass > 0:
             adjectiveAlignments.append(indexPairWithStrongestTieForCurrentPass)
-            sourceWordIndicesAlreadyAligned.append(
-                indexPairWithStrongestTieForCurrentPass[0]
-            )
-            targetWordIndicesAlreadyAligned.append(
-                indexPairWithStrongestTieForCurrentPass[1]
-            )
+            sourceWordIndicesAlreadyAligned.append(indexPairWithStrongestTieForCurrentPass[0])
+            targetWordIndicesAlreadyAligned.append(indexPairWithStrongestTieForCurrentPass[1])
             for item in relativeAlignmentsMatrix[
                 (
                     indexPairWithStrongestTieForCurrentPass[0],
@@ -1778,9 +1469,7 @@ def alignAdjectives(
     return adjectiveAlignments
 
 
-def alignAdverbs(
-    source, target, sourceParseResult, targetParseResult, existingAlignments
-):
+def alignAdverbs(source, target, sourceParseResult, targetParseResult, existingAlignments):
     # source and target:: each is a list of elements of the form:
     # [[character begin offset, character end offset], word index, word, lemma, pos tag]
 
@@ -1792,12 +1481,8 @@ def alignAdverbs(
     sourceWordIndices = [i + 1 for i in range(len(source))]
     targetWordIndices = [i + 1 for i in range(len(target))]
 
-    sourceWordIndicesAlreadyAligned = sorted(
-        list(set([item[0] for item in existingAlignments]))
-    )
-    targetWordIndicesAlreadyAligned = sorted(
-        list(set([item[1] for item in existingAlignments]))
-    )
+    sourceWordIndicesAlreadyAligned = sorted(list(set([item[0] for item in existingAlignments])))
+    targetWordIndicesAlreadyAligned = sorted(list(set([item[1] for item in existingAlignments])))
 
     sourceWords = [item[2] for item in source]
     targetWords = [item[2] for item in target]
@@ -1818,17 +1503,13 @@ def alignAdverbs(
     wordSimilarities = {}
 
     for i in sourceWordIndices:
-        if i in sourceWordIndicesAlreadyAligned or (
-            sourcePosTags[i - 1][0].lower() != "r"
-        ):
+        if i in sourceWordIndicesAlreadyAligned or (sourcePosTags[i - 1][0].lower() != "r"):
             continue
 
         numberOfAdverbsInSource += 1
 
         for j in targetWordIndices:
-            if j in targetWordIndicesAlreadyAligned or (
-                targetPosTags[j - 1][0].lower() != "r"
-            ):
+            if j in targetWordIndicesAlreadyAligned or (targetPosTags[j - 1][0].lower() != "r"):
                 continue
 
             if (
@@ -1866,20 +1547,15 @@ def alignAdverbs(
             )
 
             sourceWordParents = findParents(sourceDParse, i, sourceWords[i - 1])
-            sourceWordChildren = findChildren(
-                sourceDParse, i, sourceWords[i - 1]
-            )
+            sourceWordChildren = findChildren(sourceDParse, i, sourceWords[i - 1])
             targetWordParents = findParents(targetDParse, j, targetWords[j - 1])
-            targetWordChildren = findChildren(
-                targetDParse, j, targetWords[j - 1]
-            )
+            targetWordChildren = findChildren(targetDParse, j, targetWords[j - 1])
 
             # search for utils parents
             for ktem in sourceWordParents:
                 for ltem in targetWordParents:
                     if (
-                        (ktem[0], ltem[0])
-                        in existingAlignments + adverbAlignments
+                        (ktem[0], ltem[0]) in existingAlignments + adverbAlignments
                         or max(
                             wordRelatedness(
                                 ktem[1],
@@ -1928,21 +1604,16 @@ def alignAdverbs(
                             )
 
                         if (i, j) in relativeAlignmentsMatrix:
-                            relativeAlignmentsMatrix[(i, j)].append(
-                                [ktem[0], ltem[0]]
-                            )
+                            relativeAlignmentsMatrix[(i, j)].append([ktem[0], ltem[0]])
                         else:
                             relativeAlignmentsMatrix[(i, j)] = []
-                            relativeAlignmentsMatrix[(i, j)].append(
-                                [ktem[0], ltem[0]]
-                            )
+                            relativeAlignmentsMatrix[(i, j)].append([ktem[0], ltem[0]])
 
             # search for utils children
             for ktem in sourceWordChildren:
                 for ltem in targetWordChildren:
                     if (
-                        (ktem[0], ltem[0])
-                        in existingAlignments + adverbAlignments
+                        (ktem[0], ltem[0]) in existingAlignments + adverbAlignments
                         or max(
                             wordRelatedness(
                                 ktem[1],
@@ -1991,14 +1662,10 @@ def alignAdverbs(
                             )
 
                         if (i, j) in relativeAlignmentsMatrix:
-                            relativeAlignmentsMatrix[(i, j)].append(
-                                [ktem[0], ltem[0]]
-                            )
+                            relativeAlignmentsMatrix[(i, j)].append([ktem[0], ltem[0]])
                         else:
                             relativeAlignmentsMatrix[(i, j)] = []
-                            relativeAlignmentsMatrix[(i, j)].append(
-                                [ktem[0], ltem[0]]
-                            )
+                            relativeAlignmentsMatrix[(i, j)].append([ktem[0], ltem[0]])
 
             # search for equivalent parent-child relationships
             group1OfSimilarRelationsInOppositeDirectionForAdverbParentAndChild = [
@@ -2017,8 +1684,7 @@ def alignAdverbs(
             for ktem in sourceWordParents:
                 for ltem in targetWordChildren:
                     if (
-                        (ktem[0], ltem[0])
-                        in existingAlignments + adverbAlignments
+                        (ktem[0], ltem[0]) in existingAlignments + adverbAlignments
                         or max(
                             wordRelatedness(
                                 ktem[1],
@@ -2037,34 +1703,16 @@ def alignAdverbs(
                     ) and (
                         (ktem[2] == ltem[2])
                         or (
-                            ktem[2]
-                            in group1OfSimilarRelationsInOppositeDirectionForAdverbParentAndChild[
-                                0
-                            ]
-                            and ltem[2]
-                            in group1OfSimilarRelationsInOppositeDirectionForAdverbParentAndChild[
-                                1
-                            ]
+                            ktem[2] in group1OfSimilarRelationsInOppositeDirectionForAdverbParentAndChild[0]
+                            and ltem[2] in group1OfSimilarRelationsInOppositeDirectionForAdverbParentAndChild[1]
                         )
                         or (
-                            ktem[2]
-                            in group2OfSimilarRelationsInOppositeDirectionForAdverbParentAndChild[
-                                0
-                            ]
-                            and ltem[2]
-                            in group2OfSimilarRelationsInOppositeDirectionForAdverbParentAndChild[
-                                1
-                            ]
+                            ktem[2] in group2OfSimilarRelationsInOppositeDirectionForAdverbParentAndChild[0]
+                            and ltem[2] in group2OfSimilarRelationsInOppositeDirectionForAdverbParentAndChild[1]
                         )
                         or (
-                            ktem[2]
-                            in group3OfSimilarRelationsInOppositeDirectionForAdverbParentAndChild[
-                                0
-                            ]
-                            and ltem[2]
-                            in group3OfSimilarRelationsInOppositeDirectionForAdverbParentAndChild[
-                                1
-                            ]
+                            ktem[2] in group3OfSimilarRelationsInOppositeDirectionForAdverbParentAndChild[0]
+                            and ltem[2] in group3OfSimilarRelationsInOppositeDirectionForAdverbParentAndChild[1]
                         )
                     ):
 
@@ -2100,21 +1748,16 @@ def alignAdverbs(
                             )
 
                         if (i, j) in relativeAlignmentsMatrix:
-                            relativeAlignmentsMatrix[(i, j)].append(
-                                [ktem[0], ltem[0]]
-                            )
+                            relativeAlignmentsMatrix[(i, j)].append([ktem[0], ltem[0]])
                         else:
                             relativeAlignmentsMatrix[(i, j)] = []
-                            relativeAlignmentsMatrix[(i, j)].append(
-                                [ktem[0], ltem[0]]
-                            )
+                            relativeAlignmentsMatrix[(i, j)].append([ktem[0], ltem[0]])
 
             # search for equivalent child-parent relationships
             for ktem in sourceWordChildren:
                 for ltem in targetWordParents:
                     if (
-                        (ktem[0], ltem[0])
-                        in existingAlignments + adverbAlignments
+                        (ktem[0], ltem[0]) in existingAlignments + adverbAlignments
                         or max(
                             wordRelatedness(
                                 ktem[1],
@@ -2133,34 +1776,16 @@ def alignAdverbs(
                     ) and (
                         (ktem[2] == ltem[2])
                         or (
-                            ktem[2]
-                            in group1OfSimilarRelationsInOppositeDirectionForAdverbParentAndChild[
-                                1
-                            ]
-                            and ltem[2]
-                            in group1OfSimilarRelationsInOppositeDirectionForAdverbParentAndChild[
-                                0
-                            ]
+                            ktem[2] in group1OfSimilarRelationsInOppositeDirectionForAdverbParentAndChild[1]
+                            and ltem[2] in group1OfSimilarRelationsInOppositeDirectionForAdverbParentAndChild[0]
                         )
                         or (
-                            ktem[2]
-                            in group2OfSimilarRelationsInOppositeDirectionForAdverbParentAndChild[
-                                1
-                            ]
-                            and ltem[2]
-                            in group2OfSimilarRelationsInOppositeDirectionForAdverbParentAndChild[
-                                0
-                            ]
+                            ktem[2] in group2OfSimilarRelationsInOppositeDirectionForAdverbParentAndChild[1]
+                            and ltem[2] in group2OfSimilarRelationsInOppositeDirectionForAdverbParentAndChild[0]
                         )
                         or (
-                            ktem[2]
-                            in group3OfSimilarRelationsInOppositeDirectionForAdverbParentAndChild[
-                                1
-                            ]
-                            and ltem[2]
-                            in group3OfSimilarRelationsInOppositeDirectionForAdverbParentAndChild[
-                                0
-                            ]
+                            ktem[2] in group3OfSimilarRelationsInOppositeDirectionForAdverbParentAndChild[1]
+                            and ltem[2] in group3OfSimilarRelationsInOppositeDirectionForAdverbParentAndChild[0]
                         )
                     ):
 
@@ -2196,14 +1821,10 @@ def alignAdverbs(
                             )
 
                         if (i, j) in relativeAlignmentsMatrix:
-                            relativeAlignmentsMatrix[(i, j)].append(
-                                [ktem[0], ltem[0]]
-                            )
+                            relativeAlignmentsMatrix[(i, j)].append([ktem[0], ltem[0]])
                         else:
                             relativeAlignmentsMatrix[(i, j)] = []
-                            relativeAlignmentsMatrix[(i, j)].append(
-                                [ktem[0], ltem[0]]
-                            )
+                            relativeAlignmentsMatrix[(i, j)].append([ktem[0], ltem[0]])
 
     # now use the collected stats to align
     for n in range(numberOfAdverbsInSource):
@@ -2228,29 +1849,19 @@ def alignAdverbs(
                 ):
                     continue
 
-                if (
-                    (i, j) in evidenceCountsMatrix
-                    and theta1 * wordSimilarities[(i, j)]
-                    + (1 - theta1) * evidenceCountsMatrix[(i, j)]
-                    > maxOverallValueForCurrentPass
-                ):
+                if (i, j) in evidenceCountsMatrix and theta1 * wordSimilarities[(i, j)] + (
+                    1 - theta1
+                ) * evidenceCountsMatrix[(i, j)] > maxOverallValueForCurrentPass:
                     maxOverallValueForCurrentPass = (
-                        theta1 * wordSimilarities[(i, j)]
-                        + (1 - theta1) * evidenceCountsMatrix[(i, j)]
+                        theta1 * wordSimilarities[(i, j)] + (1 - theta1) * evidenceCountsMatrix[(i, j)]
                     )
-                    maxEvidenceCountForCurrentPass = evidenceCountsMatrix[
-                        (i, j)
-                    ]
+                    maxEvidenceCountForCurrentPass = evidenceCountsMatrix[(i, j)]
                     indexPairWithStrongestTieForCurrentPass = [i, j]
 
         if maxEvidenceCountForCurrentPass > 0:
             adverbAlignments.append(indexPairWithStrongestTieForCurrentPass)
-            sourceWordIndicesAlreadyAligned.append(
-                indexPairWithStrongestTieForCurrentPass[0]
-            )
-            targetWordIndicesAlreadyAligned.append(
-                indexPairWithStrongestTieForCurrentPass[1]
-            )
+            sourceWordIndicesAlreadyAligned.append(indexPairWithStrongestTieForCurrentPass[0])
+            targetWordIndicesAlreadyAligned.append(indexPairWithStrongestTieForCurrentPass[1])
             for item in relativeAlignmentsMatrix[
                 (
                     indexPairWithStrongestTieForCurrentPass[0],
@@ -2272,9 +1883,7 @@ def alignAdverbs(
     return adverbAlignments
 
 
-def alignNamedEntities(
-    source, target, sourceParseResult, targetParseResult, existingAlignments
-):
+def alignNamedEntities(source, target, sourceParseResult, targetParseResult, existingAlignments):
     # source and target:: each is a list of elements of the form:
     # [[character begin offset, character end offset], word index, word, lemma, pos tag]
 
@@ -2305,26 +1914,15 @@ def alignNamedEntities(
                 # check if the current item is part of a named entity part of which has already been added (by checking contiguousness)
                 partOfABiggerName = False
                 for k in range(len(sourceNamedEntities)):
-                    if (
-                        sourceNamedEntities[k][1][
-                            len(sourceNamedEntities[k][1]) - 1
-                        ]
-                        == newItem[1][0] - 1
-                    ):
+                    if sourceNamedEntities[k][1][len(sourceNamedEntities[k][1]) - 1] == newItem[1][0] - 1:
                         sourceNamedEntities[k][0].append(newItem[0][0])
                         sourceNamedEntities[k][1].append(newItem[1][0])
                         sourceNamedEntities[k][2].append(newItem[2][0])
                         partOfABiggerName = True
                 if not partOfABiggerName:
                     sourceNamedEntities.append(newItem)
-            elif (
-                isAcronym(item[2], jtem[2])
-                and [[item[0]], [item[1]], [item[2]], jtem[3]]
-                not in sourceNamedEntities
-            ):
-                sourceNamedEntities.append(
-                    [[item[0]], [item[1]], [item[2]], jtem[3]]
-                )
+            elif isAcronym(item[2], jtem[2]) and [[item[0]], [item[1]], [item[2]], jtem[3]] not in sourceNamedEntities:
+                sourceNamedEntities.append([[item[0]], [item[1]], [item[2]], jtem[3]])
 
     # learn from the other sentence that a certain word/phrase is a named entity (learn for target from source)
     for item in target:
@@ -2343,26 +1941,15 @@ def alignNamedEntities(
                 # check if the current item is part of a named entity part of which has already been added (by checking contiguousness)
                 partOfABiggerName = False
                 for k in range(len(targetNamedEntities)):
-                    if (
-                        targetNamedEntities[k][1][
-                            len(targetNamedEntities[k][1]) - 1
-                        ]
-                        == newItem[1][0] - 1
-                    ):
+                    if targetNamedEntities[k][1][len(targetNamedEntities[k][1]) - 1] == newItem[1][0] - 1:
                         targetNamedEntities[k][0].append(newItem[0][0])
                         targetNamedEntities[k][1].append(newItem[1][0])
                         targetNamedEntities[k][2].append(newItem[2][0])
                         partOfABiggerName = True
                 if not partOfABiggerName:
                     targetNamedEntities.append(newItem)
-            elif (
-                isAcronym(item[2], jtem[2])
-                and [[item[0]], [item[1]], [item[2]], jtem[3]]
-                not in targetNamedEntities
-            ):
-                targetNamedEntities.append(
-                    [[item[0]], [item[1]], [item[2]], jtem[3]]
-                )
+            elif isAcronym(item[2], jtem[2]) and [[item[0]], [item[1]], [item[2]], jtem[3]] not in targetNamedEntities:
+                targetNamedEntities.append([[item[0]], [item[1]], [item[2]], jtem[3]])
 
     sourceWords = []
     targetWords = []
@@ -2444,10 +2031,7 @@ def alignNamedEntities(
 
     # align subset matches
     for item in sourceNamedEntities:
-        if (
-            item[3] not in ["PERSON", "ORGANIZATION", "LOCATION"]
-            or item in sourceNamedEntitiesAlreadyAligned
-        ):
+        if item[3] not in ["PERSON", "ORGANIZATION", "LOCATION"] or item in sourceNamedEntitiesAlreadyAligned:
             continue
 
         # do not align if the current source entity is present more than once
@@ -2459,10 +2043,7 @@ def alignNamedEntities(
             continue
 
         for jtem in targetNamedEntities:
-            if (
-                jtem[3] not in ["PERSON", "ORGANIZATION", "LOCATION"]
-                or jtem in targetNamedEntitiesAlreadyAligned
-            ):
+            if jtem[3] not in ["PERSON", "ORGANIZATION", "LOCATION"] or jtem in targetNamedEntitiesAlreadyAligned:
                 continue
 
             if item[3] != jtem[3]:
@@ -2483,18 +2064,10 @@ def alignNamedEntities(
                     unalignedWordIndicesInTheLongerName.append(ktem)
                 for k in range(len(item[2])):
                     for l in range(len(jtem[2])):
-                        if (
-                            item[2][k] == jtem[2][l]
-                            and [item[1][k], jtem[1][l]] not in alignments
-                        ):
+                        if item[2][k] == jtem[2][l] and [item[1][k], jtem[1][l]] not in alignments:
                             alignments.append([item[1][k], jtem[1][l]])
-                            if (
-                                jtem[1][l]
-                                in unalignedWordIndicesInTheLongerName
-                            ):
-                                unalignedWordIndicesInTheLongerName.remove(
-                                    jtem[1][l]
-                                )
+                            if jtem[1][l] in unalignedWordIndicesInTheLongerName:
+                                unalignedWordIndicesInTheLongerName.remove(jtem[1][l])
                 for k in range(len(item[1])):  # the shorter name
                     for l in range(len(jtem[1])):  # the longer name
                         # find if the current term in the longer name has already been aligned (before calling alignNamedEntities()), do not align it in that case
@@ -2503,11 +2076,7 @@ def alignNamedEntities(
                             if mtem[1] == jtem[1][l]:
                                 alreadyInserted = True
                                 break
-                        if (
-                            jtem[1][l]
-                            not in unalignedWordIndicesInTheLongerName
-                            or alreadyInserted
-                        ):
+                        if jtem[1][l] not in unalignedWordIndicesInTheLongerName or alreadyInserted:
                             continue
                         if (
                             [item[1][k], jtem[1][l]] not in alignments
@@ -2524,18 +2093,10 @@ def alignNamedEntities(
                     unalignedWordIndicesInTheLongerName.append(ktem)
                 for k in range(len(jtem[2])):
                     for l in range(len(item[2])):
-                        if (
-                            jtem[2][k] == item[2][l]
-                            and [item[1][l], jtem[1][k]] not in alignments
-                        ):
+                        if jtem[2][k] == item[2][l] and [item[1][l], jtem[1][k]] not in alignments:
                             alignments.append([item[1][l], jtem[1][k]])
-                            if (
-                                item[1][l]
-                                in unalignedWordIndicesInTheLongerName
-                            ):
-                                unalignedWordIndicesInTheLongerName.remove(
-                                    item[1][l]
-                                )
+                            if item[1][l] in unalignedWordIndicesInTheLongerName:
+                                unalignedWordIndicesInTheLongerName.remove(item[1][l])
                 for k in range(len(jtem[1])):  # the shorter name
                     for l in range(len(item[1])):  # the longer name
                         # find if the current term in the longer name has already been aligned (before calling alignNamedEntities()), do not align it in that case
@@ -2544,11 +2105,7 @@ def alignNamedEntities(
                             if mtem[0] == item[1][k]:
                                 alreadyInserted = True
                                 break
-                        if (
-                            item[1][l]
-                            not in unalignedWordIndicesInTheLongerName
-                            or alreadyInserted
-                        ):
+                        if item[1][l] not in unalignedWordIndicesInTheLongerName or alreadyInserted:
                             continue
                         if (
                             [item[1][l], jtem[1][k]] not in alignments
@@ -2591,36 +2148,27 @@ def alignWords(source, target, sourceParseResult, targetParseResult):
     targetPosTags = [item[4] for item in target]
 
     # align the sentence ending punctuation first
-    if (
-        sourceWords[len(source) - 1] in [".", "!"]
-        and targetWords[len(target) - 1] in [".", "!"]
-    ) or sourceWords[len(source) - 1] == targetWords[len(target) - 1]:
+    if (sourceWords[len(source) - 1] in [".", "!"] and targetWords[len(target) - 1] in [".", "!"]) or sourceWords[
+        len(source) - 1
+    ] == targetWords[len(target) - 1]:
         alignments.append([len(source), len(target)])
         sourceWordIndicesAlreadyAligned.append(len(source))
         targetWordIndicesAlreadyAligned.append(len(target))
-    elif sourceWords[len(source) - 2] in [".", "!"] and targetWords[
-        len(target) - 1
-    ] in [".", "!"]:
+    elif sourceWords[len(source) - 2] in [".", "!"] and targetWords[len(target) - 1] in [".", "!"]:
         alignments.append([len(source) - 1, len(target)])
         sourceWordIndicesAlreadyAligned.append(len(source) - 1)
         targetWordIndicesAlreadyAligned.append(len(target))
-    elif sourceWords[len(source) - 1] in [".", "!"] and targetWords[
-        len(target) - 2
-    ] in [".", "!"]:
+    elif sourceWords[len(source) - 1] in [".", "!"] and targetWords[len(target) - 2] in [".", "!"]:
         alignments.append([len(source), len(target) - 1])
         sourceWordIndicesAlreadyAligned.append(len(source))
         targetWordIndicesAlreadyAligned.append(len(target) - 1)
-    elif sourceWords[len(source) - 2] in [".", "!"] and targetWords[
-        len(target) - 2
-    ] in [".", "!"]:
+    elif sourceWords[len(source) - 2] in [".", "!"] and targetWords[len(target) - 2] in [".", "!"]:
         alignments.append([len(source) - 1, len(target) - 1])
         sourceWordIndicesAlreadyAligned.append(len(source) - 1)
         targetWordIndicesAlreadyAligned.append(len(target) - 1)
 
     # align all (>=2)-gram matches with at least one content word
-    commonContiguousSublists = findAllCommonContiguousSublists(
-        sourceWords, targetWords, True
-    )
+    commonContiguousSublists = findAllCommonContiguousSublists(sourceWords, targetWords, True)
     for item in commonContiguousSublists:
         allStopWords = True
         for jtem in item:
@@ -2644,9 +2192,7 @@ def alignWords(source, target, sourceParseResult, targetParseResult):
             continue
         if "-" in sourceWords[i - 1] and sourceWords[i - 1] != "-":
             tokens = sourceWords[i - 1].split("-")
-            commonContiguousSublists = findAllCommonContiguousSublists(
-                tokens, targetWords
-            )
+            commonContiguousSublists = findAllCommonContiguousSublists(tokens, targetWords)
             for item in commonContiguousSublists:
                 if len(item[0]) > 1:
                     for jtem in item[1]:
@@ -2660,9 +2206,7 @@ def alignWords(source, target, sourceParseResult, targetParseResult):
             continue
         if "-" in target[i - 1][2] and target[i - 1][2] != "-":
             tokens = target[i - 1][2].split("-")
-            commonContiguousSublists = findAllCommonContiguousSublists(
-                sourceWords, tokens
-            )
+            commonContiguousSublists = findAllCommonContiguousSublists(sourceWords, tokens)
             for item in commonContiguousSublists:
                 if len(item[0]) > 1:
                     for jtem in item[0]:
@@ -2672,9 +2216,7 @@ def alignWords(source, target, sourceParseResult, targetParseResult):
                             targetWordIndicesAlreadyAligned.append(i)
 
     # align named entities
-    neAlignments = alignNamedEntities(
-        source, target, sourceParseResult, targetParseResult, alignments
-    )
+    neAlignments = alignNamedEntities(source, target, sourceParseResult, targetParseResult, alignments)
     for item in neAlignments:
         if item not in alignments:
             alignments.append(item)
@@ -2687,9 +2229,7 @@ def alignWords(source, target, sourceParseResult, targetParseResult):
     sourceDParse = dependencyParseAndPutOffsets(sourceParseResult)
     targetDParse = dependencyParseAndPutOffsets(targetParseResult)
 
-    mainVerbAlignments = alignMainVerbs(
-        source, target, sourceParseResult, targetParseResult, alignments
-    )
+    mainVerbAlignments = alignMainVerbs(source, target, sourceParseResult, targetParseResult, alignments)
     for item in mainVerbAlignments:
         if item not in alignments:
             alignments.append(item)
@@ -2698,9 +2238,7 @@ def alignWords(source, target, sourceParseResult, targetParseResult):
             if item[1] not in targetWordIndicesAlreadyAligned:
                 targetWordIndicesAlreadyAligned.append(item[1])
 
-    nounAlignments = alignNouns(
-        source, target, sourceParseResult, targetParseResult, alignments
-    )
+    nounAlignments = alignNouns(source, target, sourceParseResult, targetParseResult, alignments)
     for item in nounAlignments:
         if item not in alignments:
             alignments.append(item)
@@ -2709,9 +2247,7 @@ def alignWords(source, target, sourceParseResult, targetParseResult):
             if item[1] not in targetWordIndicesAlreadyAligned:
                 targetWordIndicesAlreadyAligned.append(item[1])
 
-    adjectiveAlignments = alignAdjectives(
-        source, target, sourceParseResult, targetParseResult, alignments
-    )
+    adjectiveAlignments = alignAdjectives(source, target, sourceParseResult, targetParseResult, alignments)
     for item in adjectiveAlignments:
         if item not in alignments:
             alignments.append(item)
@@ -2720,9 +2256,7 @@ def alignWords(source, target, sourceParseResult, targetParseResult):
             if item[1] not in targetWordIndicesAlreadyAligned:
                 targetWordIndicesAlreadyAligned.append(item[1])
 
-    adverbAlignments = alignAdverbs(
-        source, target, sourceParseResult, targetParseResult, alignments
-    )
+    adverbAlignments = alignAdverbs(source, target, sourceParseResult, targetParseResult, alignments)
     for item in adverbAlignments:
         if item not in alignments:
             alignments.append(item)
@@ -2738,15 +2272,19 @@ def alignWords(source, target, sourceParseResult, targetParseResult):
     targetWordIndicesBeingConsidered = []
 
     for i in sourceWordIndices:
-        if i in sourceWordIndicesAlreadyAligned or sourceLemmas[
-            i - 1
-        ] in stopwords + punctuations + ["'s", "'d", "'ll"]:
+        if i in sourceWordIndicesAlreadyAligned or sourceLemmas[i - 1] in stopwords + punctuations + [
+            "'s",
+            "'d",
+            "'ll",
+        ]:
             continue
 
         for j in targetWordIndices:
-            if j in targetWordIndicesAlreadyAligned or targetLemmas[
-                j - 1
-            ] in stopwords + punctuations + ["'s", "'d", "'ll"]:
+            if j in targetWordIndicesAlreadyAligned or targetLemmas[j - 1] in stopwords + punctuations + [
+                "'s",
+                "'d",
+                "'ll",
+            ]:
                 continue
 
             wordSimilarities[(i, j)] = max(
@@ -2772,11 +2310,8 @@ def alignWords(source, target, sourceParseResult, targetParseResult):
             evidence = 0
             for k in range(len(sourceNeighborhood[0])):
                 for l in range(len(targetNeighborhood[0])):
-                    if (
-                        sourceNeighborhood[1][k] not in stopwords + punctuations
-                    ) and (
-                        (sourceNeighborhood[0][k], targetNeighborhood[0][l])
-                        in alignments
+                    if (sourceNeighborhood[1][k] not in stopwords + punctuations) and (
+                        (sourceNeighborhood[0][k], targetNeighborhood[0][l]) in alignments
                         or (
                             wordRelatedness(
                                 sourceNeighborhood[1][k],
@@ -2817,25 +2352,18 @@ def alignWords(source, target, sourceParseResult, targetParseResult):
 
                 theta2 = 1 - theta1
                 if (
-                    theta1 * wordSimilarities[(i, j)]
-                    + theta2 * textualNeighborhoodSimilarities[(i, j)]
+                    theta1 * wordSimilarities[(i, j)] + theta2 * textualNeighborhoodSimilarities[(i, j)]
                     > highestWeightedSim
                 ):
                     highestWeightedSim = (
-                        theta1 * wordSimilarities[(i, j)]
-                        + theta2 * textualNeighborhoodSimilarities[(i, j)]
+                        theta1 * wordSimilarities[(i, j)] + theta2 * textualNeighborhoodSimilarities[(i, j)]
                     )
                     bestSourceIndex = i
                     bestTargetIndex = j
                     bestWordSim = wordSimilarities[(i, j)]
-                    bestTextNeighborhoodSim = textualNeighborhoodSimilarities[
-                        (i, j)
-                    ]
+                    bestTextNeighborhoodSim = textualNeighborhoodSimilarities[(i, j)]
 
-        if (
-            bestWordSim >= ppdbSim
-            and [bestSourceIndex, bestTargetIndex] not in alignments
-        ):
+        if bestWordSim >= ppdbSim and [bestSourceIndex, bestTargetIndex] not in alignments:
             if sourceLemmas[bestSourceIndex - 1] not in stopwords:
                 alignments.append([bestSourceIndex, bestTargetIndex])
                 sourceWordIndicesAlreadyAligned.append(bestSourceIndex)
@@ -2852,16 +2380,11 @@ def alignWords(source, target, sourceParseResult, targetParseResult):
             continue
         if "-" in sourceWords[i - 1] and sourceWords[i - 1] != "-":
             tokens = sourceWords[i - 1].split("-")
-            commonContiguousSublists = findAllCommonContiguousSublists(
-                tokens, targetWords
-            )
+            commonContiguousSublists = findAllCommonContiguousSublists(tokens, targetWords)
             for item in commonContiguousSublists:
                 if len(item[0]) == 1 and target[item[1][0]][3] not in stopwords:
                     for jtem in item[1]:
-                        if (
-                            [i, jtem + 1] not in alignments
-                            and jtem + 1 not in targetWordIndicesAlreadyAligned
-                        ):
+                        if [i, jtem + 1] not in alignments and jtem + 1 not in targetWordIndicesAlreadyAligned:
                             alignments.append([i, jtem + 1])
                             sourceWordIndicesAlreadyAligned.append(i)
                             targetWordIndicesAlreadyAligned.append(jtem + 1)
@@ -2871,16 +2394,11 @@ def alignWords(source, target, sourceParseResult, targetParseResult):
             continue
         if "-" in target[i - 1][2] and target[i - 1][2] != "-":
             tokens = target[i - 1][2].split("-")
-            commonContiguousSublists = findAllCommonContiguousSublists(
-                sourceWords, tokens
-            )
+            commonContiguousSublists = findAllCommonContiguousSublists(sourceWords, tokens)
             for item in commonContiguousSublists:
                 if len(item[0]) == 1 and source[item[0][0]][3] not in stopwords:
                     for jtem in item[0]:
-                        if (
-                            [jtem + 1, i] not in alignments
-                            and i not in targetWordIndicesAlreadyAligned
-                        ):
+                        if [jtem + 1, i] not in alignments and i not in targetWordIndicesAlreadyAligned:
                             alignments.append([jtem + 1, i])
                             sourceWordIndicesAlreadyAligned.append(jtem + 1)
                             targetWordIndicesAlreadyAligned.append(i)
@@ -2892,17 +2410,11 @@ def alignWords(source, target, sourceParseResult, targetParseResult):
     targetWordIndicesBeingConsidered = []
 
     for i in sourceWordIndices:
-        if (
-            sourceLemmas[i - 1] not in stopwords
-            or i in sourceWordIndicesAlreadyAligned
-        ):
+        if sourceLemmas[i - 1] not in stopwords or i in sourceWordIndicesAlreadyAligned:
             continue
 
         for j in targetWordIndices:
-            if (
-                targetLemmas[j - 1] not in stopwords
-                or j in targetWordIndicesAlreadyAligned
-            ):
+            if targetLemmas[j - 1] not in stopwords or j in targetWordIndicesAlreadyAligned:
                 continue
 
             if (sourceLemmas[i - 1] != targetLemmas[j - 1]) and (
@@ -2935,13 +2447,9 @@ def alignWords(source, target, sourceParseResult, targetParseResult):
             targetWordIndicesBeingConsidered.append(j)
 
             sourceWordParents = findParents(sourceDParse, i, sourceWords[i - 1])
-            sourceWordChildren = findChildren(
-                sourceDParse, i, sourceWords[i - 1]
-            )
+            sourceWordChildren = findChildren(sourceDParse, i, sourceWords[i - 1])
             targetWordParents = findParents(targetDParse, j, targetWords[j - 1])
-            targetWordChildren = findChildren(
-                targetDParse, j, targetWords[j - 1]
-            )
+            targetWordChildren = findChildren(targetDParse, j, targetWords[j - 1])
 
             evidence = 0
 
@@ -2971,20 +2479,16 @@ def alignWords(source, target, sourceParseResult, targetParseResult):
                     continue
                 theta2 = 1 - theta1
                 if (
-                    theta1 * wordSimilarities[(i, j)]
-                    + theta2 * dependencyNeighborhoodSimilarities[(i, j)]
+                    theta1 * wordSimilarities[(i, j)] + theta2 * dependencyNeighborhoodSimilarities[(i, j)]
                     > highestWeightedSim
                 ):
                     highestWeightedSim = (
-                        theta1 * wordSimilarities[(i, j)]
-                        + theta2 * dependencyNeighborhoodSimilarities[(i, j)]
+                        theta1 * wordSimilarities[(i, j)] + theta2 * dependencyNeighborhoodSimilarities[(i, j)]
                     )
                     bestSourceIndex = i
                     bestTargetIndex = j
                     bestWordSim = wordSimilarities[(i, j)]
-                    bestDependencyNeighborhoodSim = dependencyNeighborhoodSimilarities[
-                        (i, j)
-                    ]
+                    bestDependencyNeighborhoodSim = dependencyNeighborhoodSimilarities[(i, j)]
 
         if (
             bestWordSim >= ppdbSim
@@ -3008,15 +2512,13 @@ def alignWords(source, target, sourceParseResult, targetParseResult):
 
     for i in sourceWordIndices:
         if (
-            sourceLemmas[i - 1]
-            not in stopwords + punctuations + ["'s", "'d", "'ll"]
+            sourceLemmas[i - 1] not in stopwords + punctuations + ["'s", "'d", "'ll"]
         ) or i in sourceWordIndicesAlreadyAligned:
             continue
 
         for j in targetWordIndices:
             if (
-                targetLemmas[j - 1]
-                not in stopwords + punctuations + ["'s", "'d", "'ll"]
+                targetLemmas[j - 1] not in stopwords + punctuations + ["'s", "'d", "'ll"]
             ) or j in targetWordIndicesAlreadyAligned:
                 continue
 
@@ -3085,20 +2587,16 @@ def alignWords(source, target, sourceParseResult, targetParseResult):
 
                 theta2 = 1 - theta1
                 if (
-                    theta1 * wordSimilarities[(i, j)]
-                    + theta2 * textualNeighborhoodSimilarities[(i, j)]
+                    theta1 * wordSimilarities[(i, j)] + theta2 * textualNeighborhoodSimilarities[(i, j)]
                     > highestWeightedSim
                 ):
                     highestWeightedSim = (
-                        theta1 * wordSimilarities[(i, j)]
-                        + theta2 * textualNeighborhoodSimilarities[(i, j)]
+                        theta1 * wordSimilarities[(i, j)] + theta2 * textualNeighborhoodSimilarities[(i, j)]
                     )
                     bestSourceIndex = i
                     bestTargetIndex = j
                     bestWordSim = wordSimilarities[(i, j)]
-                    bestTextNeighborhoodSim = textualNeighborhoodSimilarities[
-                        (i, j)
-                    ]
+                    bestTextNeighborhoodSim = textualNeighborhoodSimilarities[(i, j)]
 
         if (
             bestWordSim >= ppdbSim

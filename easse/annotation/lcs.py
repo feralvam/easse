@@ -3,6 +3,7 @@ from functools import lru_cache
 
 def get_lcs(seq1, seq2):
     '''Returns the longest common subsequence using memoization (only in local scope)'''
+
     @lru_cache(maxsize=None)
     def recursive_lcs(seq1, seq2):
         if len(seq1) == 0 or len(seq2) == 0:
@@ -22,6 +23,7 @@ def get_lcs(seq1, seq2):
 
 def get_lcs_alignment(seq1, seq2):
     '''Same as get_lcs() but returning the alignments of indexes instead of words'''
+
     @lru_cache()
     def recursive_lcs(seq1, seq2):
         if len(seq1) == 0 or len(seq2) == 0:

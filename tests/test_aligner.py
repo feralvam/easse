@@ -12,8 +12,14 @@ def test_align_str():
     alignments = aligner.align(sentence1, sentence2)
 
     assert alignments[0] == [[7, 8], [2, 2], [3, 4], [1, 1], [6, 7], [5, 6]]
-    assert alignments[1] == [['.', '.'], ['men', 'people'], ['died', 'dead'], ['Four', '4'],
-                             ['accident', 'collision'], ['an', 'a']]
+    assert alignments[1] == [
+        ['.', '.'],
+        ['men', 'people'],
+        ['died', 'dead'],
+        ['Four', '4'],
+        ['accident', 'collision'],
+        ['an', 'a'],
+    ]
 
 
 @pytest.mark.skip(reason="TODO: Aligner is currently broken")
@@ -25,5 +31,11 @@ def test_align_tokens():
     alignments = aligner.align(sentence1, sentence2)
 
     assert alignments[0] == [[7, 8], [2, 2], [3, 4], [1, 1], [6, 7], [5, 6]]
-    assert alignments[1] == [['.', '.'], ['men', 'people'], ['died', 'dead'], ['Four', '4'],
-                             ['accident', 'collision'], ['an', 'a']]
+    assert alignments[1] == [
+        ['.', '.'],
+        ['men', 'people'],
+        ['died', 'dead'],
+        ['Four', '4'],
+        ['accident', 'collision'],
+        ['an', 'a'],
+    ]

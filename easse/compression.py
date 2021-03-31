@@ -6,15 +6,12 @@ import easse.utils.preprocessing as utils_prep
 from easse.sari import compute_precision_recall_f1
 
 
-def corpus_f1_token(sys_sents: List[str], refs_sents: List[List[str]],
-                    lowercase: bool = True, tokenizer: str = '13a'):
-
+def corpus_f1_token(sys_sents: List[str], refs_sents: List[List[str]], lowercase: bool = True, tokenizer: str = '13a'):
     def find_correct_tokens(sys_tokens, ref_tokens):
         return list((Counter(sys_tokens) & Counter(ref_tokens)).elements())
 
     sys_sents = [utils_prep.normalize(sent, lowercase, tokenizer) for sent in sys_sents]
-    refs_sents = [[utils_prep.normalize(sent, lowercase, tokenizer) for sent in ref_sents]
-                  for ref_sents in refs_sents]
+    refs_sents = [[utils_prep.normalize(sent, lowercase, tokenizer) for sent in ref_sents] for ref_sents in refs_sents]
 
     f1_token_scores = []
     for sys_sent, *ref_sents in zip(sys_sents, *refs_sents):
@@ -32,4 +29,4 @@ def corpus_f1_token(sys_sents: List[str], refs_sents: List[List[str]],
 
         f1_token_scores.append(np.max(candidate_f1_token_scores))
 
-    return 100. * np.mean(f1_token_scores)
+    return 100.0 * np.mean(f1_token_scores)

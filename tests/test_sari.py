@@ -8,9 +8,11 @@ from easse.utils.resources import get_orig_sents, get_refs_sents, get_system_out
 @pytest.mark.skip(reason='TODO: Test probably broken, need to investigate')
 def test_sentence_sari():
     orig_sent = "About 95 species are currently accepted ."
-    refs_sents = ["About 95 species are currently known .",
-                  "About 95 species are now accepted .",
-                  "95 species are now accepted ."]
+    refs_sents = [
+        "About 95 species are currently known .",
+        "About 95 species are now accepted .",
+        "95 species are now accepted .",
+    ]
 
     sys_sent = "About 95 you now get in ."
     sari_score = sari.sentence_sari(orig_sent, sys_sent, refs_sents, tokenizer='none')
