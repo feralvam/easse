@@ -7,7 +7,13 @@ from urllib.request import urlretrieve
 import warnings
 import zipfile
 
-from easse.utils.constants import STANFORD_CORENLP_DIR, UCCA_DIR, UCCA_PARSER_PATH, TEST_SETS_PATHS, SYSTEM_OUTPUTS_DIRS_MAP
+from easse.utils.constants import (
+    STANFORD_CORENLP_DIR,
+    UCCA_DIR,
+    UCCA_PARSER_PATH,
+    TEST_SETS_PATHS,
+    SYSTEM_OUTPUTS_DIRS_MAP,
+)
 from easse.utils.helpers import get_temp_filepath, read_lines
 
 
@@ -76,8 +82,8 @@ def download_ucca_model():
 def maybe_map_deprecated_test_set_to_new_test_set(test_set):
     '''Map deprecated test sets to new test sets'''
     deprecated_test_sets_map = {
-            'turk': 'turkcorpus_test',
-            'turk_valid': 'turkcorpus_valid',
+        'turk': 'turkcorpus_test',
+        'turk_valid': 'turkcorpus_valid',
     }
     if test_set in deprecated_test_sets_map:
         deprecated_test_set = test_set
@@ -88,6 +94,7 @@ def maybe_map_deprecated_test_set_to_new_test_set(test_set):
 
 def get_orig_sents(test_set):
     test_set = maybe_map_deprecated_test_set_to_new_test_set(test_set)
+    print(TEST_SETS_PATHS[(test_set, 'refs')])
     return read_lines(TEST_SETS_PATHS[(test_set, 'orig')])
 
 

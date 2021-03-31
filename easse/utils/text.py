@@ -92,16 +92,29 @@ def count_syllables_in_word(word):
         'lb': 1,
         'unexpressed': 3,
         'greyish': 2,
-        'unostentatious': 5
+        'unostentatious': 5,
     }
-    special_syllables_substract = [
-        'cial', 'tia', 'cius', 'cious', 'gui', 'ion', 'iou', 'sia$', '.ely$'
-    ]
+    special_syllables_substract = ['cial', 'tia', 'cius', 'cious', 'gui', 'ion', 'iou', 'sia$', '.ely$']
     special_syllables_add = [
-        'ia', 'riet', 'dien', 'iu', 'io', 'ii', '[aeiouy]bl$', 'mbl$',
-        '[aeiou]{3}', '^mc', 'ism$', '(.)(?!\\1)([aeiouy])\\2l$', '[^l]llien',
-        '^coad.', '^coag.', '^coal.', '^coax.',
-        '(.)(?!\\1)[gq]ua(.)(?!\\2)[aeiou]', 'dnt$'
+        'ia',
+        'riet',
+        'dien',
+        'iu',
+        'io',
+        'ii',
+        '[aeiouy]bl$',
+        'mbl$',
+        '[aeiou]{3}',
+        '^mc',
+        'ism$',
+        '(.)(?!\\1)([aeiouy])\\2l$',
+        '[^l]llien',
+        '^coad.',
+        '^coag.',
+        '^coal.',
+        '^coax.',
+        '(.)(?!\\1)[gq]ua(.)(?!\\2)[aeiou]',
+        'dnt$',
     ]
     word = word.lower().strip()
     if word in special_words:

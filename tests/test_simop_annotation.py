@@ -13,21 +13,15 @@ def test_identification_wordlevel():
     orig_sent = "The tarantula, the trickster character, spun a black cord and, attaching it to the ball, crawled away fast to the east, pulling on the cord with all his strength."
     simp_sent = "The tarantula was a trickster character. He spun a black cord. He attached it to the ball. He then crawled away fast to the east. As he crawled, he was pulling on the cord with all his strength."
 
-    word_simop_annot = WordOperationAnnotator(
-        tokenizer="moses", lowercase=False
-    )
-    orig_labels, simp_labels = word_simop_annot.identify_operations(
-        [orig_sent], [simp_sent]
-    )
+    word_simop_annot = WordOperationAnnotator(tokenizer="moses", lowercase=False)
+    orig_labels, simp_labels = word_simop_annot.identify_operations([orig_sent], [simp_sent])
     print(orig_labels)
     print(simp_labels)
 
 
 @pytest.mark.skip(reason="TODO: Add assert")
 def test_identification_sentencelevel():
-    sent_simop_annot = SentenceOperationAnnotator(
-        tokenizer="moses", lowercase=False
-    )
+    sent_simop_annot = SentenceOperationAnnotator(tokenizer="moses", lowercase=False)
     orig_sent = "In return, Rollo swore fealty to Charles, converted to Christianity, and undertook to defend the northern region of France against the incursions of other Viking groups."
     simp_sent = "In return, Rollo swore fealty to Charles, converted to Christianity, and set out to defend the north of France from the raids of other Viking groups."
     labels = sent_simop_annot.identify_operations([orig_sent], [simp_sent])
@@ -47,10 +41,6 @@ def test_analysis_score():
         ["95 species are now accepted.", "The cat sat."],
     ]
 
-    word_simop_annot = WordOperationAnnotator(
-        tokenizer="moses", lowercase=False, verbose=True
-    )
-    scores = word_simop_annot.analyse_operations(
-        orig_sents, sys_sents, refs_sents
-    )
+    word_simop_annot = WordOperationAnnotator(tokenizer="moses", lowercase=False, verbose=True)
+    scores = word_simop_annot.analyse_operations(orig_sents, sys_sents, refs_sents)
     print(scores)

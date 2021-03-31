@@ -93,7 +93,12 @@ def _improve_replace(src_annots, ref_annots, src_parse, ref_parse):
 
 
 def _label_group_simop(
-    annots, parse, group_synt_tags, old_token_labels, new_group_label, majority_percent=0.75,
+    annots,
+    parse,
+    group_synt_tags,
+    old_token_labels,
+    new_group_label,
+    majority_percent=0.75,
 ):
     """
     Annotate a sequence of tokens with the same operation label and which belong to the same syntactic group,
@@ -153,7 +158,7 @@ def _label_group_simop(
 
 def _label_move(src_annots, ref_annots, aligns):
     """
-    Annotate 'move' checking if the relative index of a token in source changes in reference, considering  
+    Annotate 'move' checking if the relative index of a token in source changes in reference, considering
     preceding deletions, additions and multi-token replacements.
     """
 
@@ -283,10 +288,20 @@ def annotate_sentence(src, ref, aligns, src_parse, ref_parse, include_phrase_lev
 
         # chunk-level delete and add
         _label_group_simop(
-            src_annots, src_parse, CHUNK_SYNT_TAGS, ["B-D", "I-D"], "D", majority_percent=1,
+            src_annots,
+            src_parse,
+            CHUNK_SYNT_TAGS,
+            ["B-D", "I-D"],
+            "D",
+            majority_percent=1,
         )
         _label_group_simop(
-            ref_annots, ref_parse, CHUNK_SYNT_TAGS, ["B-A", "I-A"], "A", majority_percent=1,
+            ref_annots,
+            ref_parse,
+            CHUNK_SYNT_TAGS,
+            ["B-A", "I-A"],
+            "A",
+            majority_percent=1,
         )
 
         # clause-level move
@@ -294,7 +309,12 @@ def annotate_sentence(src, ref, aligns, src_parse, ref_parse, include_phrase_lev
 
         # chunk-level move
         _label_group_simop(
-            src_annots, src_parse, CHUNK_SYNT_TAGS, ["B-M", "I-M"], "M", majority_percent=1,
+            src_annots,
+            src_parse,
+            CHUNK_SYNT_TAGS,
+            ["B-M", "I-M"],
+            "M",
+            majority_percent=1,
         )
 
     return src_annots, ref_annots
@@ -332,7 +352,9 @@ class WordOperationAnnotator:
             matching_methods = {"inter": "a", "mwmf": "m", "itermax": "i"}
             assert simalign_method in matching_methods.keys()
             self._word_aligner = SentenceAligner(
-                model="bert", token_type="bpe", matching_methods=matching_methods[simalign_method],
+                model="bert",
+                token_type="bpe",
+                matching_methods=matching_methods[simalign_method],
             )
         elif align_tool == "mwa":
             self._word_aligner = MonolingualWordAligner()
@@ -370,7 +392,11 @@ class WordOperationAnnotator:
         return score_per_label
 
     def compute_operations_sentence_scores(
-        self, orig_sentences: List[str], sys_sentences: List[str], refs_sentences: List[List[str]], operations=None,
+        self,
+        orig_sentences: List[str],
+        sys_sentences: List[str],
+        refs_sentences: List[List[str]],
+        operations=None,
     ):
         if operations is None:
             operations = ["D", "R", "M", "C"]
@@ -394,7 +420,12 @@ class WordOperationAnnotator:
                     orig_silver_labels = _remove_iob_labels(orig_silver_labels)
                     orig_auto_labels = _remove_iob_labels(orig_auto_labels)
                 assert len(orig_silver_labels) == len(orig_auto_labels)
-                f1_per_label = f1_score(orig_silver_labels, orig_auto_labels, labels=operations, average=None,)
+                f1_per_label = f1_score(
+                    orig_silver_labels,
+                    orig_auto_labels,
+                    labels=operations,
+                    average=None,
+                )
                 curr_ref_scores.append(f1_per_label)
             sentence_scores.append(np.amax(curr_ref_scores, axis=0))
         return np.stack(sentence_scores, axis=0)
@@ -404,7 +435,9 @@ class WordOperationAnnotator:
         simp_sentences = [utils_prep.normalize(sent, self._lowercase, self._tokenizer) for sent in simp_sentences]
 
         all_parses = syntactic_parse_texts(
-            orig_sentences + simp_sentences, with_constituency_parse=self._include_phrase_level, verbose=self._verbose,
+            orig_sentences + simp_sentences,
+            with_constituency_parse=self._include_phrase_level,
+            verbose=self._verbose,
         )
         orig_parses = all_parses[: len(orig_sentences)]
         simp_parses = all_parses[len(orig_sentences) :]
@@ -412,11 +445,16 @@ class WordOperationAnnotator:
         orig_labels_per_sentence = []
         simp_labels_per_sentence = []
         for orig_sent, simp_sent, orig_parse, simp_parse in tqdm(
-            zip(orig_sentences, simp_sentences, orig_parses, simp_parses), disable=(not self._verbose),
+            zip(orig_sentences, simp_sentences, orig_parses, simp_parses),
+            disable=(not self._verbose),
         ):
             word_aligns_orig_simp = self._get_word_alignments(orig_sent, orig_parse, simp_sent, simp_parse)
             orig_annots, simp_annots = annotate_sentence(
-                orig_sent.split(), simp_sent.split(), word_aligns_orig_simp, orig_parse, simp_parse,
+                orig_sent.split(),
+                simp_sent.split(),
+                word_aligns_orig_simp,
+                orig_parse,
+                simp_parse,
             )
             orig_labels = _from_annots_to_labels(orig_annots, default_label="C")
             simp_labels = _from_annots_to_labels(simp_annots, default_label="O")

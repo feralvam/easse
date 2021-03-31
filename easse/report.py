@@ -20,9 +20,13 @@ from easse.annotation.lcs import get_lcs
 
 
 def get_all_scores(
-        orig_sents: List[str], sys_sents: List[str], refs_sents: List[List[str]],
-        lowercase: bool = False, tokenizer: str = '13a', metrics: List[str] = DEFAULT_METRICS,
-        ):
+    orig_sents: List[str],
+    sys_sents: List[str],
+    refs_sents: List[List[str]],
+    lowercase: bool = False,
+    tokenizer: str = '13a',
+    metrics: List[str] = DEFAULT_METRICS,
+):
     scores = OrderedDict()
     if 'bleu' in metrics:
         scores['BLEU'] = corpus_bleu(sys_sents, refs_sents, force=True, tokenize=tokenizer, lowercase=lowercase).score
@@ -30,19 +34,17 @@ def get_all_scores(
         scores['SARI'] = corpus_sari(orig_sents, sys_sents, refs_sents, tokenizer=tokenizer, lowercase=lowercase)
     if 'samsa' in metrics:
         from easse.samsa import corpus_samsa
+
         scores['SAMSA'] = corpus_samsa(orig_sents, sys_sents, tokenizer=tokenizer, verbose=True, lowercase=lowercase)
     if 'fkgl' in metrics:
         scores['FKGL'] = corpus_fkgl(sys_sents, tokenizer=tokenizer)
     quality_estimation_scores = corpus_quality_estimation(
-            orig_sents,
-            sys_sents,
-            tokenizer=tokenizer,
-            lowercase=lowercase
-            )
+        orig_sents, sys_sents, tokenizer=tokenizer, lowercase=lowercase
+    )
     scores = add_dicts(
-            scores,
-            quality_estimation_scores,
-            )
+        scores,
+        quality_estimation_scores,
+    )
     return {key: round(value, 2) for key, value in scores.items()}
 
 
@@ -85,24 +87,32 @@ def get_random_html_id():
 
 def get_qualitative_examples_html(orig_sents, sys_sents, refs_sents):
     title_key_print = [
-        ('Randomly sampled simplifications',
-         lambda c, s, refs: 0,
-         lambda value: ''),
-        ('Best simplifications according to SARI',
-         lambda c, s, refs: -corpus_sari([c], [s], [refs]),
-         lambda value: f'SARI={-value:.2f}'),
-        ('Worst simplifications according to SARI',
-         lambda c, s, refs: corpus_sari([c], [s], [refs]),
-         lambda value: f'SARI={value:.2f}'),
-        ('Simplifications with the most compression',
-         lambda c, s, refs: get_compression_ratio(c, s),
-         lambda value: f'compression_ratio={value:.2f}'),
-        ('Simplifications with a high amount of paraphrasing',
-         lambda c, s, refs: get_levenshtein_similarity(c, s) / get_compression_ratio(c, s),
-         lambda value: f'levenshtein_similarity={value:.2f}'),
-        ('Simplifications with the most sentence splits (if any)',
-         lambda c, s, refs: -(count_sentences(s) - count_sentences(c)),
-         lambda value: f'#sentence_splits={-value:.2f}'),
+        ('Randomly sampled simplifications', lambda c, s, refs: 0, lambda value: ''),
+        (
+            'Best simplifications according to SARI',
+            lambda c, s, refs: -corpus_sari([c], [s], [refs]),
+            lambda value: f'SARI={-value:.2f}',
+        ),
+        (
+            'Worst simplifications according to SARI',
+            lambda c, s, refs: corpus_sari([c], [s], [refs]),
+            lambda value: f'SARI={value:.2f}',
+        ),
+        (
+            'Simplifications with the most compression',
+            lambda c, s, refs: get_compression_ratio(c, s),
+            lambda value: f'compression_ratio={value:.2f}',
+        ),
+        (
+            'Simplifications with a high amount of paraphrasing',
+            lambda c, s, refs: get_levenshtein_similarity(c, s) / get_compression_ratio(c, s),
+            lambda value: f'levenshtein_similarity={value:.2f}',
+        ),
+        (
+            'Simplifications with the most sentence splits (if any)',
+            lambda c, s, refs: -(count_sentences(s) - count_sentences(c)),
+            lambda value: f'#sentence_splits={-value:.2f}',
+        ),
     ]
 
     def get_one_sample_html(orig_sent, sys_sent, ref_sents, sort_key, print_func):
@@ -123,8 +133,9 @@ def get_qualitative_examples_html(orig_sents, sys_sents, refs_sents):
                 # References
                 collapse_id = get_random_html_id()
                 with doc.tag('div', klass='position-relative'):
-                    with doc.tag('a', ('data-toggle', 'collapse'), ('href', f'#{collapse_id}'),
-                                 klass='stretched-link small'):
+                    with doc.tag(
+                        'a', ('data-toggle', 'collapse'), ('href', f'#{collapse_id}'), klass='stretched-link small'
+                    ):
                         doc.text('References')
                     with doc.tag('div', klass='collapse', id=collapse_id):
                         for ref_sent in refs:
@@ -141,8 +152,8 @@ def get_qualitative_examples_html(orig_sents, sys_sents, refs_sents):
                 doc.line('h3', klass='m-2', text_content=title)
             # Now lets print the examples
             sample_generator = sorted(
-                    zip(orig_sents, sys_sents, zip(*refs_sents)),
-                    key=lambda args: sort_key(*args),
+                zip(orig_sents, sys_sents, zip(*refs_sents)),
+                key=lambda args: sort_key(*args),
             )
             # Samples displayed by default
             with doc.tag('div', klass='collapse', id=collapse_id):
@@ -168,6 +179,7 @@ def get_test_set_description_html(test_set, orig_sents, refs_sents):
 
     def modified_count_sentences(sent):
         return max(count_sentences(sent), 1)
+
     orig_sent_counts = np.vectorize(modified_count_sentences)(orig_sents)
     expanded_orig_sent_counts = np.expand_dims(orig_sent_counts, 0).repeat(len(refs_sents), axis=0)
     refs_sent_counts = np.vectorize(modified_count_sentences)(refs_sents)
@@ -191,7 +203,9 @@ def get_plotly_html(plotly_figure):
     with doc.tag('div', id=plot_id):
         # Embedded javascript code that uses plotly to fill the div
         with doc.tag('script'):
-            doc.asis(f"var plotlyJson = '{plotly_figure.to_json()}'; var figure = JSON.parse(plotlyJson); var plotDiv = document.getElementById('{plot_id}'); Plotly.newPlot(plotDiv, figure.data, figure.layout, {{responsive: true}});")  # noqa: E501
+            doc.asis(
+                f"var plotlyJson = '{plotly_figure.to_json()}'; var figure = JSON.parse(plotlyJson); var plotDiv = document.getElementById('{plot_id}'); Plotly.newPlot(plotDiv, figure.data, figure.layout, {{responsive: true}});"
+            )  # noqa: E501
     return doc.getvalue()
 
 
@@ -202,9 +216,17 @@ def get_plotly_histogram(orig_sents, sys_sents, ref_sents, feature_extractor, fe
         data.append({'Model': 'System output', feature_name: feature_extractor(orig_sent, sys_sent)})
         data.append({'Model': 'Reference', feature_name: feature_extractor(orig_sent, ref_sent)})
     figure = px.histogram(
-            pd.DataFrame(data), title=feature_name, x=feature_name, color='Model', nbins=100, histnorm=None,
-            barmode='overlay', opacity=0.7, color_discrete_map={'Reference': '#228B22', 'System output': '#B22222'},
-            category_orders={'Model': ['System output', 'Reference']}, width=800,
+        pd.DataFrame(data),
+        title=feature_name,
+        x=feature_name,
+        color='Model',
+        nbins=100,
+        histnorm=None,
+        barmode='overlay',
+        opacity=0.7,
+        color_discrete_map={'Reference': '#228B22', 'System output': '#B22222'},
+        category_orders={'Model': ['System output', 'Reference']},
+        width=800,
     )
     figure.layout['hovermode'] = 'x'  # To compare on hover
     figure.data[-1]['marker']['opacity'] = 0.5  # So that the reference is transparent in front of the system output
@@ -214,8 +236,8 @@ def get_plotly_histogram(orig_sents, sys_sents, ref_sents, feature_extractor, fe
 def get_plots_html(orig_sents, sys_sents, ref_sents):
     doc = Doc()
     features = {
-            'Compression ratio': get_compression_ratio,
-            'Levenshtein similarity': get_levenshtein_similarity,
+        'Compression ratio': get_compression_ratio,
+        'Levenshtein similarity': get_levenshtein_similarity,
     }
     with doc.tag('div', klass='row'):
         for feature_name, feature_extractor in features.items():
@@ -231,9 +253,14 @@ def get_table_html_from_dataframe(df):
 
 
 def get_scores_by_length_html(
-        orig_sents, sys_sents, refs_sents, n_bins=5,
-        lowercase: bool = False, tokenizer: str = '13a', metrics: List[str] = DEFAULT_METRICS,
-        ):
+    orig_sents,
+    sys_sents,
+    refs_sents,
+    n_bins=5,
+    lowercase: bool = False,
+    tokenizer: str = '13a',
+    metrics: List[str] = DEFAULT_METRICS,
+):
     def get_intervals_from_limits(limits):
         return list(zip(limits[:-1], limits[1:]))
 
@@ -274,8 +301,14 @@ def get_scores_by_length_html(
         splitted_orig_sents = orig_sents_by_bins[i]
         splitted_sys_sents = sys_sents_by_bins[i]
         splitted_refs_sents = [ref_sents_by_bins[i] for ref_sents_by_bins in refs_sents_by_bins]
-        row = get_all_scores(splitted_orig_sents, splitted_sys_sents, splitted_refs_sents,
-                             lowercase=lowercase, tokenizer=tokenizer, metrics=metrics)
+        row = get_all_scores(
+            splitted_orig_sents,
+            splitted_sys_sents,
+            splitted_refs_sents,
+            lowercase=lowercase,
+            tokenizer=tokenizer,
+            metrics=metrics,
+        )
         row['index'] = f'length=[{interval[0]};{interval[1]}]'
         table.append(row)
     df_bins = pd.DataFrame.from_records(table, index='index')
@@ -300,7 +333,7 @@ def get_head_html():
     <!-- Plotly js -->
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
   </head>
-''' # noqa
+'''  # noqa
 
 
 def get_table_html(header, rows, row_names=None):
@@ -331,14 +364,18 @@ def get_table_html(header, rows, row_names=None):
 
 
 def get_score_table_html_single_system(orig_sents, sys_sents, refs_sents, lowercase, tokenizer, metrics):
-    return get_score_table_html_multiple_systems(orig_sents, [sys_sents], refs_sents, ['System output'], lowercase, tokenizer, metrics)
+    return get_score_table_html_multiple_systems(
+        orig_sents, [sys_sents], refs_sents, ['System output'], lowercase, tokenizer, metrics
+    )
 
 
-def get_score_table_html_multiple_systems(orig_sents, sys_sents_list, refs_sents, system_names, lowercase, tokenizer, metrics):
+def get_score_table_html_multiple_systems(
+    orig_sents, sys_sents_list, refs_sents, system_names, lowercase, tokenizer, metrics
+):
     def truncate(sentence):
         # Take first 80% words
         words = to_words(sentence)
-        return ' '.join(words[:int(len(words) * 0.8)]) + '.'
+        return ' '.join(words[: int(len(words) * 0.8)]) + '.'
 
     doc = Doc()
     # We don't want changes to propagate out of this scope
@@ -351,33 +388,51 @@ def get_score_table_html_multiple_systems(orig_sents, sys_sents_list, refs_sents
     sys_sents_list.append([truncate(sentence) for sentence in orig_sents])
     system_names.append('Truncate baseline')
     # Evaluate systems
-    sys_scores_list = [get_all_scores(orig_sents, sys_sents, refs_sents, lowercase=lowercase, tokenizer=tokenizer, metrics=metrics)
-                       for sys_sents in sys_sents_list]
+    sys_scores_list = [
+        get_all_scores(orig_sents, sys_sents, refs_sents, lowercase=lowercase, tokenizer=tokenizer, metrics=metrics)
+        for sys_sents in sys_sents_list
+    ]
     rows = [sys_scores.values() for sys_scores in sys_scores_list]
     if len(refs_sents) > 1:
         # Evaluate the first reference against all the others (the second reference is duplicated to have the same number of reference as for systems).
         # TODO: Ideally the system and references should be evaluated with exactly the same number of references.
-        ref_scores = get_all_scores(orig_sents, refs_sents[0], [refs_sents[1]] + refs_sents[1:],
-                                    lowercase=lowercase, tokenizer=tokenizer, metrics=metrics)
+        ref_scores = get_all_scores(
+            orig_sents,
+            refs_sents[0],
+            [refs_sents[1]] + refs_sents[1:],
+            lowercase=lowercase,
+            tokenizer=tokenizer,
+            metrics=metrics,
+        )
         assert all([sys_scores.keys() == ref_scores.keys() for sys_scores in sys_scores_list])
         rows.append(ref_scores.values())
         system_names.append('Reference*')
-    doc.asis(get_table_html(
+    doc.asis(
+        get_table_html(
             header=list(sys_scores_list[0].keys()),
             rows=rows,
             row_names=system_names,
-            ))
+        )
+    )
     doc.line(
         'p',
         klass='text-muted',
-        text_content=('* The Reference row represents one of the references (picked randomly) evaluated'
-                      ' against the others.'),
+        text_content=(
+            '* The Reference row represents one of the references (picked randomly) evaluated' ' against the others.'
+        ),
     )
     return doc.getvalue()
 
 
-def get_html_report(orig_sents: List[str], sys_sents: List[str], refs_sents: List[List[str]], test_set: str,
-                    lowercase: bool = False, tokenizer: str = '13a', metrics: List[str] = DEFAULT_METRICS):
+def get_html_report(
+    orig_sents: List[str],
+    sys_sents: List[str],
+    refs_sents: List[List[str]],
+    test_set: str,
+    lowercase: bool = False,
+    tokenizer: str = '13a',
+    metrics: List[str] = DEFAULT_METRICS,
+):
     doc = Doc()
     doc.asis('<!doctype html>')
     with doc.tag('html', lang='en'):
@@ -390,17 +445,21 @@ def get_html_report(orig_sents: List[str], sys_sents: List[str], refs_sents: Lis
             doc.line('h2', 'Test set')
             doc.stag('hr')
             with doc.tag('div', klass='container-fluid'):
-                doc.asis(get_test_set_description_html(
-                    test_set=test_set,
-                    orig_sents=orig_sents,
-                    refs_sents=refs_sents,
-                ))
+                doc.asis(
+                    get_test_set_description_html(
+                        test_set=test_set,
+                        orig_sents=orig_sents,
+                        refs_sents=refs_sents,
+                    )
+                )
             doc.line('h2', 'Scores')
             doc.stag('hr')
             with doc.tag('div', klass='container-fluid'):
                 doc.line('h3', 'System vs. Reference')
                 doc.stag('hr')
-                doc.asis(get_score_table_html_single_system(orig_sents, sys_sents, refs_sents, lowercase, tokenizer, metrics))
+                doc.asis(
+                    get_score_table_html_single_system(orig_sents, sys_sents, refs_sents, lowercase, tokenizer, metrics)
+                )
                 doc.line('h3', 'By sentence length (characters)')
                 doc.stag('hr')
                 doc.asis(get_scores_by_length_html(orig_sents, sys_sents, refs_sents))
@@ -444,15 +503,16 @@ def get_multiple_systems_qualitative_examples_html(orig_sents, sys_sents_list, r
                 # Source
                 with doc.tag('div'):
                     doc.asis(get_one_sentence_html(orig_sent, 'Original'))
-                # Predictions
+                    # Predictions
                     for sys_sent, system_name in zip(sys_sents, system_names):
                         _, sys_sent_bold = make_differing_words_bold(orig_sent, sys_sent, make_text_bold_html)
                         doc.asis(get_one_sentence_html(sys_sent_bold, system_name))
                 # References
                 collapse_id = get_random_html_id()
                 with doc.tag('div', klass='position-relative'):
-                    with doc.tag('a', ('data-toggle', 'collapse'), ('href', f'#{collapse_id}'),
-                                 klass='stretched-link small'):
+                    with doc.tag(
+                        'a', ('data-toggle', 'collapse'), ('href', f'#{collapse_id}'), klass='stretched-link small'
+                    ):
                         doc.text('References')
                     with doc.tag('div', klass='collapse', id=collapse_id):
                         for ref_sent in refs:
@@ -461,15 +521,13 @@ def get_multiple_systems_qualitative_examples_html(orig_sents, sys_sents_list, r
                                 doc.asis(ref_sent_bold)
         return doc.getvalue()
 
-    title_key_print = [
-        ('Randomly sampled simplifications',
-         lambda c, s, refs: 0,
-         lambda value: ''),
-    ] + [
-        (f'Worst relative simplifications (SARI) for {system_names[i]}',
-         lambda c, sys_sents, refs_sents: get_relative_sari(c, sys_sents, refs_sents, system_idx=i),
-         lambda value: f'Relative SARI={value:.2f}')
-         for i in range(len(system_names))
+    title_key_print = [('Randomly sampled simplifications', lambda c, s, refs: 0, lambda value: ''),] + [
+        (
+            f'Worst relative simplifications (SARI) for {system_names[i]}',
+            lambda c, sys_sents, refs_sents: get_relative_sari(c, sys_sents, refs_sents, system_idx=i),
+            lambda value: f'Relative SARI={value:.2f}',
+        )
+        for i in range(len(system_names))
     ]
     doc = Doc()
     for title, sort_key, print_func in title_key_print:
@@ -479,8 +537,8 @@ def get_multiple_systems_qualitative_examples_html(orig_sents, sys_sents_list, r
                 doc.line('h3', klass='m-2', text_content=title)
             # Now lets print the examples
             sample_generator = sorted(
-                    zip(orig_sents, zip(*sys_sents_list), zip(*refs_sents)),
-                    key=lambda args: sort_key(*args),
+                zip(orig_sents, zip(*sys_sents_list), zip(*refs_sents)),
+                key=lambda args: sort_key(*args),
             )
             # Samples displayed by default
             with doc.tag('div', klass='collapse', id=collapse_id):
@@ -492,7 +550,9 @@ def get_multiple_systems_qualitative_examples_html(orig_sents, sys_sents_list, r
     return doc.getvalue()
 
 
-def get_multiple_systems_html_report(orig_sents, sys_sents_list, refs_sents, system_names, test_set, lowercase, tokenizer, metrics):
+def get_multiple_systems_html_report(
+    orig_sents, sys_sents_list, refs_sents, system_names, test_set, lowercase, tokenizer, metrics
+):
     doc = Doc()
     doc.asis('<!doctype html>')
     with doc.tag('html', lang='en'):
@@ -505,21 +565,29 @@ def get_multiple_systems_html_report(orig_sents, sys_sents_list, refs_sents, sys
             doc.line('h2', 'Test set')
             doc.stag('hr')
             with doc.tag('div', klass='container-fluid'):
-                doc.asis(get_test_set_description_html(
-                    test_set=test_set,
-                    orig_sents=orig_sents,
-                    refs_sents=refs_sents,
-                ))
+                doc.asis(
+                    get_test_set_description_html(
+                        test_set=test_set,
+                        orig_sents=orig_sents,
+                        refs_sents=refs_sents,
+                    )
+                )
             doc.line('h2', 'Scores')
             doc.stag('hr')
             with doc.tag('div', klass='container-fluid'):
                 doc.line('h3', 'System vs. Reference')
                 doc.stag('hr')
-                doc.asis(get_score_table_html_multiple_systems(orig_sents, sys_sents_list, refs_sents, system_names, lowercase, tokenizer, metrics))
+                doc.asis(
+                    get_score_table_html_multiple_systems(
+                        orig_sents, sys_sents_list, refs_sents, system_names, lowercase, tokenizer, metrics
+                    )
+                )
             doc.line('h2', 'Qualitative evaluation')
             doc.stag('hr')
             with doc.tag('div', klass='container-fluid'):
-                doc.asis(get_multiple_systems_qualitative_examples_html(orig_sents, sys_sents_list, refs_sents, system_names))
+                doc.asis(
+                    get_multiple_systems_qualitative_examples_html(orig_sents, sys_sents_list, refs_sents, system_names)
+                )
     return indent(doc.getvalue())
 
 

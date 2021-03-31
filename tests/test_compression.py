@@ -15,7 +15,7 @@ def test_corpus_macro_avg_f1_token_single_reference():
     precision = len(correct) / len(sys_sent.split())
     recall = len(correct) / len(ref_sents[0].split())
     f1 = 2 * precision * recall / (precision + recall)
-    f1 = 100. * f1
+    f1 = 100.0 * f1
 
     assert f1_token == pytest.approx(f1)
 
@@ -36,6 +36,6 @@ def test_corpus_macro_avg_f1_token_multiple_references():
     recall_ref2 = len(correct_ref2) / len(ref_sents[1].split())
     f1_ref2 = 2 * precision_ref2 * recall_ref2 / (precision_ref2 + recall_ref2)
 
-    f1 = 100. * np.max([f1_ref1, f1_ref2])
+    f1 = 100.0 * np.max([f1_ref1, f1_ref2])
 
     assert f1_token == pytest.approx(f1)
