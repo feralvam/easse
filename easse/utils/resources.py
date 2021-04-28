@@ -94,7 +94,6 @@ def maybe_map_deprecated_test_set_to_new_test_set(test_set):
 
 def get_orig_sents(test_set):
     test_set = maybe_map_deprecated_test_set_to_new_test_set(test_set)
-    print(TEST_SETS_PATHS[(test_set, 'refs')])
     return read_lines(TEST_SETS_PATHS[(test_set, 'orig')])
 
 
