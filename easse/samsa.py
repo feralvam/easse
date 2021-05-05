@@ -1,13 +1,13 @@
 from typing import List
 import numpy as np
 from tqdm import tqdm
-from ucca.core import Passage
 
 from easse.utils.ucca_utils import (
     get_scenes_ucca,
     get_scenes_text,
     ucca_parse_texts,
     flatten_unit,
+    Passage,
 )
 from easse.aligner.aligner import MonolingualWordAligner
 from easse.aligner.corenlp_utils import syntactic_parse_texts

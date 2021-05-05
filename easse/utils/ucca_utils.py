@@ -3,7 +3,12 @@ from functools import lru_cache
 import sys
 from typing import List
 
-from tupa.parse import Parser
+try:
+    from tupa.parse import Parser
+except ImportError as e:
+    # We don't install tupa by default because it requires the ucca package which hardcodes the spacy version to the old 2.1.3
+    print("tupa package is not installed. Please install it with `pip install tupa`")
+    raise e
 from ucca.core import Passage
 import ucca.convert
 
