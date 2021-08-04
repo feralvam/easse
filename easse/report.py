@@ -90,12 +90,12 @@ def get_qualitative_examples_html(orig_sents, sys_sents, refs_sents):
         ('Randomly sampled simplifications', lambda c, s, refs: 0, lambda value: ''),
         (
             'Best simplifications according to SARI',
-            lambda c, s, refs: -corpus_sari([c], [s], [refs]),
+            lambda c, s, refs: -corpus_sari([c], [s], [[ref] for ref in refs]),
             lambda value: f'SARI={-value:.2f}',
         ),
         (
             'Worst simplifications according to SARI',
-            lambda c, s, refs: corpus_sari([c], [s], [refs]),
+            lambda c, s, refs: corpus_sari([c], [s], [[ref] for ref in refs]),
             lambda value: f'SARI={value:.2f}',
         ),
         (
@@ -151,6 +151,7 @@ def get_qualitative_examples_html(orig_sents, sys_sents, refs_sents):
             with doc.tag('a', ('data-toggle', 'collapse'), ('href', f'#{collapse_id}')):
                 doc.line('h3', klass='m-2', text_content=title)
             # Now lets print the examples
+            # Shapes: orig_sents: n_samples, sys_sents: n_samples, refs_sents: (n_refs, n_sample)
             sample_generator = sorted(
                 zip(orig_sents, sys_sents, zip(*refs_sents)),
                 key=lambda args: sort_key(*args),
