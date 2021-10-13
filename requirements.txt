@@ -1,6 +1,6 @@
 click
 matplotlib
-nltk==3.4.3
+nltk==3.4.5
 numpy
 pandas
 requests>=2.21.0
