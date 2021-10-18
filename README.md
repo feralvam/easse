@@ -135,11 +135,11 @@ EASSE is licenced under the GNU General Public License v3.0.
 
 ## Citation
 
-If you use EASSE in your research, please cite [{EASSE}: Easier Automatic Sentence Simplification Evaluation](https://aclanthology.org/D19-3009/)
+If you use EASSE in your research, please cite [EASSE: Easier Automatic Sentence Simplification Evaluation](https://aclanthology.org/D19-3009/)
 
 ```
 @inproceedings{alva-manchego-etal-2019-easse,
-    title = "{EASSE}: Easier Automatic Sentence Simplification Evaluation",
+    title = "{EASSE}: {E}asier Automatic Sentence Simplification Evaluation",
     author = "Alva-Manchego, Fernando  and
       Martin, Louis  and
       Scarton, Carolina  and
