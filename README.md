@@ -135,21 +135,22 @@ EASSE is licenced under the GNU General Public License v3.0.
 
 ## Citation
 
-If you use EASSE in your research, please cite **deepQuest-py: Large and Distilled Models for Quality Estimation**
+If you use EASSE in your research, please cite [{EASSE}: Easier Automatic Sentence Simplification Evaluation](https://aclanthology.org/D19-3009/)
 
 ```
-@inproceedings{alva-manchego-etal-2021-deepquestpy,
-    title = "deep{Q}uest-py: {L}arge and Distilled Models for Quality Estimation",
+@inproceedings{alva-manchego-etal-2019-easse,
+    title = "{EASSE}: Easier Automatic Sentence Simplification Evaluation",
     author = "Alva-Manchego, Fernando  and
-      Obamuyide, Abiola  and
-      Gajbhiye, Amit  and
-      Blain, Fr{\'e}d{\'e}ric  and
-      Fomicheva, Marina  and
+      Martin, Louis  and
+      Scarton, Carolina  and
       Specia, Lucia",
-    booktitle = "Proceedings of the 2021 Conference on Empirical Methods in Natural Language Processing: System Demonstrations",
+    booktitle = "Proceedings of the 2019 Conference on Empirical Methods in Natural Language Processing and the 9th International Joint Conference on Natural Language Processing (EMNLP-IJCNLP): System Demonstrations",
     month = nov,
-    year = "2021",
-    address = "Virtual",
+    year = "2019",
+    address = "Hong Kong, China",
     publisher = "Association for Computational Linguistics",
+    url = "https://aclanthology.org/D19-3009",
+    doi = "10.18653/v1/D19-3009",
+    pages = "49--54",
 }
 ```
