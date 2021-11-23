@@ -5,7 +5,7 @@ Implements the evaluation metrics based on BLEU score
 import numpy as np
 from typing import List
 
-import sacrebleu
+from sacrebleu.metrics import BLEU
 
 import easse.utils.preprocessing as utils_prep
 
@@ -13,37 +13,32 @@ import easse.utils.preprocessing as utils_prep
 def corpus_bleu(
     sys_sents: List[str],
     refs_sents: List[List[str]],
-    smooth_method: str = 'exp',
+    smooth_method: str = "exp",
     smooth_value: float = None,
     force: bool = True,
     lowercase: bool = False,
-    tokenizer: str = '13a',
-    use_effective_order: bool = False,
+    tokenizer: str = "13a",
+    effective_order: bool = False,
 ):
-
     sys_sents = [utils_prep.normalize(sent, lowercase, tokenizer) for sent in sys_sents]
     refs_sents = [[utils_prep.normalize(sent, lowercase, tokenizer) for sent in ref_sents] for ref_sents in refs_sents]
 
-    return sacrebleu.corpus_bleu(
+    bleu_scorer = BLEU(lowercase=False, force=force, tokenize="none", smooth_method=smooth_method, smooth_value=smooth_value, effective_order=effective_order)
+
+    return bleu_scorer.corpus_score(
         sys_sents,
         refs_sents,
-        smooth_method,
-        smooth_value,
-        force,
-        lowercase=False,
-        tokenize='none',
-        use_effective_order=use_effective_order,
     ).score
 
 
 def sentence_bleu(
     sys_sent: str,
     ref_sents: List[str],
-    smooth_method: str = 'floor',
+    smooth_method: str = "floor",
     smooth_value: float = None,
     lowercase: bool = False,
-    tokenizer: str = '13a',
-    use_effective_order: bool = True,
+    tokenizer: str = "13a",
+    effective_order: bool = True,
 ):
 
     return corpus_bleu(
@@ -54,18 +49,18 @@ def sentence_bleu(
         force=True,
         lowercase=lowercase,
         tokenizer=tokenizer,
-        use_effective_order=use_effective_order,
+        effective_order=effective_order,
     )
 
 
 def corpus_averaged_sentence_bleu(
     sys_sents: List[str],
     refs_sents: List[List[str]],
-    smooth_method: str = 'floor',
+    smooth_method: str = "floor",
     smooth_value: float = None,
     lowercase: bool = False,
-    tokenizer: str = '13a',
-    use_effective_order: bool = True,
+    tokenizer: str = "13a",
+    effective_order: bool = True,
 ):
 
     scores = []
@@ -78,7 +73,7 @@ def corpus_averaged_sentence_bleu(
                 smooth_value,
                 lowercase=lowercase,
                 tokenizer=tokenizer,
-                use_effective_order=use_effective_order,
+                effective_order=effective_order,
             )
         )
     return np.mean(scores)

@@ -1,10 +1,10 @@
 click
 matplotlib
-nltk==3.6.5
+nltk>=3.6.5
 numpy
 pandas
 requests>=2.21.0
-sacrebleu>=1.4.13
+sacrebleu>=2.0.0
 sacremoses
 seaborn
 sklearn
