@@ -25,7 +25,7 @@ Install EASSE by running:
 ```
 git clone https://github.com/feralvam/easse.git
 cd easse
-pip install .
+pip install -e .
 ```
 
 This will make `easse` available on your system but it will use the sources from the local clone
