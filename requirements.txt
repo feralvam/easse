@@ -13,5 +13,5 @@ tqdm>=4.32.2
 yattag
 plotly>=4.0.0
 bert_score
-tseval@ git+https://github.com/facebookresearch/text-simplification-evaluation.git
-simalign@ git+https://github.com/cisnlp/simalign.git
+tseval@ git+https://github.com/facebookresearch/text-simplification-evaluation.git@main
+simalign
