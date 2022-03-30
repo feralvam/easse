@@ -14,8 +14,7 @@ from easse.utils.constants import (
     TEST_SETS_PATHS,
     SYSTEM_OUTPUTS_DIRS_MAP,
 )
-from easse.utils.helpers import get_temp_filepath, read_lines
-
+from easse.utils.helpers import get_temp_filepath, read_lines, safe_divide
 
 def reporthook(count, block_size, total_size):
     # Download progress bar
@@ -25,7 +24,7 @@ def reporthook(count, block_size, total_size):
         return
     duration = time.time() - start_time
     progress_size_mb = count * block_size / (1024 * 1024)
-    speed = progress_size_mb / duration
+    speed = safe_divide(progress_size_mb, duration)
     percent = int(count * block_size * 100 / total_size)
     msg = f'\r... {percent}% - {int(progress_size_mb)} MB - {speed:.2f} MB/s - {int(duration)}s'
     sys.stdout.write(msg)
@@ -54,7 +53,7 @@ def untar(compressed_path, output_dir):
 
 def download_stanford_corenlp():
     url = 'http://nlp.stanford.edu/software/stanford-corenlp-full-2018-10-05.zip'
-    temp_filepath = get_temp_filepath()
+    temp_filepath = get_temp_filepath(create=True)
     download(url, temp_filepath)
     STANFORD_CORENLP_DIR.mkdir(parents=True, exist_ok=True)
     unzip(temp_filepath, STANFORD_CORENLP_DIR.parent)
@@ -72,7 +71,7 @@ def update_ucca_path():
 
 def download_ucca_model():
     url = 'https://github.com/huji-nlp/tupa/releases/download/v1.3.10/ucca-bilstm-1.3.10.tar.gz'
-    temp_filepath = get_temp_filepath()
+    temp_filepath = get_temp_filepath(create=True)
     download(url, temp_filepath)
     UCCA_DIR.mkdir(parents=True, exist_ok=True)
     untar(temp_filepath, UCCA_DIR)
