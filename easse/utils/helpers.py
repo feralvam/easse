@@ -2,6 +2,8 @@ from typing import List
 from pathlib import Path
 import tempfile
 
+def safe_divide(a,b):
+    return a/b if b else 0
 
 def get_temp_filepath(create=False):
     temp_filepath = Path(tempfile.mkstemp()[1])
