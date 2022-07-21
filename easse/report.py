@@ -286,7 +286,7 @@ def get_scores_by_length_html(
         sents = np.array(sents)
         sents_by_bin = []
         for sent_indexes in bins:
-            sents_by_bin.append(np.array(sents)[sent_indexes])
+            sents_by_bin.append(np.array(sents)[sent_indexes].tolist())
         return sents_by_bin
 
     intervals = get_equally_populated_intervals(orig_sents, n_bins)
