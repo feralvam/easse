@@ -125,10 +125,14 @@ def get_qualitative_examples_html(orig_sents, sys_sents, refs_sents):
             with doc.tag('div', klass='ml-2'):
                 orig_sent_bold, sys_sent_bold = make_differing_words_bold(orig_sent, sys_sent, make_text_bold_html)
                 # Source
-                with doc.tag('div'):
+                with doc.tag('div', klass='mb-2'):
+                    with doc.tag('h6', klass='mb-0 small'):
+                        doc.text('Source')
                     doc.asis(orig_sent_bold)
                 # Prediction
-                with doc.tag('div'):
+                with doc.tag('div', klass='mb-2'):
+                    with doc.tag('h6', klass='mb-0 small'):
+                        doc.text('Prediction')
                     doc.asis(sys_sent_bold)
                 # References
                 collapse_id = get_random_html_id()
